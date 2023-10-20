@@ -1,0 +1,16 @@
+{
+    "name": "UIWidgets.Editor",
+    "rootNamespace": "",
+    "references": [
+        "UIWidgets"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
