@@ -1,0 +1,17 @@
+{  
+  "name": "uiwidgets",
+  "displayName": "UIWidgets",
+  "description": "",
+  "version": "0.0.1",
+  "unity": "2021.3",
+  "dependencies": {
+    "com.unity.ugui": "1.0.0"
+  },
+  "samples": [
+    {
+      "displayName": "Examples",
+      "description": "Samples for the High Definition render pipeline",
+      "path": "Samples~/Examples"
+    }
+  ]
+}
