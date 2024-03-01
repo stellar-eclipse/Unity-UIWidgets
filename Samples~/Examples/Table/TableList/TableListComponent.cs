@@ -29,17 +29,19 @@
 		/// </summary>
 		protected override void GraphicsForegroundInit()
 		{
-			if (Foreground.Length == TextAdapterComponents.Count)
+			#pragma warning disable 0618
+			if (Foreground.Length != TextAdapterComponents.Count)
 			{
-				return;
-			}
+				Foreground = new Graphic[TextAdapterComponents.Count];
 
-			Foreground = new Graphic[TextAdapterComponents.Count];
-
-			for (int i = 0; i < TextAdapterComponents.Count; i++)
-			{
-				Foreground[i] = TextAdapterComponents[i].Graphic;
+				for (int i = 0; i < TextAdapterComponents.Count; i++)
+				{
+					Foreground[i] = TextAdapterComponents[i].Graphic;
+				}
 			}
+			#pragma warning restore
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -49,9 +51,13 @@
 		{
 			if (GraphicsBackgroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				graphicsBackground = Compatibility.EmptyArray<Graphic>();
+				#pragma warning restore
 				GraphicsBackgroundVersion = 1;
 			}
+
+			base.GraphicsBackgroundInit();
 		}
 
 		/// <summary>
@@ -122,7 +128,7 @@
 				{
 					if (t != null)
 					{
-						TextAdapterComponents.Add(Utilities.GetOrAddComponent<TextAdapter>(t));
+						TextAdapterComponents.Add(Utilities.RequireComponent<TextAdapter>(t));
 					}
 				}
 			}

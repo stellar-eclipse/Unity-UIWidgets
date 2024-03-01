@@ -7,7 +7,7 @@ namespace UIWidgets
 	/// </summary>
 	public class Awaiter
 	{
-		IAwaitable awaitable;
+		readonly IAwaitable awaitable;
 
 		Action continuation;
 

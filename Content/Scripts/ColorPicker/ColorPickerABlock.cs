@@ -7,7 +7,8 @@
 	/// <summary>
 	/// Color picker Alpha slider block.
 	/// </summary>
-	public class ColorPickerABlock : MonoBehaviour
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/colorpicker.html")]
+	public class ColorPickerABlock : MonoBehaviour, UIThemes.ITargetOwner
 	{
 		[SerializeField]
 		Slider aSlider;
@@ -18,15 +19,9 @@
 		/// <value>Alpha slider.</value>
 		public Slider ASlider
 		{
-			get
-			{
-				return aSlider;
-			}
+			get => aSlider;
 
-			set
-			{
-				SetASlider(value);
-			}
+			set => SetASlider(value);
 		}
 
 		[SerializeField]
@@ -38,15 +33,9 @@
 		/// <value>Alpha spinner.</value>
 		public Spinner AInput
 		{
-			get
-			{
-				return aInput;
-			}
+			get => aInput;
 
-			set
-			{
-				SetAInput(value);
-			}
+			set => SetAInput(value);
 		}
 
 		[SerializeField]
@@ -58,10 +47,7 @@
 		/// <value>Alpha slider background.</value>
 		public Image ASliderBackground
 		{
-			get
-			{
-				return aSliderBackground;
-			}
+			get => aSliderBackground;
 
 			set
 			{
@@ -79,10 +65,7 @@
 		/// <value>The default shader.</value>
 		public Shader DefaultShader
 		{
-			get
-			{
-				return defaultShader;
-			}
+			get => defaultShader;
 
 			set
 			{
@@ -99,15 +82,9 @@
 		/// <value>The input mode.</value>
 		public ColorPickerInputMode InputMode
 		{
-			get
-			{
-				return inputMode;
-			}
+			get => inputMode;
 
-			set
-			{
-				inputMode = value;
-			}
+			set => inputMode = value;
 		}
 
 		ColorPickerPaletteMode paletteMode;
@@ -118,15 +95,9 @@
 		/// <value>The palette mode.</value>
 		public ColorPickerPaletteMode PaletteMode
 		{
-			get
-			{
-				return paletteMode;
-			}
+			get => paletteMode;
 
-			set
-			{
-				paletteMode = value;
-			}
+			set => paletteMode = value;
 		}
 
 		/// <summary>
@@ -341,6 +312,14 @@
 		{
 			aSlider = null;
 			aInput = null;
+		}
+
+		/// <summary>
+		/// Set target owner.
+		/// </summary>
+		public void SetTargetOwner()
+		{
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), aSliderBackground, nameof(Graphic.color), this);
 		}
 
 		/// <summary>

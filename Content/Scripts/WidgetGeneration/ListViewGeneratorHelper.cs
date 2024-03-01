@@ -6,6 +6,7 @@
 	/// <summary>
 	/// ListView generator helper.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/generator.html")]
 	public class ListViewGeneratorHelper : MonoBehaviour
 	{
 		/// <summary>

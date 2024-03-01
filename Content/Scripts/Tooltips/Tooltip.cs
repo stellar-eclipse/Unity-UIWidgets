@@ -14,6 +14,7 @@
 	[RequireComponent(typeof(RectTransform))]
 	[DisallowMultipleComponent]
 	[Obsolete("Replaced with generic Tooltip and TooltipViewer")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/misc/simple-tooltip.html")]
 	public class Tooltip : MonoBehaviour,
 		IPointerEnterHandler, IPointerExitHandler,
 		ISelectHandler, IDeselectHandler,
@@ -308,32 +309,10 @@
 
 		#if UNITY_EDITOR
 		/// <summary>
-		/// Create tooltip object.
-		/// </summary>
-		protected virtual void CreateTooltipObject()
-		{
-			TooltipObject = UtilitiesEditor.CreateWidgetFromPrefab(PrefabsMenu.Instance.Tooltip);
-			TooltipObject.transform.SetParent(transform);
-
-			var tooltipRectTransform = TooltipObject.transform as RectTransform;
-
-			tooltipRectTransform.anchorMin = new Vector2(1, 1);
-			tooltipRectTransform.anchorMax = new Vector2(1, 1);
-			tooltipRectTransform.pivot = new Vector2(1, 0);
-
-			tooltipRectTransform.anchoredPosition = new Vector2(0, 0);
-		}
-
-		/// <summary>
 		/// Reset this instance.
 		/// </summary>
 		protected virtual void Reset()
 		{
-			if (TooltipObject == null)
-			{
-				CreateTooltipObject();
-			}
-
 			if (ParentCanvas == null)
 			{
 				ParentCanvas = UtilitiesUI.FindTopmostCanvas(transform);

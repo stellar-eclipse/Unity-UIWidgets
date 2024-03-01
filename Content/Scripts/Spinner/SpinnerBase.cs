@@ -34,6 +34,7 @@ namespace UIWidgets
 	/// </summary>
 	/// <typeparam name="T">Type of spinner value.</typeparam>
 	[DataBindSupport]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/spinner.html")]
 	public abstract class SpinnerBase<T> : UIWidgetsMonoBehaviour, IStylable, IUpgradeable, IValidateable
 		where T : struct
 	{
@@ -75,13 +76,7 @@ namespace UIWidgets
 		/// InputField proxy.
 		/// </summary>
 		[Obsolete("Replaced with InputFieldAdapter.")]
-		protected IInputFieldExtended InputField
-		{
-			get
-			{
-				return InputFieldAdapter;
-			}
-		}
+		protected IInputFieldExtended InputField => InputFieldAdapter;
 
 		[SerializeField]
 		InputFieldExtendedAdapter inputFieldAdapter;
@@ -311,6 +306,7 @@ namespace UIWidgets
 		/// <summary>
 		/// Always allow inputed symbols.
 		/// </summary>
+		[DomainReloadExclude]
 		protected static readonly InputField.OnValidateInput AlwaysAllow = (x, y, z) => z;
 
 		/// <summary>
@@ -682,7 +678,7 @@ namespace UIWidgets
 			m_TargetGraphic = null;
 #pragma warning restore 0612, 0618
 
-			Utilities.GetOrAddComponent(this, ref inputFieldAdapter);
+			Utilities.RequireComponent(this, ref inputFieldAdapter);
 		}
 
 #if UNITY_EDITOR
@@ -692,6 +688,14 @@ namespace UIWidgets
 		public virtual void Validate()
 		{
 			Compatibility.Upgrade(this);
+		}
+
+		/// <summary>
+		/// Validate instance.
+		/// </summary>
+		protected virtual void OnValidate()
+		{
+			Validate();
 		}
 #endif
 	}

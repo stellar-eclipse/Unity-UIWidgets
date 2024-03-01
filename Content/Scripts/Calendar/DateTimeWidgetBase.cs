@@ -9,6 +9,7 @@
 	/// DateTime widget.
 	/// </summary>
 	[DataBindSupport]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/datetime.html")]
 	public abstract class DateTimeWidgetBase : MonoBehaviourConditional
 	{
 		[SerializeField]

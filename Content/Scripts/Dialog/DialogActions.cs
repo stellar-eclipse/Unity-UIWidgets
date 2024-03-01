@@ -310,7 +310,7 @@
 				}
 			}
 
-			value = default(Func<bool>);
+			value = default;
 			return false;
 		}
 

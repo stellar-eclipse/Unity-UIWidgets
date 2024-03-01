@@ -9,6 +9,7 @@ namespace UIWidgets
 	/// RectTransform drop component.
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/drag-and-drop.html")]
 	public class DropRectTransform : MonoBehaviour, IDropSupport<RectTransform>, ISnapGridSupport
 	{
 		[SerializeField]

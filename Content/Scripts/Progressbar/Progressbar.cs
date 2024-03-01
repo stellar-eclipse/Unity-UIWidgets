@@ -27,6 +27,7 @@
 	/// </example>
 	/// </summary>
 	[DataBindSupport]
+	[Obsolete("Replaced with ProgressbarDeterminate and ProgressbarIndeterminate.")]
 	public class Progressbar : MonoBehaviour, IUpgradeable
 	{
 		/// <summary>
@@ -232,6 +233,57 @@
 				textFunc = value;
 				UpdateText();
 			}
+		}
+
+		[SerializeField]
+		bool correctUVRect = true;
+
+		/// <summary>
+		/// Correct UV rect of the Bar.
+		/// </summary>
+		public bool CorrectUVRect
+		{
+			get
+			{
+				return correctUVRect;
+			}
+
+			set
+			{
+				correctUVRect = value;
+				if (correctUVRect)
+				{
+					UpdateUVRect();
+				}
+			}
+		}
+
+		/// <summary>
+		/// Process the start event.
+		/// </summary>
+		protected virtual void Start()
+		{
+			UpdateUVRect();
+		}
+
+		/// <summary>
+		/// Update UV rect.
+		/// </summary>
+		protected virtual void UpdateUVRect()
+		{
+			if ((IndeterminateBar == null) || (IndeterminateBar.texture == null))
+			{
+				return;
+			}
+
+			var t_width = IndeterminateBar.texture.width;
+			var t_height = IndeterminateBar.texture.height;
+
+			var rt_size = IndeterminateBar.GetComponent<RectTransform>().rect.size;
+			var rect = IndeterminateBar.uvRect;
+			rect.width = rt_size.x / t_width;
+			rect.height = rt_size.y / t_height;
+			IndeterminateBar.uvRect = rect;
 		}
 
 		/// <summary>
@@ -457,6 +509,12 @@
 		/// </summary>
 		protected virtual void UpdateText()
 		{
+			// prevent memory allocation if no text components
+			if ((FullBarTextAdapter == null) && (EmptyBarTextAdapter == null))
+			{
+				return;
+			}
+
 			var text = textFunc(this);
 			if (FullBarTextAdapter != null)
 			{
@@ -511,8 +569,8 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(EmptyBarText, ref EmptyBarTextAdapter);
-			Utilities.GetOrAddComponent(FullBarText, ref FullBarTextAdapter);
+			Utilities.RequireComponent(EmptyBarText, ref EmptyBarTextAdapter);
+			Utilities.RequireComponent(FullBarText, ref FullBarTextAdapter);
 #pragma warning restore 0612, 0618
 		}
 
@@ -522,6 +580,11 @@
 		/// </summary>
 		protected virtual void OnValidate()
 		{
+			if (correctUVRect)
+			{
+				UpdateUVRect();
+			}
+
 			Compatibility.Upgrade(this);
 		}
 #endif

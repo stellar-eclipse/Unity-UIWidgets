@@ -11,6 +11,7 @@
 	/// Base class for Time widget.
 	/// </summary>
 	[DataBindSupport]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/time.html")]
 	public class TimeSpinnerBase : TimeBase, IUpgradeable
 	{
 		/// <summary>
@@ -35,37 +36,19 @@
 		/// The input field proxy for the hours.
 		/// </summary>
 		[Obsolete("Replaced with InputHoursAdapter.")]
-		protected IInputFieldProxy InputProxyHours
-		{
-			get
-			{
-				return InputHoursAdapter;
-			}
-		}
+		protected IInputFieldProxy InputProxyHours =>InputHoursAdapter;
 
 		/// <summary>
 		/// The input field proxy for the minutes.
 		/// </summary>
 		[Obsolete("Replaced with InputMinutesAdapter.")]
-		protected IInputFieldProxy InputProxyMinutes
-		{
-			get
-			{
-				return InputMinutesAdapter;
-			}
-		}
+		protected IInputFieldProxy InputProxyMinutes => InputMinutesAdapter;
 
 		/// <summary>
 		/// The input field proxy for the seconds.
 		/// </summary>
 		[Obsolete("Replaced with InputSecondsAdapter.")]
-		protected IInputFieldProxy InputProxySeconds
-		{
-			get
-			{
-				return InputSecondsAdapter;
-			}
-		}
+		protected IInputFieldProxy InputProxySeconds => InputSecondsAdapter;
 
 		/// <summary>
 		/// The button to increase hours.
@@ -321,8 +304,7 @@
 		/// <param name="hours">Hours.</param>
 		protected virtual void UpdateHours(string hours)
 		{
-			int h;
-			if (int.TryParse(hours, out h))
+			if (int.TryParse(hours, out var h))
 			{
 				Time += new TimeSpan(Mathf.Abs(h) - time.Hours, 0, 0);
 			}
@@ -338,8 +320,7 @@
 		/// <param name="minutes">Minutes.</param>
 		protected virtual void UpdateMinutes(string minutes)
 		{
-			int m;
-			if (int.TryParse(minutes, out m))
+			if (int.TryParse(minutes, out var m))
 			{
 				Time += new TimeSpan(0, Mathf.Abs(m) - time.Minutes, 0);
 			}
@@ -355,8 +336,7 @@
 		/// <param name="seconds">Seconds.</param>
 		protected virtual void UpdateSeconds(string seconds)
 		{
-			int s;
-			if (int.TryParse(seconds, out s))
+			if (int.TryParse(seconds, out var s))
 			{
 				Time += new TimeSpan(0, 0, Mathf.Abs(s) - time.Seconds);
 			}

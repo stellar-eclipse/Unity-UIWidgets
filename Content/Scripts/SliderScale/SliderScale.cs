@@ -69,19 +69,14 @@ namespace UIWidgets
 		protected override Vector2 Value2Anchor(float value)
 		{
 			var v = (value - Slider.minValue) / (Slider.maxValue - Slider.minValue);
-			switch (Slider.direction)
+			return Slider.direction switch
 			{
-				case Slider.Direction.LeftToRight:
-					return new Vector2(v, 0.5f);
-				case Slider.Direction.RightToLeft:
-					return new Vector2(1f - v, 0.5f);
-				case Slider.Direction.TopToBottom:
-					return new Vector2(0.5f, 1f - v);
-				case Slider.Direction.BottomToTop:
-					return new Vector2(0.5f, v);
-				default:
-					throw new NotSupportedException(string.Format("Unknown slider direction: {0}", EnumHelper<Slider.Direction>.ToString(Slider.direction)));
-			}
+				Slider.Direction.LeftToRight => new Vector2(v, 0.5f),
+				Slider.Direction.RightToLeft => new Vector2(1f - v, 0.5f),
+				Slider.Direction.TopToBottom => new Vector2(0.5f, 1f - v),
+				Slider.Direction.BottomToTop => new Vector2(0.5f, v),
+				_ => throw new NotSupportedException(string.Format("Unknown slider direction: {0}", EnumHelper<Slider.Direction>.ToString(Slider.direction))),
+			};
 		}
 	}
 }

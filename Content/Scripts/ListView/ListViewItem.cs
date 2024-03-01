@@ -9,6 +9,7 @@ namespace UIWidgets
 	using UnityEngine;
 	using UnityEngine.Events;
 	using UnityEngine.EventSystems;
+	using UnityEngine.Serialization;
 	using UnityEngine.UI;
 
 	/// <summary>
@@ -16,6 +17,7 @@ namespace UIWidgets
 	/// Item for ListViewBase.
 	/// </summary>
 	[RequireComponent(typeof(Image))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/listview.html")]
 	public class ListViewItem : UIBehaviour,
 		IPointerClickHandler, IPointerDownHandler, IPointerUpHandler,
 		IPointerEnterHandler, IPointerExitHandler,
@@ -248,8 +250,34 @@ namespace UIWidgets
 		{
 			if (GraphicsBackgroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				graphicsBackground = new Graphic[] { Background };
+				#pragma warning restore
 				GraphicsBackgroundVersion = 1;
+			}
+
+			if (GraphicsBackgroundVersion == 1)
+			{
+				if (backgrounds.Count == 0)
+				{
+					#pragma warning disable 0618
+					backgrounds.AddRange(graphicsBackground);
+					#pragma warning restore
+				}
+
+				GraphicsBackgroundVersion = 2;
+			}
+
+			if (CellsBackgroundVersion == 1)
+			{
+				if (cellsBackgrounds.Count == 0)
+				{
+					#pragma warning disable 0618
+					cellsBackgrounds.AddRange(cellsGraphicsBackground);
+					#pragma warning restore
+				}
+
+				CellsBackgroundVersion = 2;
 			}
 		}
 
@@ -265,10 +293,35 @@ namespace UIWidgets
 		/// </summary>
 		protected virtual void GraphicsForegroundInit()
 		{
+			if (GraphicsForegroundVersion == 1)
+			{
+				if (foregrounds.Count == 0)
+				{
+					#pragma warning disable 0618
+					foregrounds.AddRange(Foreground);
+					#pragma warning restore
+				}
+
+				GraphicsForegroundVersion = 2;
+			}
+
+			// workaround: TMPText became missing when using both instantiate prefabs and tmpro support
+			// because GraphicsForegroundInit() is first run for prefab and "foregrounds" now contains obsolete Text reference
+			// this replace prefab "foregrounds" with correct instance "Foreground"
+			#if UNITY_EDITOR && UIWIDGETS_TMPRO_SUPPORT
+			if ((GraphicsForegroundVersion == 2) && UnityEditor.PrefabUtility.IsPartOfNonAssetPrefabInstance(this) && UtilitiesCollections.HasNull(foregrounds))
+			{
+				#pragma warning disable 0618
+				foregrounds.AddRange(Foreground);
+				#pragma warning restore
+				foregrounds.RemoveAll(x => x == null);
+				UnityEditor.EditorUtility.SetDirty(this);
+			}
+			#endif
 		}
 
 		/// <summary>
-		/// Is colors setted at least once?
+		/// Is colors were set at least once?
 		/// </summary>
 		protected bool GraphicsColorSetted = false;
 
@@ -276,11 +329,21 @@ namespace UIWidgets
 		/// Foreground graphics for coloring.
 		/// </summary>
 		[SerializeField]
+		[HideInInspector]
+		[Obsolete("Replaces with 'foregrounds'.")]
 		protected Graphic[] Foreground = Compatibility.EmptyArray<Graphic>();
+
+		/// <summary>
+		/// Foreground graphics for coloring.
+		/// </summary>
+		[SerializeField]
+		[FormerlySerializedAs("Foreground")]
+		protected List<Graphic> foregrounds = new List<Graphic>();
 
 		/// <summary>
 		/// Gets foreground graphics for coloring.
 		/// </summary>
+		[Obsolete("Replaces with Foregrounds.")]
 		public virtual Graphic[] GraphicsForeground
 		{
 			get
@@ -292,14 +355,59 @@ namespace UIWidgets
 		}
 
 		/// <summary>
+		/// Gets foreground graphics for coloring.
+		/// </summary>
+		public virtual List<Graphic> Foregrounds
+		{
+			get
+			{
+				GraphicsForegroundInit();
+
+				return foregrounds;
+			}
+		}
+
+		/// <summary>
 		/// Background graphics for coloring.
 		/// </summary>
 		[SerializeField]
+		[HideInInspector]
+		[Obsolete("Replaced with 'backgrounds'.")]
 		protected Graphic[] graphicsBackground = Compatibility.EmptyArray<Graphic>();
 
 		/// <summary>
 		/// Background graphics for coloring.
 		/// </summary>
+		[SerializeField]
+		[FormerlySerializedAs("graphicsBackground")]
+		protected List<Graphic> backgrounds = new List<Graphic>();
+
+		/// <summary>
+		/// Cells graphics background.
+		/// </summary>
+		[SerializeField]
+		[HideInInspector]
+		[Obsolete("Replaced with cellsBackgrounds.")]
+		protected Graphic[] cellsGraphicsBackground = Compatibility.EmptyArray<Graphic>();
+
+		/// <summary>
+		/// Background graphics for coloring.
+		/// </summary>
+		[SerializeField]
+		[FormerlySerializedAs("cellsGraphicsBackground")]
+		protected List<Graphic> cellsBackgrounds = new List<Graphic>();
+
+		/// <summary>
+		/// CellsBackground version.
+		/// </summary>
+		[SerializeField]
+		[HideInInspector]
+		protected int CellsBackgroundVersion = 0;
+
+		/// <summary>
+		/// Background graphics for coloring.
+		/// </summary>
+		[Obsolete("Replaced with Backgrounds.")]
 		public virtual Graphic[] GraphicsBackground
 		{
 			get
@@ -312,17 +420,18 @@ namespace UIWidgets
 		}
 
 		/// <summary>
-		/// CellsBackground version.
+		/// Background graphics for coloring.
 		/// </summary>
-		[SerializeField]
-		[HideInInspector]
-		protected int CellsBackgroundVersion = 0;
+		public virtual List<Graphic> Backgrounds
+		{
+			get
+			{
+				GraphicsBackgroundInit();
 
-		/// <summary>
-		/// Cells graphics background.
-		/// </summary>
-		[SerializeField]
-		protected Graphic[] cellsGraphicsBackground = Compatibility.EmptyArray<Graphic>();
+				var style_table = (Owner != null) && Owner.StyleTable && !ComboboxInstance;
+				return style_table ? cellsBackgrounds : backgrounds;
+			}
+		}
 
 		LayoutElement layoutElement;
 
@@ -335,7 +444,7 @@ namespace UIWidgets
 			{
 				if (layoutElement == null)
 				{
-					layoutElement = Utilities.GetOrAddComponent<LayoutElement>(this);
+					layoutElement = Utilities.RequireComponent<LayoutElement>(this);
 				}
 
 				return layoutElement;
@@ -446,12 +555,28 @@ namespace UIWidgets
 		/// <param name="graphics">Graphics.</param>
 		/// <param name="color">New color.</param>
 		/// <param name="fadeDuration">Time for fade the original color to the new one.</param>
-		protected void GraphicsSet(Graphic[] graphics, Color color, float fadeDuration)
+		protected void GraphicsSet(IList<Graphic> graphics, Color color, float fadeDuration)
 		{
 			if (graphics == null)
 			{
 				return;
 			}
+
+#if UNITY_EDITOR
+			if (!Application.isPlaying)
+			{
+				foreach (var g in graphics)
+				{
+					if ((g != null) && (g.color != color))
+					{
+						g.color = color;
+						Compatibility.MarkDirty(g);
+					}
+				}
+
+				return;
+			}
+#endif
 
 			// reset default color to white, otherwise it will look darker than specified color,
 			// because actual color = graphic.color * graphic.CrossFadeColor
@@ -463,9 +588,18 @@ namespace UIWidgets
 			var duration = GraphicsColorSetted ? fadeDuration : 0f;
 			foreach (var g in graphics)
 			{
-				if (g != null)
+				if (g == null)
+				{
+					continue;
+				}
+
+				if (duration > 0f)
 				{
 					g.CrossFadeColor(color, duration, true, true);
+				}
+				else
+				{
+					g.canvasRenderer.SetColor(color);
 				}
 			}
 		}
@@ -474,7 +608,7 @@ namespace UIWidgets
 		/// Reset graphics colors.
 		/// </summary>
 		/// <param name="graphics">Graphics.</param>
-		protected void GraphicsReset(Graphic[] graphics)
+		protected void GraphicsReset(IList<Graphic> graphics)
 		{
 			if (graphics == null)
 			{
@@ -495,8 +629,8 @@ namespace UIWidgets
 		/// <param name="fadeDuration">Fade duration.</param>
 		public virtual void GraphicsColoring(Color foregroundColor, Color backgroundColor, float fadeDuration = 0.0f)
 		{
-			GraphicsSet(GraphicsForeground, foregroundColor, GraphicsColorSetted ? fadeDuration : 0f);
-			GraphicsSet(GraphicsBackground, backgroundColor, GraphicsColorSetted ? fadeDuration : 0f);
+			GraphicsSet(Foregrounds, foregroundColor, GraphicsColorSetted ? fadeDuration : 0f);
+			GraphicsSet(Backgrounds, backgroundColor, GraphicsColorSetted ? fadeDuration : 0f);
 
 			GraphicsColorSetted = true;
 		}
@@ -506,7 +640,7 @@ namespace UIWidgets
 		/// </summary>
 		/// <param name="graphics">Graphics.</param>
 		/// <param name="color">New color.</param>
-		protected void SetColors(Graphic[] graphics, Color color)
+		protected void SetColors(IList<Graphic> graphics, Color color)
 		{
 			if (graphics == null)
 			{
@@ -529,8 +663,8 @@ namespace UIWidgets
 		/// <param name="backgroundColor">Background color.</param>
 		public virtual void SetColors(Color foregroundColor, Color backgroundColor)
 		{
-			SetColors(GraphicsForeground, foregroundColor);
-			SetColors(GraphicsBackground, backgroundColor);
+			SetColors(Foregrounds, foregroundColor);
+			SetColors(Backgrounds, backgroundColor);
 		}
 		#endregion
 
@@ -611,12 +745,15 @@ namespace UIWidgets
 				return;
 			}
 
+			var owner = Owner;
+			var index = Index;
+
 			onPointerDown.Invoke(eventData);
 
 			if (AllowItemsEvents())
 			{
-				Owner.InstancesEventsInternal.PointerDown.Invoke(Index, this, eventData);
-				Owner.InstancesEvents.PointerDown.Invoke(Index, this, eventData);
+				owner.InstancesEventsInternal.PointerDown.Invoke(index, this, eventData);
+				owner.InstancesEvents.PointerDown.Invoke(index, this, eventData);
 			}
 		}
 
@@ -631,12 +768,15 @@ namespace UIWidgets
 				return;
 			}
 
+			var owner = Owner;
+			var index = Index;
+
 			onPointerUp.Invoke(eventData);
 
 			if (AllowItemsEvents())
 			{
-				Owner.InstancesEventsInternal.PointerUp.Invoke(Index, this, eventData);
-				Owner.InstancesEvents.PointerUp.Invoke(Index, this, eventData);
+				owner.InstancesEventsInternal.PointerUp.Invoke(index, this, eventData);
+				owner.InstancesEvents.PointerUp.Invoke(index, this, eventData);
 			}
 		}
 
@@ -651,12 +791,15 @@ namespace UIWidgets
 				return;
 			}
 
+			var owner = Owner;
+			var index = Index;
+
 			onMove.Invoke(eventData, this);
 
 			if (AllowItemsEvents())
 			{
-				Owner.InstancesEventsInternal.Move.Invoke(Index, this, eventData);
-				Owner.InstancesEvents.Move.Invoke(Index, this, eventData);
+				owner.InstancesEventsInternal.Move.Invoke(index, this, eventData);
+				owner.InstancesEvents.Move.Invoke(index, this, eventData);
 			}
 		}
 
@@ -666,6 +809,9 @@ namespace UIWidgets
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnSubmit(BaseEventData eventData)
 		{
+			var owner = Owner;
+			var index = Index;
+
 			if (!IsInteractable())
 			{
 				return;
@@ -673,15 +819,15 @@ namespace UIWidgets
 
 			if (ToggleOnSubmit && AllowItemsEvents())
 			{
-				Owner.ItemToggle(Index);
+				owner.ItemToggle(index);
 			}
 
 			onSubmit.Invoke(this);
 
 			if (AllowItemsEvents())
 			{
-				Owner.InstancesEventsInternal.Submit.Invoke(Index, this, eventData);
-				Owner.InstancesEvents.Submit.Invoke(Index, this, eventData);
+				owner.InstancesEventsInternal.Submit.Invoke(index, this, eventData);
+				owner.InstancesEvents.Submit.Invoke(index, this, eventData);
 			}
 		}
 
@@ -696,12 +842,15 @@ namespace UIWidgets
 				return;
 			}
 
+			var owner = Owner;
+			var index = Index;
+
 			onCancel.Invoke(this);
 
 			if (AllowItemsEvents())
 			{
-				Owner.InstancesEventsInternal.Cancel.Invoke(Index, this, eventData);
-				Owner.InstancesEvents.Cancel.Invoke(Index, this, eventData);
+				owner.InstancesEventsInternal.Cancel.Invoke(index, this, eventData);
+				owner.InstancesEvents.Cancel.Invoke(index, this, eventData);
 			}
 		}
 
@@ -716,13 +865,16 @@ namespace UIWidgets
 				return;
 			}
 
+			var owner = Owner;
+			var index = Index;
+
 			Select();
 			onSelect.Invoke(this);
 
 			if (AllowItemsEvents())
 			{
-				Owner.InstancesEventsInternal.Select.Invoke(Index, this, eventData);
-				Owner.InstancesEvents.Select.Invoke(Index, this, eventData);
+				owner.InstancesEventsInternal.Select.Invoke(index, this, eventData);
+				owner.InstancesEvents.Select.Invoke(index, this, eventData);
 			}
 		}
 
@@ -737,12 +889,15 @@ namespace UIWidgets
 				return;
 			}
 
+			var owner = Owner;
+			var index = Index;
+
 			onDeselect.Invoke(this);
 
 			if (AllowItemsEvents())
 			{
-				Owner.InstancesEventsInternal.Deselect.Invoke(Index, this, eventData);
-				Owner.InstancesEvents.Deselect.Invoke(Index, this, eventData);
+				owner.InstancesEventsInternal.Deselect.Invoke(index, this, eventData);
+				owner.InstancesEvents.Deselect.Invoke(index, this, eventData);
 			}
 		}
 
@@ -757,12 +912,15 @@ namespace UIWidgets
 				return;
 			}
 
+			var owner = Owner;
+			var index = Index;
+
 			onPointerClick.Invoke(eventData);
 
 			if (AllowItemsEvents())
 			{
-				Owner.InstancesEventsInternal.PointerClick.Invoke(Index, this, eventData);
-				Owner.InstancesEvents.PointerClick.Invoke(Index, this, eventData);
+				owner.InstancesEventsInternal.PointerClick.Invoke(index, this, eventData);
+				owner.InstancesEvents.PointerClick.Invoke(index, this, eventData);
 			}
 
 			if ((eventData.button == PointerEventData.InputButton.Left) && (eventData.clickCount <= 1))
@@ -773,7 +931,7 @@ namespace UIWidgets
 
 				if (ToggleOnClick && AllowItemsEvents())
 				{
-					Owner.ItemToggle(Index);
+					owner.ItemToggle(index);
 				}
 
 				Select();
@@ -782,18 +940,18 @@ namespace UIWidgets
 
 				if (AllowItemsEvents())
 				{
-					Owner.InstancesEventsInternal.FirstClick.Invoke(Index, this, eventData);
-					Owner.InstancesEvents.FirstClick.Invoke(Index, this, eventData);
+					owner.InstancesEventsInternal.FirstClick.Invoke(index, this, eventData);
+					owner.InstancesEvents.FirstClick.Invoke(index, this, eventData);
 				}
 			}
 
 			if ((eventData.button == PointerEventData.InputButton.Left) && (eventData.clickCount == 2))
 			{
-				onDoubleClick.Invoke(Index);
+				onDoubleClick.Invoke(index);
 				if (AllowItemsEvents())
 				{
-					Owner.InstancesEventsInternal.DoubleClick.Invoke(Index, this, eventData);
-					Owner.InstancesEvents.DoubleClick.Invoke(Index, this, eventData);
+					owner.InstancesEventsInternal.DoubleClick?.Invoke(index, this, eventData);
+					owner.InstancesEvents.DoubleClick?.Invoke(index, this, eventData);
 				}
 			}
 		}
@@ -809,13 +967,16 @@ namespace UIWidgets
 				return;
 			}
 
+			var owner = Owner;
+			var index = Index;
+
 			onPointerEnter.Invoke(eventData);
 			onPointerEnterItem.Invoke(this);
 
 			if (AllowItemsEvents())
 			{
-				Owner.InstancesEventsInternal.PointerEnter.Invoke(Index, this, eventData);
-				Owner.InstancesEvents.PointerEnter.Invoke(Index, this, eventData);
+				owner.InstancesEventsInternal.PointerEnter.Invoke(index, this, eventData);
+				owner.InstancesEvents.PointerEnter.Invoke(index, this, eventData);
 			}
 		}
 
@@ -830,13 +991,16 @@ namespace UIWidgets
 				return;
 			}
 
+			var owner = Owner;
+			var index = Index;
+
 			onPointerExit.Invoke(eventData);
 			onPointerExitItem.Invoke(this);
 
 			if (AllowItemsEvents())
 			{
-				Owner.InstancesEventsInternal.PointerExit.Invoke(Index, this, eventData);
-				Owner.InstancesEvents.PointerExit.Invoke(Index, this, eventData);
+				owner.InstancesEventsInternal.PointerExit.Invoke(index, this, eventData);
+				owner.InstancesEvents.PointerExit.Invoke(index, this, eventData);
 			}
 		}
 
@@ -877,13 +1041,16 @@ namespace UIWidgets
 				return;
 			}
 
+			var owner = Owner;
+			var index = Index;
+
 			oldSize = current;
-			onResize.Invoke(Index, oldSize);
+			onResize.Invoke(index, oldSize);
 
 			if (AllowItemsEvents())
 			{
-				Owner.InstancesEventsInternal.Resize.Invoke(Index, this, oldSize);
-				Owner.InstancesEvents.Resize.Invoke(Index, this, oldSize);
+				owner.InstancesEventsInternal.Resize.Invoke(index, this, oldSize);
+				owner.InstancesEvents.Resize.Invoke(index, this, oldSize);
 			}
 		}
 
@@ -910,10 +1077,13 @@ namespace UIWidgets
 		/// </summary>
 		public virtual void MovedToCache()
 		{
-			if (Owner != null)
+			var owner = Owner;
+			var index = Index;
+
+			if (owner != null)
 			{
-				Owner.InstancesEventsInternal.MovedToCache.Invoke(Index, this);
-				Owner.InstancesEvents.MovedToCache.Invoke(Index, this);
+				owner.InstancesEventsInternal.MovedToCache.Invoke(index, this);
+				owner.InstancesEvents.MovedToCache.Invoke(index, this);
 			}
 
 			Updater.RemoveRunOnceNextFrame(OnRectTransformDimensionsChangeDelegate);
@@ -966,6 +1136,26 @@ namespace UIWidgets
 			base.OnDestroy();
 		}
 
+		/// <summary>
+		/// Set theme properties owner.
+		/// </summary>
+		/// <param name="owner">Owner.</param>
+		public virtual void SetThemePropertyOwner(Component owner)
+		{
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Foregrounds, nameof(Graphic.color), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Backgrounds, nameof(Graphic.color), owner);
+
+			SetThemeImagesPropertiesOwner(owner);
+		}
+
+		/// <summary>
+		/// Set only images properties owner.
+		/// </summary>
+		/// <param name="owner">Owner.</param>
+		public virtual void SetThemeImagesPropertiesOwner(Component owner)
+		{
+		}
+
 #if UNITY_EDITOR
 		/// <summary>
 		/// Validate this instance.
@@ -979,17 +1169,7 @@ namespace UIWidgets
 			GraphicsBackgroundInit();
 			GraphicsForegroundInit();
 
-#if UNITY_2018_3_OR_NEWER
-			if (UnityEditor.PrefabUtility.IsPartOfAnyPrefab(this))
-#endif
-			{
-				UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(this);
-			}
-
-			if (Compatibility.IsPrefab(this))
-			{
-				UnityEditor.EditorUtility.SetDirty(this);
-			}
+			Compatibility.MarkDirty(this);
 		}
 #endif
 
@@ -1008,8 +1188,8 @@ namespace UIWidgets
 
 			if (is_playmode)
 			{
-				GraphicsReset(GraphicsForeground);
-				GraphicsReset(GraphicsBackground);
+				GraphicsReset(Foregrounds);
+				GraphicsReset(Backgrounds);
 			}
 		}
 
@@ -1027,18 +1207,18 @@ namespace UIWidgets
 			{
 				Background.sprite = null;
 
-				if (GraphicsBackground != null)
+				if (Backgrounds != null)
 				{
-					foreach (var bg in GraphicsBackground)
+					foreach (var bg in Backgrounds)
 					{
 						style.Table.Background.ApplyTo(bg);
 					}
 				}
 			}
 
-			if (GraphicsForeground != null)
+			if (Foregrounds != null)
 			{
-				foreach (var gf in GraphicsForeground)
+				foreach (var gf in Foregrounds)
 				{
 					if (gf != null)
 					{
@@ -1070,18 +1250,18 @@ namespace UIWidgets
 
 			if ((Owner != null) && (Owner.StyleTable) && !ComboboxInstance)
 			{
-				if (GraphicsBackground != null)
+				if (Backgrounds != null)
 				{
-					foreach (var bg in GraphicsBackground)
+					foreach (var bg in Backgrounds)
 					{
 						style.Table.Background.GetFrom(bg);
 					}
 				}
 			}
 
-			if (GraphicsForeground != null)
+			if (Foregrounds != null)
 			{
-				foreach (var gf in GraphicsForeground)
+				foreach (var gf in Foregrounds)
 				{
 					if (gf != null)
 					{

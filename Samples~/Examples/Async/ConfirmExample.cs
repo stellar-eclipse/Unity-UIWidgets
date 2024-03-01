@@ -14,7 +14,7 @@ namespace UIWidgets.Examples
 		/// Message.
 		/// </summary>
 		[SerializeField]
-		protected Text Message;
+		protected TextAdapter Message;
 
 		/// <summary>
 		/// Button OK.

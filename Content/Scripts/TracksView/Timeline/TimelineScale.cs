@@ -7,6 +7,7 @@
 	/// <summary>
 	/// Timeline Scale.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/tracksview.html")]
 	public class TimelineScale : MonoBehaviourConditional, IStylable
 	{
 		[SerializeField]
@@ -131,10 +132,7 @@
 		{
 			get
 			{
-				if (value2MarkDataDelegate == null)
-				{
-					value2MarkDataDelegate = Value2MarkData;
-				}
+				value2MarkDataDelegate ??= Value2MarkData;
 
 				return value2MarkDataDelegate;
 			}

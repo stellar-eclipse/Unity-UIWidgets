@@ -8,6 +8,7 @@
 	/// <summary>
 	/// InputField with exposed functions to validate input.
 	/// </summary>
+	[HelpURL("https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/script-InputField.html")]
 	public class InputFieldExtended : InputField, IInputFieldExtended
 	{
 #if !(UNITY_5_1 || UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER)
@@ -17,15 +18,9 @@
 		/// <value>The caret position.</value>
 		int IInputFieldProxy.caretPosition
 		{
-			get
-			{
-				return base.caretPosition;
-			}
+			get => base.caretPosition;
 
-			set
-			{
-				base.caretPosition = value;
-			}
+			set => base.caretPosition = value;
 		}
 #endif
 
@@ -76,23 +71,14 @@
 		/// The Unity Event to call when editing has ended.
 		/// </summary>
 		/// <value>The OnEndEdit.</value>
-		UnityEvent<string> IInputFieldProxy.onEndEdit
-		{
-			get
-			{
-				return onEndEdit;
-			}
-		}
+		UnityEvent<string> IInputFieldProxy.onEndEdit => onEndEdit;
 
 		/// <summary>
 		/// Current value.
 		/// </summary>
 		public string Value
 		{
-			get
-			{
-				return text;
-			}
+			get => text;
 
 			set
 			{
@@ -113,13 +99,7 @@
 		/// <summary>
 		/// Is InputField has rich text support?
 		/// </summary>
-		public bool richText
-		{
-			get
-			{
-				return false;
-			}
-		}
+		public bool richText => false;
 
 		/// <summary>
 		/// Start selection position.
@@ -156,15 +136,9 @@
 		/// </summary>
 		Graphic IInputFieldProxy.textComponent
 		{
-			get
-			{
-				return textComponent;
-			}
+			get => textComponent;
 
-			set
-			{
-				textComponent = value as Text;
-			}
+			set => textComponent = value as Text;
 		}
 
 		/// <summary>
@@ -175,10 +149,7 @@
 
 		bool currentPauseValidation;
 
-		static char NoValidation(string text, int charIndex, char addedChar)
-		{
-			return addedChar;
-		}
+		static char NoValidation(string text, int charIndex, char addedChar) => addedChar;
 
 		static void DoNothing(string value)
 		{
@@ -191,20 +162,9 @@
 		{
 			base.Start();
 
-			if (Validation == null)
-			{
-				Validation = NoValidation;
-			}
-
-			if (ValueChanged == null)
-			{
-				ValueChanged = DoNothing;
-			}
-
-			if (ValueEndEdit == null)
-			{
-				ValueEndEdit = DoNothing;
-			}
+			Validation ??= NoValidation;
+			ValueChanged ??= DoNothing;
+			ValueEndEdit ??= DoNothing;
 
 			onValidateInput = ProcessValidation;
 
@@ -223,33 +183,21 @@
 				: Validation(validateText, charIndex, addedChar);
 		}
 
-		void ProcessValueChanged(string value)
-		{
-			ValueChanged(value);
-		}
+		void ProcessValueChanged(string value) => ValueChanged(value);
 
-		void ProcessValueEndEdit(string value)
-		{
-			ValueEndEdit(value);
-		}
+		void ProcessValueEndEdit(string value) => ValueEndEdit(value);
 
 		/// <summary>
 		/// Determines whether InputField instance is null.
 		/// </summary>
 		/// <returns><c>true</c> if InputField instance is null; otherwise, <c>false</c>.</returns>
-		public bool IsNull()
-		{
-			return this != null;
-		}
+		public bool IsNull() => this != null;
 
 		/// <summary>
 		/// Determines whether this lineType is LineType.MultiLineNewline.
 		/// </summary>
 		/// <returns><c>true</c> if lineType is LineType.MultiLineNewline; otherwise, <c>false</c>.</returns>
-		public bool IsMultiLineNewline()
-		{
-			return lineType == LineType.MultiLineNewline;
-		}
+		public bool IsMultiLineNewline() => lineType == LineType.MultiLineNewline;
 
 #if UNITY_4_6 || UNITY_4_7 || UNITY_5_0
 		/// <summary>

@@ -8,6 +8,7 @@ namespace UIWidgets.TMProSupport
 	/// <summary>
 	/// TreeView component TMPro.
 	/// </summary>
+	[System.Obsolete("Use TreeViewComponent with TextAdapter.")]
 	public class TreeViewComponentTMPro : TreeViewComponent
 	{
 		/// <summary>
@@ -24,7 +25,7 @@ namespace UIWidgets.TMProSupport
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(TextTMPro, ref TextAdapter);
+			Utilities.RequireComponent(TextTMPro, ref TextAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

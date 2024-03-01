@@ -12,6 +12,7 @@
 	[RequireComponent(typeof(Rotatable))]
 	[RequireComponent(typeof(Resizable))]
 	[AddComponentMenu("UI/New UI Widgets/Interactions/Pinchable")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/pinchable.html")]
 	public class Pinchable : UIBehaviourConditional, IDragHandler, IBeginDragHandler, IEndDragHandler
 	{
 		/// <summary>
@@ -32,13 +33,7 @@
 			/// <summary>
 			/// Angle between points.
 			/// </summary>
-			public float Angle
-			{
-				get
-				{
-					return Rotatable.Point2Angle(Point1 - Point2);
-				}
-			}
+			public readonly float Angle => Rotatable.Point2Angle(Point1 - Point2);
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Touches"/> struct.
@@ -56,34 +51,20 @@
 			/// </summary>
 			/// <param name="obj">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is Touches)
-				{
-					return Equals((Touches)obj);
-				}
-
-				return false;
-			}
+			public readonly override bool Equals(object obj) => (obj is Touches touches) && Equals(touches);
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
 			/// </summary>
 			/// <param name="other">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public bool Equals(Touches other)
-			{
-				return Point1 == other.Point1 && Point2 == other.Point2;
-			}
+			public readonly bool Equals(Touches other) => Point1 == other.Point1 && Point2 == other.Point2;
 
 			/// <summary>
 			/// Hash function.
 			/// </summary>
 			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
-			{
-				return Point1.GetHashCode() ^ Point2.GetHashCode();
-			}
+			public readonly override int GetHashCode() => Point1.GetHashCode() ^ Point2.GetHashCode();
 
 			/// <summary>
 			/// Compare specified instances.
@@ -91,10 +72,7 @@
 			/// <param name="left">Left instance.</param>
 			/// <param name="right">Right instances.</param>
 			/// <returns>true if the instances are equal; otherwise, false.</returns>
-			public static bool operator ==(Touches left, Touches right)
-			{
-				return left.Equals(right);
-			}
+			public static bool operator ==(Touches left, Touches right) => left.Equals(right);
 
 			/// <summary>
 			/// Compare specified instances.
@@ -102,10 +80,7 @@
 			/// <param name="left">Left instance.</param>
 			/// <param name="right">Right instances.</param>
 			/// <returns>true if the instances are now equal; otherwise, false.</returns>
-			public static bool operator !=(Touches left, Touches right)
-			{
-				return !left.Equals(right);
-			}
+			public static bool operator !=(Touches left, Touches right) => !left.Equals(right);
 		}
 
 		#region Interactable
@@ -349,6 +324,12 @@
 		public bool AllowRotate = true;
 
 		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
+
+		/// <summary>
 		/// Start pinch event.
 		/// </summary>
 		[SerializeField]
@@ -386,12 +367,22 @@
 		}
 
 		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return IsActive() && (eventData.button == DragButton);
+		}
+
+		/// <summary>
 		/// Process the begin drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		public void OnBeginDrag(PointerEventData eventData)
 		{
-			if (!IsActive())
+			if (!CanDrag(eventData))
 			{
 				return;
 			}
@@ -412,6 +403,12 @@
 		{
 			if (!IsDrag)
 			{
+				return;
+			}
+
+			if (!CanDrag(eventData))
+			{
+				OnEndDrag(eventData);
 				return;
 			}
 
@@ -451,13 +448,10 @@
 		/// <returns>Touches.</returns>
 		protected virtual Touches ConvertTouches(List<Touch> rawTouches)
 		{
-			Vector2 point1;
-			Vector2 point2;
-
 			var rotation = Target.localRotation;
 			Target.localRotation = Quaternion.Euler(Vector3.zero);
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, rawTouches[0].position, PressEventCamera, out point1);
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, rawTouches[1].position, PressEventCamera, out point2);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, rawTouches[0].position, PressEventCamera, out var point1);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, rawTouches[1].position, PressEventCamera, out var point2);
 			Target.localRotation = rotation;
 
 			return new Touches(point1, point2);
@@ -555,11 +549,8 @@
 				return;
 			}
 
-			Vector2 current_position;
-			Vector2 original_position;
-
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.position, eventData.pressEventCamera, out current_position);
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.pressPosition, eventData.pressEventCamera, out original_position);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.position, eventData.pressEventCamera, out var current_position);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.pressPosition, eventData.pressEventCamera, out var original_position);
 
 			var delta = current_position - original_position;
 			Draggable.Drag(delta);

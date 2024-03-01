@@ -285,7 +285,7 @@
 		/// <param name="size">Size.</param>
 		protected void SetResizableSize(TDataView component, Vector2 size)
 		{
-			var resizable = Utilities.GetOrAddComponent<Resizable>(component);
+			var resizable = Utilities.RequireComponent<Resizable>(component);
 			resizable.MinSize = size;
 		}
 

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR && UIWIDGETS_TMPRO_SUPPORT
+#if UNITY_EDITOR && UIWIDGETS_TMPRO_SUPPORT
 namespace UIWidgets
 {
 	using System.Collections.Generic;
@@ -70,7 +70,10 @@ namespace UIWidgets
 			styleMessageSelected.richText = true;
 		}
 
-		void OnGUI()
+		/// <summary>
+		/// Show GUI.
+		/// </summary>
+		protected void OnGUI()
 		{
 			SetStyles();
 

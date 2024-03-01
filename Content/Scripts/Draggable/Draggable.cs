@@ -34,6 +34,7 @@
 	[AddComponentMenu("UI/New UI Widgets/Interactions/Draggable")]
 	[RequireComponent(typeof(RectTransform))]
 	[DisallowMultipleComponent]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/draggable.html")]
 	public class Draggable : UIBehaviourConditional, ISnapGridSupport
 	{
 		#region Interactable
@@ -158,7 +159,7 @@
 		[SerializeField]
 		GameObject handle;
 
-		DraggableHandle handleDrag;
+		DragSupportHandle handleDrag;
 
 		/// <summary>
 		/// Allow horizontal movement.
@@ -311,7 +312,7 @@
 
 				if (!IsTargetSelf)
 				{
-					var le = Utilities.GetOrAddComponent<LayoutElement>(this);
+					var le = Utilities.RequireComponent<LayoutElement>(this);
 					le.ignoreLayout = true;
 
 					RectTransform.SetParent(target.parent, false);
@@ -322,6 +323,12 @@
 				OnTargetChanged.Invoke(this);
 			}
 		}
+
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
 
 		/// <summary>
 		/// Start resize event.
@@ -425,7 +432,7 @@
 			}
 
 			handle = value;
-			handleDrag = Utilities.GetOrAddComponent<DraggableHandle>(handle);
+			handleDrag = Utilities.RequireComponent<DragSupportHandle>(handle);
 			AddListeners();
 		}
 
@@ -456,19 +463,29 @@
 		}
 
 		/// <summary>
+		/// Determines whether this instance can be dragged.
+		/// </summary>
+		/// <returns><c>true</c> if this instance can be dragged; otherwise, <c>false</c>.</returns>
+		/// <param name="eventData">Current event data.</param>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return IsActive() && (eventData.button == DragButton);
+		}
+
+		/// <summary>
 		/// Process the begin drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		protected virtual void BeginDrag(PointerEventData eventData)
 		{
+			if (!CanDrag(eventData))
+			{
+				return;
+			}
+
 			if (Animation != null)
 			{
 				StopCoroutine(Animation);
-			}
-
-			if (!IsActive())
-			{
-				return;
 			}
 
 			IsDrag = true;
@@ -501,6 +518,12 @@
 				return;
 			}
 
+			if (!CanDrag(eventData))
+			{
+				EndDrag(eventData);
+				return;
+			}
+
 			eventData.Use();
 
 			Drag(eventData, false);
@@ -515,11 +538,8 @@
 		/// <param name="isEnd">Is end drag?</param>
 		public virtual void Drag(PointerEventData eventData, bool isEnd)
 		{
-			Vector2 current_point;
-			Vector2 original_point;
-
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.position, eventData.pressEventCamera, out current_point);
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.pressPosition, eventData.pressEventCamera, out original_point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.position, eventData.pressEventCamera, out var current_point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.pressPosition, eventData.pressEventCamera, out var original_point);
 
 			var base_delta = current_point - original_point;
 			Drag(base_delta, isEnd);
@@ -599,6 +619,13 @@
 			{
 				return;
 			}
+
+			if (eventData.used)
+			{
+				return;
+			}
+
+			eventData.Use();
 
 			if (Restriction == DraggableRestriction.AfterDrag)
 			{

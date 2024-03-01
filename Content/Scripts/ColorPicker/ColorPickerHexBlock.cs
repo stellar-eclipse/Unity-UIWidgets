@@ -22,7 +22,7 @@
 		public override void Upgrade()
 		{
 #pragma warning disable 0612,0618
-			Utilities.GetOrAddComponent(InputHex, ref InputHexAdapter);
+			Utilities.RequireComponent(InputHex, ref InputHexAdapter);
 #pragma warning restore 0612,0618
 		}
 	}

@@ -22,6 +22,8 @@ namespace UIWidgets
 			"ActivePage",
 			"PrevPage",
 			"NextPage",
+			"SkipPage",
+			"visiblePagesCount",
 
 			"Direction",
 			"pageSizeType",
@@ -32,6 +34,7 @@ namespace UIWidgets
 			"currentPage",
 			"ForcedPosition",
 			"lastPageFullSize",
+			"pageRounding",
 
 			"Animation",
 			"Movement",
@@ -67,6 +70,8 @@ namespace UIWidgets
 			EditorGUILayout.PropertyField(Properties["ActivePage"], true);
 			EditorGUILayout.PropertyField(Properties["PrevPage"], true);
 			EditorGUILayout.PropertyField(Properties["NextPage"], true);
+			EditorGUILayout.PropertyField(Properties["SkipPage"], true);
+			EditorGUILayout.PropertyField(Properties["visiblePagesCount"], true);
 
 			EditorGUILayout.PropertyField(Properties["Direction"], true);
 			EditorGUILayout.PropertyField(Properties["pageSizeType"], true);
@@ -85,6 +90,7 @@ namespace UIWidgets
 			EditorGUILayout.PropertyField(Properties["currentPage"], true);
 			EditorGUILayout.PropertyField(Properties["ForcedPosition"], true);
 			EditorGUILayout.PropertyField(Properties["lastPageFullSize"], true);
+			EditorGUILayout.PropertyField(Properties["pageRounding"], true);
 
 			EditorGUILayout.PropertyField(Properties["Animation"], true);
 

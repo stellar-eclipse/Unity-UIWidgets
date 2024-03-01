@@ -6,6 +6,7 @@
 	/// <summary>
 	/// ScrollBlock item.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/scroll-block.html")]
 	public class ScrollBlockItem : MonoBehaviour, IMovableToCache
 	{
 		/// <summary>

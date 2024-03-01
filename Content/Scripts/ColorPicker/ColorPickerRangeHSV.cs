@@ -2,6 +2,7 @@
 {
 	using System.Collections.Generic;
 	using UIWidgets.Attributes;
+	using UIWidgets.Pool;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.UI;
@@ -11,7 +12,8 @@
 	/// Allow to select colors in range between specified colors.
 	/// </summary>
 	[DataBindSupport]
-	public class ColorPickerRangeHSV : MonoBehaviour, IStylable
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/colorpicker-range.html")]
+	public class ColorPickerRangeHSV : MonoBehaviour, IStylable, UIThemes.ITargetOwner
 	{
 		[SerializeField]
 		Slider slider;
@@ -302,39 +304,34 @@
 		protected bool inUpdateMode;
 
 		/// <summary>
-		/// Difference between color components.
-		/// </summary>
-		protected List<float> Diffs = new List<float>();
-
-		/// <summary>
 		/// Sets the color.
 		/// </summary>
 		/// <param name="value">Value.</param>
 		protected virtual void SetColor(ColorHSV value)
 		{
-			Diffs.Clear();
+			using var _ = ListPool<float>.Get(out var diffs);
 
 			if ((ColorRight.H - ColorLeft.H) != 0f)
 			{
-				Diffs.Add(Mathf.Abs((value.H - ColorLeft.H) / (ColorRight.H - ColorLeft.H)));
+				diffs.Add(Mathf.Abs((value.H - ColorLeft.H) / (ColorRight.H - ColorLeft.H)));
 			}
 
 			if ((ColorRight.S - ColorLeft.S) != 0f)
 			{
-				Diffs.Add(Mathf.Abs((value.S - ColorLeft.S) / (ColorRight.S - ColorLeft.S)));
+				diffs.Add(Mathf.Abs((value.S - ColorLeft.S) / (ColorRight.S - ColorLeft.S)));
 			}
 
 			if ((ColorRight.V - ColorLeft.V) != 0f)
 			{
-				Diffs.Add(Mathf.Abs((value.V - ColorLeft.V) / (ColorRight.V - ColorLeft.V)));
+				diffs.Add(Mathf.Abs((value.V - ColorLeft.V) / (ColorRight.V - ColorLeft.V)));
 			}
 
 			if (ColorRight.A != ColorLeft.A)
 			{
-				Diffs.Add(Mathf.Abs((value.A - ColorLeft.A) / (ColorRight.A - ColorLeft.A)));
+				diffs.Add(Mathf.Abs((value.A - ColorLeft.A) / (ColorRight.A - ColorLeft.A)));
 			}
 
-			var t = Diffs.Count == 0 ? 1 : UtilitiesCollections.Sum(Diffs) / (float)Diffs.Count;
+			var t = diffs.Count == 0 ? 1 : UtilitiesCollections.Sum(diffs) / (float)diffs.Count;
 			color = ColorHSV.Lerp(ColorLeft, ColorRight, t);
 			Slider.value = t * (Slider.maxValue - Slider.minValue);
 		}
@@ -410,6 +407,14 @@
 			}
 
 			inUpdateMode = false;
+		}
+
+		/// <summary>
+		/// Set target owner.
+		/// </summary>
+		public void SetTargetOwner()
+		{
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), sliderBackground, nameof(Graphic.color), this);
 		}
 
 		#if UNITY_EDITOR

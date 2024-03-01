@@ -3,12 +3,14 @@
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 
 	/// <summary>
 	/// Component pool.
 	/// </summary>
 	/// <typeparam name="T">Type of object.</typeparam>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/component-pool.html")]
 	public class ComponentPool<T> : MonoBehaviour, IEnumerable<T>, IEnumerable, IReadOnlyCollection<T>
 		where T : MonoBehaviour
 	{
@@ -20,13 +22,16 @@
 		/// <summary>
 		/// Count.
 		/// </summary>
-		public int Count
+		public int Count => Cache.Count;
+
+		#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(Cache))]
+		static void StaticInit()
 		{
-			get
-			{
-				return Cache.Count;
-			}
+			Cache.Clear();
 		}
+		#endif
 
 		/// <summary>
 		/// Clones or take from cache the object original and returns the clone.
@@ -36,18 +41,11 @@
 		{
 			T instance;
 
-			if (Cache.Count == 0)
+			do
 			{
-				instance = Instantiate(this) as T;
+				instance = (Cache.Count > 0) ? Cache.Pop() : Instantiate(this) as T;
 			}
-			else
-			{
-				do
-				{
-					instance = (Cache.Count > 0) ? Cache.Pop() : Instantiate(this) as T;
-				}
-				while (instance == null);
-			}
+			while (instance == null);
 
 			instance.transform.SetParent(transform.parent, false);
 			instance.gameObject.SetActive(true);

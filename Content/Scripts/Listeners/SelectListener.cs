@@ -9,6 +9,7 @@ namespace UIWidgets
 	/// <summary>
 	/// Deselect listener.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/listeners/select.html")]
 	public class SelectListener : MonoBehaviour, ISelectHandler, IDeselectHandler
 	{
 		/// <summary>

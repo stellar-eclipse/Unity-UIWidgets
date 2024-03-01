@@ -7,9 +7,10 @@ namespace UIWidgets
 	/// Safe area.
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/mobile/safe-area.html")]
 	public class SafeArea : UIBehaviour, IUpdatable
 	{
-		struct ScreenState
+		readonly struct ScreenState
 		{
 			public readonly Rect SafeArea;
 
@@ -32,61 +33,38 @@ namespace UIWidgets
 			/// </summary>
 			/// <param name="obj">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is ScreenState)
-				{
-					return Equals((ScreenState)obj);
-				}
+			public override bool Equals(object obj) => (obj is ScreenState state) && Equals(state);
 
-				return false;
-			}
-
-			bool SameResolution(Resolution resolution)
-			{
-				return Resolution.width == resolution.width && Resolution.height == resolution.height;
-			}
+			bool SameResolution(Resolution resolution) => Resolution.width == resolution.width && Resolution.height == resolution.height;
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
 			/// </summary>
 			/// <param name="other">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public bool Equals(ScreenState other)
-			{
-				return SafeArea == other.SafeArea && SameResolution(other.Resolution) && Orientation == other.Orientation;
-			}
+			public bool Equals(ScreenState other) => SafeArea == other.SafeArea && SameResolution(other.Resolution) && Orientation == other.Orientation;
 
 			/// <summary>
 			/// Hash function.
 			/// </summary>
 			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
-			{
-				return SafeArea.GetHashCode() ^ Resolution.width ^ Resolution.height ^ (int)Orientation;
-			}
+			public override int GetHashCode() => SafeArea.GetHashCode() ^ Resolution.width ^ Resolution.height ^ (int)Orientation;
 
 			/// <summary>
 			/// Compare specified instances.
 			/// </summary>
-			/// <param name="left">Left instance.</param>
-			/// <param name="right">Right instances.</param>
+			/// <param name="a">Left instance.</param>
+			/// <param name="b">Right instances.</param>
 			/// <returns>true if the instances are equal; otherwise, false.</returns>
-			public static bool operator ==(ScreenState left, ScreenState right)
-			{
-				return left.Equals(right);
-			}
+			public static bool operator ==(ScreenState a, ScreenState b) => a.Equals(b);
 
 			/// <summary>
 			/// Compare specified instances.
 			/// </summary>
-			/// <param name="left">Left instance.</param>
-			/// <param name="right">Right instances.</param>
+			/// <param name="a">Left instance.</param>
+			/// <param name="b">Right instances.</param>
 			/// <returns>true if the instances are now equal; otherwise, false.</returns>
-			public static bool operator !=(ScreenState left, ScreenState right)
-			{
-				return !left.Equals(right);
-			}
+			public static bool operator !=(ScreenState a, ScreenState b) => !a.Equals(b);
 		}
 
 		RectTransform rectTransform;

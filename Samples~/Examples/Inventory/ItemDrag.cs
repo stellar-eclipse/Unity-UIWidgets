@@ -105,7 +105,7 @@
 				return false;
 			}
 
-			return AllowDrag && Source.Item != null;
+			return base.CanDrag(eventData) && Source.Item != null;
 		}
 
 		/// <inheritdoc/>

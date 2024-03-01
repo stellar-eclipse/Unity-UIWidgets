@@ -21,9 +21,13 @@
 		{
 			if (GraphicsBackgroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				graphicsBackground = Compatibility.EmptyArray<Graphic>();
+				#pragma warning restore
 				GraphicsBackgroundVersion = 1;
 			}
+
+			base.GraphicsBackgroundInit();
 		}
 
 		/// <summary>

@@ -2,6 +2,7 @@ namespace UIWidgets
 {
 	using System.Collections.Generic;
 	using System.ComponentModel;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 	using UnityEngine.Events;
 
@@ -40,7 +41,7 @@ namespace UIWidgets
 			/// </summary>
 			public TooltipListener Helper;
 
-			static Stack<TargetInfo> Cache = new Stack<TargetInfo>();
+			static readonly Stack<TargetInfo> Cache = new Stack<TargetInfo>();
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="TargetInfo"/> class.
@@ -50,7 +51,7 @@ namespace UIWidgets
 			/// <param name="settings">Settings.</param>
 			private TargetInfo(GameObject target, TData data, TooltipSettings settings)
 			{
-				Helper = Utilities.GetOrAddComponent<TooltipListener>(target);
+				Helper = Utilities.RequireComponent<TooltipListener>(target);
 				Data = data;
 				Settings = settings;
 			}
@@ -68,7 +69,7 @@ namespace UIWidgets
 				{
 					var info = Cache.Pop();
 
-					info.Helper = Utilities.GetOrAddComponent<TooltipListener>(target);
+					info.Helper = Utilities.RequireComponent<TooltipListener>(target);
 					info.Data = data;
 					info.Settings = settings;
 
@@ -83,11 +84,23 @@ namespace UIWidgets
 			/// </summary>
 			public void Free()
 			{
-				Data = default(TData);
+				Data = default;
 				Helper = null;
 
 				Cache.Push(this);
 			}
+
+			#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+			/// <summary>
+			/// Reload support.
+			/// </summary>
+			[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+			[DomainReload(nameof(Cache))]
+			static void StaticInit()
+			{
+				Cache.Clear();
+			}
+			#endif
 		}
 
 		/// <summary>
@@ -142,16 +155,19 @@ namespace UIWidgets
 		/// <summary>
 		/// Data type is value type.
 		/// </summary>
+		[DomainReloadExclude]
 		protected static readonly bool IsValueType;
 
 		/// <summary>
 		/// Data type implements IObservable.
 		/// </summary>
+		[DomainReloadExclude]
 		protected static readonly bool IsDataObservable;
 
 		/// <summary>
 		/// Data type implements INotifyPropertyChanged.
 		/// </summary>
+		[DomainReloadExclude]
 		protected static readonly bool IsDataNotifyPropertyChanged;
 
 		static Tooltip()
@@ -220,8 +236,7 @@ namespace UIWidgets
 		/// <param name="settings">Tooltip settings.</param>
 		public virtual void Register(GameObject target, TData data, TooltipSettings settings)
 		{
-			TargetInfo info;
-			if (Targets.TryGetValue(target, out info))
+			if (Targets.TryGetValue(target, out var info))
 			{
 				info.Data = data;
 				info.Settings = settings;
@@ -241,8 +256,7 @@ namespace UIWidgets
 		/// <returns>true if target was registered; otherwise false.</returns>
 		public virtual bool Unregister(GameObject target)
 		{
-			TargetInfo info;
-			if (!Targets.TryGetValue(target, out info))
+			if (!Targets.TryGetValue(target, out var info))
 			{
 				return false;
 			}
@@ -272,8 +286,7 @@ namespace UIWidgets
 		/// <inheritdoc/>
 		public override bool UpdateSettings(GameObject target, TooltipSettings settings)
 		{
-			TargetInfo info;
-			if (!Targets.TryGetValue(target, out info))
+			if (!Targets.TryGetValue(target, out var info))
 			{
 				return false;
 			}
@@ -300,8 +313,7 @@ namespace UIWidgets
 		/// <returns>true if target registered and data was updated; otherwise false.</returns>
 		public virtual bool UpdateData(GameObject target, TData data)
 		{
-			TargetInfo info;
-			if (!Targets.TryGetValue(target, out info))
+			if (!Targets.TryGetValue(target, out var info))
 			{
 				return false;
 			}
@@ -423,7 +435,7 @@ namespace UIWidgets
 
 			CurrentTarget = null;
 			Unsubscribe(CurrentData);
-			currentData = default(TData);
+			currentData = default;
 
 			if (isDisabled)
 			{

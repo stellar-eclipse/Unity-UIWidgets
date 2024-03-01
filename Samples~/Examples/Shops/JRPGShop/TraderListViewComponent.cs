@@ -3,6 +3,7 @@
 	using System;
 	using UIWidgets;
 	using UnityEngine;
+	using UnityEngine.Events;
 	using UnityEngine.EventSystems;
 	using UnityEngine.Serialization;
 	using UnityEngine.UI;
@@ -12,6 +13,14 @@
 	/// </summary>
 	public class TraderListViewComponent : ListViewItem, IViewData<JRPGOrderLine>
 	{
+		/// <summary>
+		/// Quantity changed event.
+		/// </summary>
+		[Serializable]
+		public class QuantityEvent : UnityEvent<int>
+		{
+		}
+
 		/// <summary>
 		/// The name.
 		/// </summary>
@@ -64,20 +73,30 @@
 		protected Spinner Quantity;
 
 		/// <summary>
+		/// Event on quantity changed.
+		/// </summary>
+		[SerializeField]
+		public QuantityEvent OnQuantityChanged = new QuantityEvent();
+
+		/// <summary>
 		/// Init graphics foreground.
 		/// </summary>
 		protected override void GraphicsForegroundInit()
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[]
 				{
 					UtilitiesUI.GetGraphic(NameAdapter),
 					UtilitiesUI.GetGraphic(PriceAdapter),
 					UtilitiesUI.GetGraphic(AvailableQuantityAdapter),
 				};
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -139,6 +158,7 @@
 		void ChangeQuantity(int quantity)
 		{
 			OrderLine.Quantity = quantity;
+			OnQuantityChanged.Invoke(quantity);
 		}
 
 		/// <summary>
@@ -159,9 +179,9 @@
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Name, ref NameAdapter);
-			Utilities.GetOrAddComponent(Price, ref PriceAdapter);
-			Utilities.GetOrAddComponent(AvailableQuantity, ref AvailableQuantityAdapter);
+			Utilities.RequireComponent(Name, ref NameAdapter);
+			Utilities.RequireComponent(Price, ref PriceAdapter);
+			Utilities.RequireComponent(AvailableQuantity, ref AvailableQuantityAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

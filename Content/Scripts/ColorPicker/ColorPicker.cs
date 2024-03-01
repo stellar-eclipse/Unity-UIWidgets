@@ -10,136 +10,55 @@ namespace UIWidgets
 	/// ColorPicker.
 	/// </summary>
 	[DataBindSupport]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/colorpicker.html")]
 	public class ColorPicker : MonoBehaviour, IStylable
 	{
 		/// <summary>
-		/// IDs of ColorPicker shaders properties.
+		/// IDs of ColorPicker shader properties.
 		/// </summary>
-		public struct ColorPickerShaderIDs : System.IEquatable<ColorPickerShaderIDs>
+		public static class ShaderIDs
 		{
 			/// <summary>
 			/// Left color ID.
 			/// </summary>
-			public readonly int Left;
+			[DomainReloadExclude]
+			public static readonly int Left = Shader.PropertyToID("_ColorLeft");
 
 			/// <summary>
 			/// Right color ID.
 			/// </summary>
-			public readonly int Right;
+			[DomainReloadExclude]
+			public static readonly int Right = Shader.PropertyToID("_ColorRight");
 
 			/// <summary>
 			/// Top color ID.
 			/// </summary>
-			public readonly int Top;
+			[DomainReloadExclude]
+			public static readonly int Top = Shader.PropertyToID("_ColorTop");
 
 			/// <summary>
 			/// Bottom color ID.
 			/// </summary>
-			public readonly int Bottom;
+			[DomainReloadExclude]
+			public static readonly int Bottom = Shader.PropertyToID("_ColorBottom");
 
 			/// <summary>
 			/// Quality ID.
 			/// </summary>
-			public readonly int Quality;
+			[DomainReloadExclude]
+			public static readonly int Quality = Shader.PropertyToID("_Quality");
 
 			/// <summary>
 			/// Value ID.
 			/// </summary>
-			public readonly int Value;
-
-			private ColorPickerShaderIDs(int colorLeft, int colorRight, int colorTop, int colorBottom, int quality, int value)
-			{
-				Left = colorLeft;
-				Right = colorRight;
-				Top = colorTop;
-				Bottom = colorBottom;
-				Quality = quality;
-				Value = value;
-			}
-
-			/// <summary>
-			/// Get ColorPickerShaderIDs instance.
-			/// </summary>
-			public static ColorPickerShaderIDs Instance
-			{
-				get
-				{
-					return new ColorPickerShaderIDs(
-						Shader.PropertyToID("_ColorLeft"),
-						Shader.PropertyToID("_ColorRight"),
-						Shader.PropertyToID("_ColorTop"),
-						Shader.PropertyToID("_ColorBottom"),
-						Shader.PropertyToID("_Quality"),
-						Shader.PropertyToID("_Value"));
-				}
-			}
-
-			/// <summary>
-			/// Determines whether the specified object is equal to the current object.
-			/// </summary>
-			/// <param name="obj">The object to compare with the current object.</param>
-			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is ColorPickerShaderIDs)
-				{
-					return Equals((ColorPickerShaderIDs)obj);
-				}
-
-				return false;
-			}
-
-			/// <summary>
-			/// Determines whether the specified object is equal to the current object.
-			/// </summary>
-			/// <param name="other">The object to compare with the current object.</param>
-			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public bool Equals(ColorPickerShaderIDs other)
-			{
-				return (Left == other.Left) && (Right == other.Right) && (Top == other.Top) && (Bottom == other.Bottom) && (Quality == other.Quality) && (Value == other.Value);
-			}
-
-			/// <summary>
-			/// Hash function.
-			/// </summary>
-			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
-			{
-				return Left ^ Right ^ Top ^ Bottom ^ Quality ^ Value;
-			}
-
-			/// <summary>
-			/// Compare specified instances.
-			/// </summary>
-			/// <param name="left">Left instance.</param>
-			/// <param name="right">Right instances.</param>
-			/// <returns>true if the instances are equal; otherwise, false.</returns>
-			public static bool operator ==(ColorPickerShaderIDs left, ColorPickerShaderIDs right)
-			{
-				return left.Equals(right);
-			}
-
-			/// <summary>
-			/// Compare specified instances.
-			/// </summary>
-			/// <param name="left">Left instance.</param>
-			/// <param name="right">Right instances.</param>
-			/// <returns>true if the instances are now equal; otherwise, false.</returns>
-			public static bool operator !=(ColorPickerShaderIDs left, ColorPickerShaderIDs right)
-			{
-				return !left.Equals(right);
-			}
+			[DomainReloadExclude]
+			public static readonly int Value = Shader.PropertyToID("_Value");
 		}
 
 		/// <summary>
 		/// Value limit in HSV gradients.
 		/// </summary>
 		public const int ValueLimit = 80;
-
-		/// <summary>
-		/// ColorPicker shaders ids.
-		/// </summary>
-		public static ColorPickerShaderIDs ShaderIDs = ColorPickerShaderIDs.Instance;
 
 		[SerializeField]
 		ColorPickerRGBPalette rgbPalette;
@@ -150,10 +69,7 @@ namespace UIWidgets
 		/// <value>The RGB palette.</value>
 		public ColorPickerRGBPalette RGBPalette
 		{
-			get
-			{
-				return rgbPalette;
-			}
+			get => rgbPalette;
 
 			set
 			{
@@ -180,10 +96,7 @@ namespace UIWidgets
 		/// <value>The RGB sliders block.</value>
 		public ColorPickerRGBBlock RGBBlock
 		{
-			get
-			{
-				return rgbBlock;
-			}
+			get => rgbBlock;
 
 			set
 			{
@@ -210,10 +123,7 @@ namespace UIWidgets
 		/// <value>The HSV palette.</value>
 		public ColorPickerHSVPalette HSVPalette
 		{
-			get
-			{
-				return hsvPalette;
-			}
+			get => hsvPalette;
 
 			set
 			{
@@ -240,10 +150,7 @@ namespace UIWidgets
 		/// <value>The HSV sliders block.</value>
 		public ColorPickerHSVBlock HSVBlock
 		{
-			get
-			{
-				return hsvBlock;
-			}
+			get => hsvBlock;
 
 			set
 			{
@@ -270,10 +177,7 @@ namespace UIWidgets
 		/// <value>Alpha slider block.</value>
 		public ColorPickerABlock ABlock
 		{
-			get
-			{
-				return aBlock;
-			}
+			get => aBlock;
 
 			set
 			{
@@ -300,10 +204,7 @@ namespace UIWidgets
 		/// <value>Alpha slider block.</value>
 		public ColorPickerHexBlockBase HexBlock
 		{
-			get
-			{
-				return hexBlock;
-			}
+			get => hexBlock;
 
 			set
 			{
@@ -330,10 +231,7 @@ namespace UIWidgets
 		/// <value>The color view.</value>
 		public ColorPickerColorBlock ColorView
 		{
-			get
-			{
-				return colorView;
-			}
+			get => colorView;
 
 			set
 			{
@@ -354,10 +252,7 @@ namespace UIWidgets
 		/// <value>The image palette.</value>
 		public ColorPickerImagePalette ImagePalette
 		{
-			get
-			{
-				return imagePalette;
-			}
+			get => imagePalette;
 
 			set
 			{
@@ -384,10 +279,7 @@ namespace UIWidgets
 		/// <value>The input mode.</value>
 		public ColorPickerInputMode InputMode
 		{
-			get
-			{
-				return inputMode;
-			}
+			get => inputMode;
 
 			set
 			{
@@ -438,10 +330,7 @@ namespace UIWidgets
 		/// <value>The palette mode.</value>
 		public ColorPickerPaletteMode PaletteMode
 		{
-			get
-			{
-				return paletteMode;
-			}
+			get => paletteMode;
 
 			set
 			{
@@ -493,10 +382,7 @@ namespace UIWidgets
 		/// <value>The color32.</value>
 		public Color32 Color32
 		{
-			get
-			{
-				return color;
-			}
+			get => color;
 
 			set
 			{
@@ -519,15 +405,9 @@ namespace UIWidgets
 		[DataBindField]
 		public Color Color
 		{
-			get
-			{
-				return Color32;
-			}
+			get => Color32;
 
-			set
-			{
-				Color32 = value;
-			}
+			set => Color32 = value;
 		}
 
 		/// <summary>
@@ -746,6 +626,7 @@ namespace UIWidgets
 				: ColorPickerInputMode.RGB;
 		}
 
+		[DomainReloadExclude]
 		static readonly List<ColorPickerPaletteMode> RGBPaletteModes = new List<ColorPickerPaletteMode>()
 		{
 			ColorPickerPaletteMode.Red,
@@ -753,6 +634,7 @@ namespace UIWidgets
 			ColorPickerPaletteMode.Blue,
 		};
 
+		[DomainReloadExclude]
 		static readonly List<ColorPickerPaletteMode> HSVPaletteModes = new List<ColorPickerPaletteMode>()
 		{
 			ColorPickerPaletteMode.Hue,
@@ -761,6 +643,7 @@ namespace UIWidgets
 			ColorPickerPaletteMode.HSVCircle,
 		};
 
+		[DomainReloadExclude]
 		static readonly List<ColorPickerPaletteMode> ImagePaletteModes = new List<ColorPickerPaletteMode>()
 		{
 			ColorPickerPaletteMode.Image,

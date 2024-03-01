@@ -2,23 +2,42 @@
 {
 	using UnityEngine;
 	using UnityEngine.EventSystems;
+	using UnityEngine.Serialization;
 
 	/// <summary>
-	/// Changed drag event to work only with one direction.
+	/// Modifies the drag event to work in only one direction.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/drag-one-direction.html")]
 	public class DragOneDirection : UIBehaviour, IInitializePotentialDragHandler, IBeginDragHandler, IEndDragHandler, IDragHandler
 	{
 		Vector2 startPosition = Vector2.zero;
 
-		bool dragging;
+		bool isDrag;
 
 		bool isHorizontal;
 
 		/// <summary>
-		/// Dead zone before
+		/// Minimal drag distance .
 		/// </summary>
 		[SerializeField]
-		public float DeadZone = 20f;
+		[FormerlySerializedAs("DeadZone")]
+		public float MinDistance = 20f;
+
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
+
+		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return IsActive() && (eventData.button == DragButton);
+		}
 
 		/// <summary>
 		/// Process begin drag event.
@@ -26,12 +45,7 @@
 		/// <param name="eventData">Event data.</param>
 		public void OnBeginDrag(PointerEventData eventData)
 		{
-			if (eventData.button != PointerEventData.InputButton.Left)
-			{
-				return;
-			}
-
-			if (!IsActive())
+			if (!CanDrag(eventData))
 			{
 				return;
 			}
@@ -45,19 +59,15 @@
 		/// <param name="eventData">Event data.</param>
 		public void OnDrag(PointerEventData eventData)
 		{
-			if (eventData.button != PointerEventData.InputButton.Left)
+			if (!CanDrag(eventData))
 			{
-				return;
-			}
-
-			if (!IsActive())
-			{
+				OnEndDrag(eventData);
 				return;
 			}
 
 			var current = eventData.position;
 
-			if (dragging)
+			if (isDrag)
 			{
 				eventData.position = isHorizontal
 					? new Vector2(current.x, startPosition.y)
@@ -66,7 +76,7 @@
 			else
 			{
 				var delta = current - startPosition;
-				dragging = delta.magnitude > DeadZone;
+				isDrag = delta.magnitude > MinDistance;
 				isHorizontal = Mathf.Abs(delta.x) > Mathf.Abs(delta.y);
 
 				eventData.position = startPosition;
@@ -79,7 +89,7 @@
 		/// <param name="eventData">Event data.</param>
 		public void OnEndDrag(PointerEventData eventData)
 		{
-			dragging = false;
+			isDrag = false;
 		}
 
 		/// <summary>

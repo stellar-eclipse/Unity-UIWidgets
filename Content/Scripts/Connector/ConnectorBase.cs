@@ -8,6 +8,8 @@
 	/// Connector base class.
 	/// </summary>
 	[RequireComponent(typeof(TransformListener))]
+	[RequireComponent(typeof(CanvasRenderer))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/connectors.html")]
 	public abstract class ConnectorBase : MaskableGraphic, IStylable
 	{
 		[SerializeField]
@@ -153,6 +155,36 @@
 		}
 
 		/// <summary>
+		/// Get target position relative to the canvas.
+		/// </summary>
+		/// <param name="target">Target.</param>
+		/// <returns>Position.</returns>
+		protected virtual Vector3 CanvasRelativePosition(Transform target)
+		{
+			var pos = target.localPosition;
+			if (canvas == null)
+			{
+				return pos;
+			}
+
+			var canvas_id = canvas.transform.GetInstanceID();
+
+			while (true)
+			{
+				target = target.parent;
+
+				if ((target == null) || (target.GetInstanceID() == canvas_id))
+				{
+					break;
+				}
+
+				pos += target.localPosition;
+			}
+
+			return pos;
+		}
+
+		/// <summary>
 		/// Gets the point.
 		/// </summary>
 		/// <returns>The point.</returns>
@@ -174,30 +206,17 @@
 					delta /= canvas.scaleFactor;
 				}
 			}
+			else if (RootCanvas.renderMode == RenderMode.WorldSpace)
+			{
+				delta = CanvasRelativePosition(rectTransform) - CanvasRelativePosition(targetRectTransform);
+			}
 			else
 			{
 				delta = rectTransform.position - targetRectTransform.position;
 
-				if (RootCanvas.renderMode == RenderMode.WorldSpace)
+				if (canvas.scaleFactor != 0f)
 				{
-					var canvas_scale = (RootCanvas.transform as RectTransform).lossyScale;
-
-					if (canvas_scale.x != 0)
-					{
-						delta.x /= canvas_scale.x;
-					}
-
-					if (canvas_scale.y != 0)
-					{
-						delta.y /= canvas_scale.y;
-					}
-				}
-				else
-				{
-					if (canvas.scaleFactor != 0f)
-					{
-						delta /= canvas.scaleFactor;
-					}
+					delta /= canvas.scaleFactor;
 				}
 			}
 

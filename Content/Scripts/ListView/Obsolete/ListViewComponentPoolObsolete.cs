@@ -398,10 +398,9 @@
 
 				Components.Clear();
 
-				bool is_new;
 				foreach (var index in IndicesDiff.Displayed)
 				{
-					var instance = GetTemplate(index).RequestInstance(OwnerID, index, InstanceCompare, out is_new);
+					var instance = GetTemplate(index).RequestInstance(OwnerID, index, InstanceCompare, out var is_new);
 					Components.Add(instance);
 
 					if (is_new)

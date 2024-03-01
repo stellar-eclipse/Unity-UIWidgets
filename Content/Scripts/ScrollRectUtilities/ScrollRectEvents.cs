@@ -11,6 +11,7 @@
 	/// </summary>
 	[AddComponentMenu("UI/New UI Widgets/Helpers/ScrollRect Events")]
 	[RequireComponent(typeof(ScrollRect))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/scrollrect/scrollrect-events.html")]
 	public class ScrollRectEvents : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 	{
 		/// <summary>
@@ -59,56 +60,36 @@
 			/// </summary>
 			/// <param name="obj">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is PullThreshold)
-				{
-					return Equals((PullThreshold)obj);
-				}
-
-				return false;
-			}
+			public readonly override bool Equals(object obj) => (obj is PullThreshold threshold) && Equals(threshold);
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
 			/// </summary>
 			/// <param name="other">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public bool Equals(PullThreshold other)
-			{
-				return Up == other.Up && Down == other.Down && Left == other.Left && Right == other.Right;
-			}
+			public readonly bool Equals(PullThreshold other) => Up == other.Up && Down == other.Down && Left == other.Left && Right == other.Right;
 
 			/// <summary>
 			/// Hash function.
 			/// </summary>
 			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
-			{
-				return Up.GetHashCode() ^ Down.GetHashCode() ^ Left.GetHashCode() ^ Right.GetHashCode();
-			}
+			public override int GetHashCode() => Up.GetHashCode() ^ Down.GetHashCode() ^ Left.GetHashCode() ^ Right.GetHashCode();
 
 			/// <summary>
 			/// Compare specified instances.
 			/// </summary>
-			/// <param name="left">Left instance.</param>
-			/// <param name="right">Right instances.</param>
+			/// <param name="a">Left instance.</param>
+			/// <param name="b">Right instances.</param>
 			/// <returns>true if the instances are equal; otherwise, false.</returns>
-			public static bool operator ==(PullThreshold left, PullThreshold right)
-			{
-				return left.Equals(right);
-			}
+			public static bool operator ==(PullThreshold a, PullThreshold b) => a.Equals(b);
 
 			/// <summary>
 			/// Compare specified instances.
 			/// </summary>
-			/// <param name="left">Left instance.</param>
-			/// <param name="right">Right instances.</param>
+			/// <param name="a">Left instance.</param>
+			/// <param name="b">Right instances.</param>
 			/// <returns>true if the instances are now equal; otherwise, false.</returns>
-			public static bool operator !=(PullThreshold left, PullThreshold right)
-			{
-				return !left.Equals(right);
-			}
+			public static bool operator !=(PullThreshold a, PullThreshold b) => !a.Equals(b);
 		}
 
 		/// <summary>

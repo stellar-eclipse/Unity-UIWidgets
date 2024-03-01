@@ -17,15 +17,9 @@
 		/// </summary>
 		public bool LocalizationSupport
 		{
-			get
-			{
-				return localizationSupport;
-			}
+			get => localizationSupport;
 
-			set
-			{
-				localizationSupport = value;
-			}
+			set => localizationSupport = value;
 		}
 
 		/// <inheritdoc/>

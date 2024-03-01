@@ -8,6 +8,7 @@
 	/// </summary>
 	/// <typeparam name="TData">Data type.</typeparam>
 	/// <typeparam name="TPoint">Point type.</typeparam>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/tracksview.html")]
 	public abstract class TrackFormBase<TData, TPoint> : MonoBehaviour
 		where TData : class, ITrackData<TPoint>
 		where TPoint : IComparable<TPoint>

@@ -9,6 +9,7 @@
 	/// <typeparam name="TData">Data type.</typeparam>
 	/// <typeparam name="TPoint">Point type.</typeparam>
 	/// <typeparam name="TDataForm">DataForm type.</typeparam>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/tracksview.html")]
 	public class TrackDataDialogBase<TData, TPoint, TDataForm> : MonoBehaviour
 		where TDataForm : TrackDataFormBase<TData, TPoint>
 		where TData : ITrackData<TPoint>

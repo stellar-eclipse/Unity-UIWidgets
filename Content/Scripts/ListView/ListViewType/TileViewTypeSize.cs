@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using EasyLayoutNS;
+	using UIWidgets.Extensions;
 	using UIWidgets.Internal;
 	using UIWidgets.Styles;
 	using UnityEngine;
@@ -12,7 +13,7 @@
 	/// <content>
 	/// Base class for the custom ListViews.
 	/// </content>
-	public partial class ListViewCustom<TItemView, TItem> : ListViewCustomBase, IStylable
+	public partial class ListViewCustom<TItemView, TItem> : ListViewCustom<TItem>, IUpdatable, ILateUpdatable, IListViewCallbacks<TItemView>
 		where TItemView : ListViewItem
 	{
 		/// <summary>
@@ -123,8 +124,8 @@
 					return 0;
 				}
 
-				var height = Owner.Viewport.Size.y - Owner.LayoutBridge.GetFullMarginY();
-				var width = Owner.Viewport.Size.x - Owner.LayoutBridge.GetFullMarginX();
+				var height = ViewportHeight();
+				var width = ViewportWidth();
 
 				if (Owner.IsHorizontal())
 				{
@@ -202,7 +203,7 @@
 			{
 				BlockSizes.Clear();
 
-				var blocks = Mathf.CeilToInt((float)Owner.DataSource.Count / (float)perBlock);
+				var blocks = Mathf.CeilToInt(Owner.DataSource.Count / (float)perBlock);
 				for (int i = 0; i < blocks; i++)
 				{
 					var size = 0f;
@@ -301,7 +302,7 @@
 			/// <inheritdoc/>
 			protected override int GetBlockIndex(int index)
 			{
-				return Mathf.FloorToInt((float)index / (float)GetItemsPerBlock());
+				return Mathf.FloorToInt(index / (float)GetItemsPerBlock());
 			}
 
 			/// <inheritdoc/>
@@ -393,7 +394,8 @@
 			/// <inheritdoc/>
 			public override int GetFirstVisibleIndex(bool strict = false)
 			{
-				var first_visible_index = Mathf.Max(0, GetIndexAtPosition(GetPosition()));
+				var pos = Mathf.Max(0f, GetPosition() - Owner.LayoutBridge.GetMargin());
+				var first_visible_index = Mathf.Max(0, GetIndexAtPosition(pos));
 
 				return first_visible_index;
 			}
@@ -401,15 +403,36 @@
 			/// <inheritdoc/>
 			public override int GetLastVisibleIndex(bool strict = false)
 			{
-				var last_visible_index = GetIndexAtPosition(GetPosition() + Owner.Viewport.ScaledAxisSize);
+				var pos = Mathf.Max(0f, GetPosition() - Owner.LayoutBridge.GetMargin());
+				var last_visible_index = GetIndexAtPosition(pos + Owner.Viewport.ScaledAxisSize);
 
 				return strict ? last_visible_index : last_visible_index + GetItemsPerBlock();
+			}
+
+			/// <inheritdoc/>
+			protected override int GetVisibleItems(int start_index)
+			{
+				var spacing = Owner.IsHorizontal() ? Owner.GetItemSpacingX() : Owner.GetItemSpacingY();
+
+				var start_block = GetBlockIndex(start_index);
+				var size = Owner.IsHorizontal() ? ViewportWidth() : ViewportHeight();
+
+				var blocks = start_block;
+				var max = BlockSizes.Count - 1;
+				while ((size > 0) && (blocks < max))
+				{
+					blocks += 1;
+					size -= BlockSizes[blocks] + spacing;
+				}
+
+				return (blocks + 1 - start_block) * GetItemsPerBlock();
 			}
 
 			/// <inheritdoc/>
 			public override int GetNearestIndex(Vector2 point, NearestType type)
 			{
 				var pos_block = Owner.IsHorizontal() ? point.x : Mathf.Abs(point.y);
+				pos_block -= Owner.LayoutBridge.GetMargin();
 				pos_block -= IsRequiredCenterTheItems() ? CenteredFillerSize() : 0f;
 
 				var start = GetIndexAtPosition(pos_block);
@@ -472,23 +495,17 @@
 					return 0;
 				}
 
-				return UtilitiesCollections.Sum(BlockSizes) + (BlockSizes.Count * Owner.LayoutBridge.GetSpacing()) - Owner.LayoutBridge.GetSpacing();
+				return UtilitiesCollections.Sum(BlockSizes) + (BlockSizes.Count * Owner.LayoutBridge.GetSpacing()) - Owner.LayoutBridge.GetSpacing() + Owner.LayoutBridge.GetFullMargin();
 			}
 
 			/// <inheritdoc/>
 			public override void GetDebugInfo(System.Text.StringBuilder builder)
 			{
-				builder.Append("Rows: ");
-				builder.Append(Rows);
-				builder.AppendLine();
+				base.GetDebugInfo(builder);
 
-				builder.Append("Columns: ");
-				builder.Append(Columns);
-				builder.AppendLine();
-
-				builder.Append("BlockSizes: ");
-				builder.Append(UtilitiesCollections.List2String(BlockSizes));
-				builder.AppendLine();
+				builder.AppendValue("Rows: ", Rows);
+				builder.AppendValue("Columns: ", Columns);
+				builder.AppendValue("BlockSizes: ", UtilitiesCollections.List2String(BlockSizes));
 			}
 		}
 	}

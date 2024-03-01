@@ -72,7 +72,6 @@
 		}
 
 		[SerializeField]
-		[HideInInspector]
 		ConnectorArrow arrow = ConnectorArrow.None;
 
 		/// <summary>
@@ -89,6 +88,26 @@
 			set
 			{
 				Change(ref arrow, value, "Arrow");
+			}
+		}
+
+		[SerializeField]
+		Vector2 arrowSize = new Vector2(20f, 10f);
+
+		/// <summary>
+		/// Gets or sets the arrow.
+		/// </summary>
+		/// <value>The arrow.</value>
+		public Vector2 ArrowSize
+		{
+			get
+			{
+				return arrowSize;
+			}
+
+			set
+			{
+				Change(ref arrowSize, value, "ArrowSize");
 			}
 		}
 
@@ -133,7 +152,7 @@
 		}
 
 		[SerializeField]
-		float margin = 10f;
+		float margin = 30f;
 
 		/// <summary>
 		/// Gets or sets the margin.

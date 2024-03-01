@@ -37,13 +37,7 @@
 			/// <summary>
 			/// Count.
 			/// </summary>
-			public int Count
-			{
-				get
-				{
-					return AllInstances.Count;
-				}
-			}
+			public int Count => AllInstances.Count;
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="InstancesCollection{TItemView}"/> class.
@@ -67,9 +61,8 @@
 
 				foreach (var instance in AllInstances)
 				{
-					List<TItemView> instances;
 					var id = new InstanceID(instance.Owner);
-					if (OwnersInstances.TryGetValue(id, out instances))
+					if (OwnersInstances.TryGetValue(id, out var instances))
 					{
 						instances.Add(instance);
 					}
@@ -87,8 +80,7 @@
 			/// <returns>Instances.</returns>
 			public List<TItemView> Of(InstanceID ownerID)
 			{
-				List<TItemView> instances;
-				if (!OwnersInstances.TryGetValue(ownerID, out instances))
+				if (!OwnersInstances.TryGetValue(ownerID, out var instances))
 				{
 					instances = new List<TItemView>();
 					OwnersInstances.Add(ownerID, instances);

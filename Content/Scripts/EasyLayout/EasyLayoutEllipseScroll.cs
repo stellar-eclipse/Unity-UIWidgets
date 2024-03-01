@@ -10,6 +10,7 @@
 	/// Scroll for EasyLayout with Ellipse layout type.
 	/// </summary>
 	[RequireComponent(typeof(EasyLayout))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/layout/easylayout-ellipse-scroll.html")]
 	public class EasyLayoutEllipseScroll : UIBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IScrollHandler, UIWidgets.ILateUpdatable
 	{
 #region Interactable
@@ -166,10 +167,7 @@
 		/// </summary>
 		protected float ScrollValue
 		{
-			get
-			{
-				return Layout.EllipseSettings.AngleScroll;
-			}
+			get => Layout.EllipseSettings.AngleScroll;
 
 			set
 			{
@@ -180,7 +178,7 @@
 		}
 
 		/// <summary>
-		/// Intertia.
+		/// Inertia.
 		/// </summary>
 		[SerializeField]
 		public bool Inertia = true;
@@ -196,6 +194,12 @@
 		/// </summary>
 		[SerializeField]
 		public bool UnscaledTime = true;
+
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
 
 		/// <summary>
 		/// Scroll event.
@@ -219,7 +223,7 @@
 		/// Inertia velocity.
 		/// </summary>
 		[NonSerialized]
-		protected float IntertiaVelocity;
+		protected float InertiaVelocity;
 
 		/// <summary>
 		/// Current deceleration rate.
@@ -267,17 +271,22 @@
 		}
 
 		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return IsActive() && (eventData.button == DragButton);
+		}
+
+		/// <summary>
 		/// Process the begin drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnBeginDrag(PointerEventData eventData)
 		{
-			if (eventData.button != PointerEventData.InputButton.Left)
-			{
-				return;
-			}
-
-			if (!IsActive())
+			if (!CanDrag(eventData))
 			{
 				return;
 			}
@@ -301,8 +310,9 @@
 				return;
 			}
 
-			if (eventData.button != PointerEventData.InputButton.Left)
+			if (!CanDrag(eventData))
 			{
+				OnEndDrag(eventData);
 				return;
 			}
 
@@ -359,11 +369,6 @@
 				return;
 			}
 
-			if (eventData.button != PointerEventData.InputButton.Left)
-			{
-				return;
-			}
-
 			IsDragging = false;
 			InitIntertia();
 		}
@@ -379,16 +384,16 @@
 				return;
 			}
 
-			IntertiaVelocity = -ScrollVelocity;
-			CurrentDecelerationRate = -IntertiaVelocity / TimeToStop;
+			InertiaVelocity = -ScrollVelocity;
+			CurrentDecelerationRate = -InertiaVelocity / TimeToStop;
 
-			var direction = Mathf.Sign(IntertiaVelocity);
+			var direction = Mathf.Sign(InertiaVelocity);
 			var time_to_stop_sq = Mathf.Pow(TimeToStop, 2f);
-			var distance = ((-Mathf.Abs(CurrentDecelerationRate) * time_to_stop_sq) / 2f) + (Mathf.Abs(IntertiaVelocity) * TimeToStop);
+			var distance = ((-Mathf.Abs(CurrentDecelerationRate) * time_to_stop_sq) / 2f) + (Mathf.Abs(InertiaVelocity) * TimeToStop);
 
 			InertiaDistance = distance;
-			IntertiaVelocity = (InertiaDistance - (-Mathf.Abs(CurrentDecelerationRate) * (TimeToStop * TimeToStop) / 2f)) / TimeToStop;
-			IntertiaVelocity *= direction;
+			InertiaVelocity = (InertiaDistance - (-Mathf.Abs(CurrentDecelerationRate) * (TimeToStop * TimeToStop) / 2f)) / TimeToStop;
+			InertiaVelocity *= direction;
 		}
 
 		/// <summary>
@@ -422,17 +427,17 @@
 			else if (!IsDragging && (InertiaDistance > 0f))
 			{
 				var delta = EasyLayout.GetDeltaTime(UnscaledTime);
-				var distance = IntertiaVelocity > 0f
-					? Mathf.Min(InertiaDistance, IntertiaVelocity * delta)
-					: Mathf.Max(-InertiaDistance, IntertiaVelocity * delta);
+				var distance = InertiaVelocity > 0f
+					? Mathf.Min(InertiaDistance, InertiaVelocity * delta)
+					: Mathf.Max(-InertiaDistance, InertiaVelocity * delta);
 
 				ScrollValue += distance;
 				InertiaDistance -= Mathf.Abs(distance);
 
 				if (InertiaDistance > 0f)
 				{
-					IntertiaVelocity += CurrentDecelerationRate * delta;
-					ScrollVelocity = -IntertiaVelocity;
+					InertiaVelocity += CurrentDecelerationRate * delta;
+					ScrollVelocity = -InertiaVelocity;
 				}
 				else
 				{

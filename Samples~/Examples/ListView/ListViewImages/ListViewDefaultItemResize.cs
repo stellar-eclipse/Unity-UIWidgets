@@ -144,8 +144,13 @@ namespace UIWidgets.Examples
 			var list_view = GetComponent<ListViewImages>();
 			if (list_view != null)
 			{
-				ListViewSize = (list_view.transform as RectTransform).rect.size;
-				DefaultItemSize = list_view.GetDefaultItemSize();
+				var size = (list_view.transform as RectTransform).rect.size;
+				var valid = !(Mathf.Approximately(size.x, 0f) || Mathf.Approximately(size.y, 0f));
+				if (valid)
+				{
+					ListViewSize = size;
+					DefaultItemSize = list_view.GetDefaultItemSize();
+				}
 			}
 		}
 #endif

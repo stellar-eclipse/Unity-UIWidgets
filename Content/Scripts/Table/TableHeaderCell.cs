@@ -6,6 +6,7 @@
 	/// <summary>
 	/// TableHeader cell.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/collections/table-header.html")]
 	public class TableHeaderCell : MonoBehaviour,
 		IInitializePotentialDragHandler, IBeginDragHandler, IEndDragHandler, IDragHandler
 	{

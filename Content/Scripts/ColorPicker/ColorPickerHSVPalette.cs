@@ -8,7 +8,8 @@ namespace UIWidgets
 	/// <summary>
 	/// Color picker HSV palette.
 	/// </summary>
-	public class ColorPickerHSVPalette : MonoBehaviour
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/colorpicker.html")]
+	public class ColorPickerHSVPalette : MonoBehaviour, UIThemes.ITargetOwner
 	{
 		[SerializeField]
 		Image palette;
@@ -27,15 +28,9 @@ namespace UIWidgets
 		/// <value>The palette.</value>
 		public Image Palette
 		{
-			get
-			{
-				return palette;
-			}
+			get => palette;
 
-			set
-			{
-				SetPalette(value);
-			}
+			set => SetPalette(value);
 		}
 
 		[SerializeField]
@@ -47,10 +42,7 @@ namespace UIWidgets
 		/// <value>The palette shader.</value>
 		public Shader PaletteShader
 		{
-			get
-			{
-				return paletteShader;
-			}
+			get => paletteShader;
 
 			set
 			{
@@ -68,10 +60,7 @@ namespace UIWidgets
 		/// <value>The palette circle shader.</value>
 		public Shader CircleShader
 		{
-			get
-			{
-				return circleShader;
-			}
+			get => circleShader;
 
 			set
 			{
@@ -89,10 +78,7 @@ namespace UIWidgets
 		/// <value>The palette cursor.</value>
 		public RectTransform PaletteCursor
 		{
-			get
-			{
-				return paletteCursor;
-			}
+			get => paletteCursor;
 
 			set
 			{
@@ -113,15 +99,9 @@ namespace UIWidgets
 		/// <value>The slider.</value>
 		public Slider Slider
 		{
-			get
-			{
-				return slider;
-			}
+			get => slider;
 
-			set
-			{
-				SetSlider(value);
-			}
+			set => SetSlider(value);
 		}
 
 		[SerializeField]
@@ -133,10 +113,7 @@ namespace UIWidgets
 		/// <value>The slider background.</value>
 		public Image SliderBackground
 		{
-			get
-			{
-				return sliderBackground;
-			}
+			get => sliderBackground;
 
 			set
 			{
@@ -154,10 +131,7 @@ namespace UIWidgets
 		/// <value>The slider shader.</value>
 		public Shader SliderShader
 		{
-			get
-			{
-				return sliderShader;
-			}
+			get => sliderShader;
 
 			set
 			{
@@ -174,15 +148,9 @@ namespace UIWidgets
 		/// <value>The input mode.</value>
 		public ColorPickerInputMode InputMode
 		{
-			get
-			{
-				return inputMode;
-			}
+			get => inputMode;
 
-			set
-			{
-				inputMode = value;
-			}
+			set => inputMode = value;
 		}
 
 		ColorPickerPaletteMode paletteMode;
@@ -193,16 +161,16 @@ namespace UIWidgets
 		/// <value>The palette mode.</value>
 		public ColorPickerPaletteMode PaletteMode
 		{
-			get
-			{
-				return paletteMode;
-			}
+			get => paletteMode;
 
-			set
-			{
-				SetPaletteMode(value);
-			}
+			set => SetPaletteMode(value);
 		}
+
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
 
 		/// <summary>
 		/// OnChangeRGB event.
@@ -222,23 +190,14 @@ namespace UIWidgets
 		/// <summary>
 		/// Is current pallete mode is HSVCircle?
 		/// </summary>
-		protected bool IsCircle
-		{
-			get
-			{
-				return PaletteMode == ColorPickerPaletteMode.HSVCircle;
-			}
-		}
+		protected bool IsCircle => PaletteMode == ColorPickerPaletteMode.HSVCircle;
 
 		bool isInited;
 
 		/// <summary>
 		/// Start this instance.
 		/// </summary>
-		public virtual void Start()
-		{
-			Init();
-		}
+		public virtual void Start() => Init();
 
 		/// <summary>
 		/// Init this instance.
@@ -291,13 +250,13 @@ namespace UIWidgets
 			{
 				paletteRect = palette.transform as RectTransform;
 
-				dragListener = Utilities.GetOrAddComponent<DragListener>(palette);
+				dragListener = Utilities.RequireComponent<DragListener>(palette);
 				dragListener.OnDragEvent.AddListener(OnDrag);
 
-				clickListener = Utilities.GetOrAddComponent<ClickListener>(palette);
+				clickListener = Utilities.RequireComponent<ClickListener>(palette);
 				clickListener.ClickEvent.AddListener(OnDrag);
 
-				resizeListener = Utilities.GetOrAddComponent<ResizeListener>(palette);
+				resizeListener = Utilities.RequireComponent<ResizeListener>(palette);
 				resizeListener.OnResizeNextFrame.AddListener(UpdateView);
 
 				UpdateMaterial();
@@ -373,7 +332,7 @@ namespace UIWidgets
 		}
 
 		/// <summary>
-		/// Сurrent color.
+		/// Current color.
 		/// </summary>
 		protected ColorHSV currentColorHSV;
 
@@ -400,14 +359,28 @@ namespace UIWidgets
 		}
 
 		/// <summary>
-		/// When dragging is occurring this will be called every time the cursor is moved.
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return eventData.button == DragButton;
+		}
+
+		/// <summary>
+		/// When drag is occurring this will be called every time the cursor is moved.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		protected virtual void OnDrag(PointerEventData eventData)
 		{
+			if (!CanDrag(eventData))
+			{
+				return;
+			}
+
 			Vector2 size = paletteRect.rect.size;
-			Vector2 cur_pos;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(paletteRect, eventData.position, eventData.pressEventCamera, out cur_pos);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(paletteRect, eventData.position, eventData.pressEventCamera, out var cur_pos);
 
 			cur_pos.x = Mathf.Clamp(cur_pos.x, 0, size.x);
 			cur_pos.y = Mathf.Clamp(cur_pos.y, -size.y, 0);
@@ -641,41 +614,37 @@ namespace UIWidgets
 		/// <returns>The palette colors.</returns>
 		protected Color[] GetPaletteColors()
 		{
-			switch (paletteMode)
+			return paletteMode switch
 			{
-				case ColorPickerPaletteMode.Hue:
-					return new Color[]
-					{
-						new Color(currentColorHSV.H / 359f / 2f, 0f, 0f, 1f),
-						new Color(currentColorHSV.H / 359f / 2f, 1f, 0f, 1f),
-						new Color(currentColorHSV.H / 359f / 2f, 0f, 0f, 1f),
-						new Color(currentColorHSV.H / 359f / 2f, 0f, 1f, 1f),
-					};
-				case ColorPickerPaletteMode.Saturation:
-					return new Color[]
-					{
-						new Color(0f, currentColorHSV.S / 255f / 2f, 0f, 1f),
-						new Color(1f, currentColorHSV.S / 255f / 2f, 0f, 1f),
-						new Color(0f, currentColorHSV.S / 255f / 2f, 0f, 1f),
-						new Color(0f, currentColorHSV.S / 255f / 2f, 1f, 1f),
-					};
-				case ColorPickerPaletteMode.Value:
-					return new Color[]
-					{
-						new Color(0f, 0f, currentColorHSV.V / 255f / 2f, 1f),
-						new Color(1f, 0f, currentColorHSV.V / 255f / 2f, 1f),
-						new Color(0f, 0f, currentColorHSV.V / 255f / 2f, 1f),
-						new Color(0f, 1f, currentColorHSV.V / 255f / 2f, 1f),
-					};
-				default:
-					return new Color[]
-					{
-						new Color(0f, 0f, 1f, 1f),
-						new Color(1f, 1f, 1f, 1f),
-						new Color(0f, 0f, 1f, 1f),
-						new Color(1f, 1f, 1f, 1f),
-					};
-			}
+				ColorPickerPaletteMode.Hue => new Color[]
+				{
+					new Color(currentColorHSV.H / 359f / 2f, 0f, 0f, 1f),
+					new Color(currentColorHSV.H / 359f / 2f, 1f, 0f, 1f),
+					new Color(currentColorHSV.H / 359f / 2f, 0f, 0f, 1f),
+					new Color(currentColorHSV.H / 359f / 2f, 0f, 1f, 1f),
+				},
+				ColorPickerPaletteMode.Saturation => new Color[]
+				{
+					new Color(0f, currentColorHSV.S / 255f / 2f, 0f, 1f),
+					new Color(1f, currentColorHSV.S / 255f / 2f, 0f, 1f),
+					new Color(0f, currentColorHSV.S / 255f / 2f, 0f, 1f),
+					new Color(0f, currentColorHSV.S / 255f / 2f, 1f, 1f),
+				},
+				ColorPickerPaletteMode.Value => new Color[]
+				{
+					new Color(0f, 0f, currentColorHSV.V / 255f / 2f, 1f),
+					new Color(1f, 0f, currentColorHSV.V / 255f / 2f, 1f),
+					new Color(0f, 0f, currentColorHSV.V / 255f / 2f, 1f),
+					new Color(0f, 1f, currentColorHSV.V / 255f / 2f, 1f),
+				},
+				_ => new Color[]
+				{
+					new Color(0f, 0f, 1f, 1f),
+					new Color(1f, 1f, 1f, 1f),
+					new Color(0f, 0f, 1f, 1f),
+					new Color(1f, 1f, 1f, 1f),
+				},
+			};
 		}
 
 		/// <summary>
@@ -695,6 +664,15 @@ namespace UIWidgets
 			}
 
 			UpdateViewReal();
+		}
+
+		/// <summary>
+		/// Set target owner.
+		/// </summary>
+		public void SetTargetOwner()
+		{
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), palette, nameof(Graphic.color), this);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), sliderBackground, nameof(Graphic.color), this);
 		}
 
 		/// <summary>

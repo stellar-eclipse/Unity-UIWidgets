@@ -197,22 +197,14 @@
 		/// </summary>
 		/// <param name="obj">The object to compare with the current object.</param>
 		/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-		public override bool Equals(object obj)
-		{
-			if (obj is GroupSize)
-			{
-				return Equals((GroupSize)obj);
-			}
-
-			return false;
-		}
+		public readonly override bool Equals(object obj) => (obj is GroupSize size) && Equals(size);
 
 		/// <summary>
 		/// Determines whether the specified object is equal to the current object.
 		/// </summary>
 		/// <param name="other">The object to compare with the current object.</param>
 		/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-		public bool Equals(GroupSize other)
+		public readonly bool Equals(GroupSize other)
 		{
 			return (MinWidth == other.MinWidth)
 				&& (PreferredWidth == other.PreferredWidth)
@@ -237,10 +229,7 @@
 		/// <param name="a">First instance.</param>
 		/// <param name="b">Second instance.</param>
 		/// <returns>true if the instances are equal; otherwise, false.</returns>
-		public static bool operator ==(GroupSize a, GroupSize b)
-		{
-			return a.Equals(b);
-		}
+		public static bool operator ==(GroupSize a, GroupSize b) => a.Equals(b);
 
 		/// <summary>
 		/// Compare specified instances.
@@ -248,9 +237,6 @@
 		/// <param name="a">First instance.</param>
 		/// <param name="b">Second instance.</param>
 		/// <returns>true if the instances not equal; otherwise, false.</returns>
-		public static bool operator !=(GroupSize a, GroupSize b)
-		{
-			return !a.Equals(b);
-		}
+		public static bool operator !=(GroupSize a, GroupSize b) => !a.Equals(b);
 	}
 }

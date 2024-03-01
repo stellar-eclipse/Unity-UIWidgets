@@ -10,6 +10,7 @@
 	/// IOExceptionsView.
 	/// Handle IO exceptions - catch exception and display following errors.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/ioexceptionsview.html")]
 	public class IOExceptionsView : MonoBehaviour, IStylable
 	{
 		/// <summary>

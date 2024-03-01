@@ -7,6 +7,7 @@
 	/// Component to display lines with distance from Target borders to parent borders.
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/distance-lines.html")]
 	public class DistanceLines : MonoBehaviour
 	{
 		[SerializeField]

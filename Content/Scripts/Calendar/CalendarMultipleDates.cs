@@ -8,6 +8,7 @@
 	/// Multiple dates support for Calendar.
 	/// </summary>
 	[RequireComponent(typeof(CalendarBase))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/calendar-multiple-dates.html")]
 	public class CalendarMultipleDates : MonoBehaviour
 	{
 		/// <summary>
@@ -34,25 +35,14 @@
 			/// </summary>
 			/// <param name="date">Date.</param>
 			/// <returns>true if date represents the same day; otherwise false.</returns>
-			public bool IsSameDay(DateTime date)
-			{
-				return Calendar.IsSameDay(Date, date);
-			}
+			public bool IsSameDay(DateTime date) => Calendar.IsSameDay(Date, date);
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
 			/// </summary>
 			/// <param name="obj">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is DateComparer)
-				{
-					return Equals((DateComparer)obj);
-				}
-
-				return false;
-			}
+			public override bool Equals(object obj) => (obj is DateComparer comparer) && Equals(comparer);
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
@@ -61,7 +51,7 @@
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
 			public bool Equals(DateComparer other)
 			{
-				if (ReferenceEquals(other, null))
+				if (other is null)
 				{
 					return false;
 				}
@@ -73,10 +63,7 @@
 			/// Hash function.
 			/// </summary>
 			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
-			{
-				return Calendar.GetHashCode() ^ Date.GetHashCode();
-			}
+			public override int GetHashCode() => Calendar.GetHashCode() ^ Date.GetHashCode();
 
 			/// <summary>
 			/// Compare specified instances.
@@ -86,9 +73,9 @@
 			/// <returns>true if the instances are equal; otherwise, false.</returns>
 			public static bool operator ==(DateComparer left, DateComparer right)
 			{
-				if (ReferenceEquals(left, null))
+				if (left is null)
 				{
-					return ReferenceEquals(right, null);
+					return right is null;
 				}
 
 				return left.Equals(right);
@@ -100,10 +87,7 @@
 			/// <param name="left">Left instance.</param>
 			/// <param name="right">Right instances.</param>
 			/// <returns>true if the instances are not equal; otherwise, false.</returns>
-			public static bool operator !=(DateComparer left, DateComparer right)
-			{
-				return !(left == right);
-			}
+			public static bool operator !=(DateComparer left, DateComparer right) => !(left == right);
 		}
 
 		/// <summary>
@@ -258,10 +242,7 @@
 		/// <summary>
 		/// Update calendar.
 		/// </summary>
-		protected virtual void CollectionChanged()
-		{
-			CurrentCalendar.UpdateCalendar();
-		}
+		protected virtual void CollectionChanged() => CurrentCalendar.UpdateCalendar();
 
 		/// <summary>
 		/// Process destroy event.

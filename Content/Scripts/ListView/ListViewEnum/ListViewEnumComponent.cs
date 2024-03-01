@@ -6,6 +6,7 @@ namespace UIWidgets
 	/// <summary>
 	/// ListViewEnum item component.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/listview-enum.html")]
 	public class ListViewEnumComponent : ListViewItem, IViewData<ListViewEnum.Item>
 	{
 		/// <summary>

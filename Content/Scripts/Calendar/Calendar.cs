@@ -63,8 +63,8 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0618
-			Utilities.GetOrAddComponent(dateText, ref dateTextAdapter);
-			Utilities.GetOrAddComponent(monthText, ref monthTextAdapter);
+			Utilities.RequireComponent(dateText, ref dateTextAdapter);
+			Utilities.RequireComponent(monthText, ref monthTextAdapter);
 #pragma warning restore 0618
 		}
 

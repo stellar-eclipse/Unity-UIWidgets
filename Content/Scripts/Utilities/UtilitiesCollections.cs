@@ -195,15 +195,15 @@
 		/// <typeparam name="T">Type of value.</typeparam>
 		/// <param name="arr">Input array.</param>
 		/// <returns>true if input array not empty and all values are null; otherwise false.</returns>
-		public static bool AllNull<T>(T[] arr)
+		public static bool AllNull<T>(IList<T> arr)
 			where T : class
 		{
-			if (arr.Length == 0)
+			if (arr.Count == 0)
 			{
 				return false;
 			}
 
-			for (int i = 0; i < arr.Length; i++)
+			for (int i = 0; i < arr.Count; i++)
 			{
 				if (arr[i] != null)
 				{
@@ -248,6 +248,26 @@
 			}
 
 			Debug.Log(Time.frameCount.ToString() + ": " + string.Join("; ", arr) + comment);
+		}
+
+		/// <summary>
+		/// Is any element in list is null?
+		/// </summary>
+		/// <typeparam name="T">Item type.</typeparam>
+		/// <param name="list">List.</param>
+		/// <returns>true if any element in list is null; otherwise false.</returns>
+		public static bool HasNull<T>(IList<T> list)
+			where T : class
+		{
+			foreach (var item in list)
+			{
+				if (item == null)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 	}
 }

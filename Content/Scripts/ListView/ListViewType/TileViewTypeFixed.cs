@@ -2,6 +2,7 @@
 {
 	using System;
 	using EasyLayoutNS;
+	using UIWidgets.Extensions;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
@@ -10,7 +11,7 @@
 	/// <content>
 	/// Base class for the custom ListViews.
 	/// </content>
-	public partial class ListViewCustom<TItemView, TItem> : ListViewCustomBase, IStylable
+	public partial class ListViewCustom<TItemView, TItem> : ListViewCustom<TItem>, IUpdatable, ILateUpdatable, IListViewCallbacks<TItemView>
 		where TItemView : ListViewItem
 	{
 		/// <summary>
@@ -94,8 +95,8 @@
 				var spacing_x = Owner.GetItemSpacingX();
 				var spacing_y = Owner.GetItemSpacingY();
 
-				var width = Owner.Viewport.Size.x + spacing_x - Owner.LayoutBridge.GetFullMarginX();
-				var height = Owner.Viewport.Size.y + spacing_y - Owner.LayoutBridge.GetFullMarginY();
+				var width = ViewportWidth();
+				var height = ViewportHeight();
 
 				if (Owner.IsHorizontal())
 				{
@@ -152,31 +153,31 @@
 			{
 				// block index
 				var pos_block = Owner.IsHorizontal() ? point.x : Mathf.Abs(point.y);
+				pos_block -= Owner.LayoutBridge.GetMargin();
 				pos_block -= IsRequiredCenterTheItems() ? CenteredFillerSize() : 0f;
 
-				var block = Mathf.FloorToInt(pos_block / GetItemSize());
+				var block = type switch
+				{
+					NearestType.Auto => Mathf.RoundToInt(pos_block / GetItemSize()),
+					NearestType.Before => Mathf.FloorToInt(pos_block / GetItemSize()),
+					NearestType.After => Mathf.CeilToInt(pos_block / GetItemSize()),
+					_ => throw new NotSupportedException(string.Format("Unsupported NearestType: {0}", EnumHelper<NearestType>.ToString(type))),
+				};
 
 				// item index in block
 				var pos_elem = Owner.IsHorizontal() ? Mathf.Abs(point.y) : point.x;
 				var size = Owner.IsHorizontal() ? Owner.DefaultInstanceSize.y + Owner.GetItemSpacingY() : Owner.DefaultInstanceSize.x + Owner.GetItemSpacingX();
 
-				int k;
-				switch (type)
+				var k = type switch
 				{
-					case NearestType.Auto:
-						k = Mathf.RoundToInt(pos_elem / size);
-						break;
-					case NearestType.Before:
-						k = Mathf.FloorToInt(pos_elem / size);
-						break;
-					case NearestType.After:
-						k = Mathf.CeilToInt(pos_elem / size);
-						break;
-					default:
-						throw new NotSupportedException(string.Format("Unsupported NearestType: {0}", EnumHelper<NearestType>.ToString(type)));
-				}
+					NearestType.Auto => Mathf.RoundToInt(pos_elem / size),
+					NearestType.Before => Mathf.FloorToInt(pos_elem / size),
+					NearestType.After => Mathf.CeilToInt(pos_elem / size),
+					_ => throw new NotSupportedException(string.Format("Unsupported NearestType: {0}", EnumHelper<NearestType>.ToString(type))),
+				};
+				var index = (block * GetItemsPerBlock()) + k;
 
-				return (block * GetItemsPerBlock()) + k;
+				return index;
 			}
 
 			/// <inheritdoc/>
@@ -246,13 +247,10 @@
 			/// <inheritdoc/>
 			public override void GetDebugInfo(System.Text.StringBuilder builder)
 			{
-				builder.Append("Rows: ");
-				builder.Append(Rows);
-				builder.AppendLine();
+				base.GetDebugInfo(builder);
 
-				builder.Append("Columns: ");
-				builder.Append(Columns);
-				builder.AppendLine();
+				builder.AppendValue("Rows: ", Rows);
+				builder.AppendValue("Columns: ", Columns);
 			}
 		}
 	}

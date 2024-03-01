@@ -20,6 +20,7 @@ namespace UIWidgets
 	#else
 	[ExecuteInEditMode]
 	#endif
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/circular-slider.html")]
 	public abstract class CircularSliderBase<T> : UIBehaviour, IStylable,
 		IBeginDragHandler, IEndDragHandler, IDragHandler,
 		IPointerDownHandler, IPointerClickHandler, IPointerUpHandler
@@ -144,18 +145,18 @@ namespace UIWidgets
 			{
 				if (handle != null)
 				{
-					handle.OnDragStartEvent.RemoveListener(OnBeginDrag);
+					handle.OnBeginDragEvent.RemoveListener(OnBeginDrag);
 					handle.OnDragEvent.RemoveListener(OnDrag);
-					handle.OnDragEndEvent.RemoveListener(OnEndDrag);
+					handle.OnEndDragEvent.RemoveListener(OnEndDrag);
 				}
 
 				handle = value;
 
 				if (handle != null)
 				{
-					handle.OnDragStartEvent.AddListener(OnBeginDrag);
+					handle.OnBeginDragEvent.AddListener(OnBeginDrag);
 					handle.OnDragEvent.AddListener(OnDrag);
-					handle.OnDragEndEvent.AddListener(OnEndDrag);
+					handle.OnEndDragEvent.AddListener(OnEndDrag);
 				}
 
 				UpdateTracker();
@@ -294,6 +295,12 @@ namespace UIWidgets
 				Value = this.value;
 			}
 		}
+
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
 
 		/// <summary>
 		/// Value changed event.
@@ -461,12 +468,22 @@ namespace UIWidgets
 		public abstract float Value2Angle(T value);
 
 		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return IsActive() && (eventData.button == DragButton);
+		}
+
+		/// <summary>
 		/// Process the begin drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnBeginDrag(PointerEventData eventData)
 		{
-			if (!IsActive())
+			if (!CanDrag(eventData))
 			{
 				return;
 			}
@@ -480,7 +497,7 @@ namespace UIWidgets
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnDrag(PointerEventData eventData)
 		{
-			if (!IsActive())
+			if (!CanDrag(eventData))
 			{
 				return;
 			}
@@ -494,7 +511,7 @@ namespace UIWidgets
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnEndDrag(PointerEventData eventData)
 		{
-			if (!IsActive())
+			if (!CanDrag(eventData))
 			{
 				return;
 			}
@@ -535,8 +552,7 @@ namespace UIWidgets
 		/// <param name="eventData">Event data.</param>
 		protected virtual void Rotate(PointerEventData eventData)
 		{
-			Vector2 point;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out var point);
 
 			var base_angle = -DragPoint2Angle(point);
 			Value = Angle2Value(base_angle - StartAngle);

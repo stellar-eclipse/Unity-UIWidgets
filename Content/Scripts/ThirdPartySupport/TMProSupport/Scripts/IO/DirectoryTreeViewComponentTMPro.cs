@@ -8,6 +8,7 @@ namespace UIWidgets.TMProSupport
 	/// <summary>
 	/// DirectoryTreeView component TMPro.
 	/// </summary>
+	[System.Obsolete("Use DirectoryTreeViewComponent with TextAdapter.")]
 	public class DirectoryTreeViewComponentTMPro : DirectoryTreeViewComponent
 	{
 		/// <summary>
@@ -25,7 +26,7 @@ namespace UIWidgets.TMProSupport
 		{
 			base.Upgrade();
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(TextTMPro, ref TextAdapter);
+			Utilities.RequireComponent(TextTMPro, ref TextAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

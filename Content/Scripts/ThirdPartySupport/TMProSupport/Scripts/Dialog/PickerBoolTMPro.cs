@@ -8,6 +8,7 @@ namespace UIWidgets.TMProSupport
 	/// <summary>
 	/// PickerBool.
 	/// </summary>
+	[System.Obsolete("Use PickerBool with TextAdapter.")]
 	public class PickerBoolTMPro : PickerBool
 	{
 		/// <summary>
@@ -24,7 +25,7 @@ namespace UIWidgets.TMProSupport
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(MessageTMPro, ref MessageAdapter);
+			Utilities.RequireComponent(MessageTMPro, ref MessageAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

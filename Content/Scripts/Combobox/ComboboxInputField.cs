@@ -11,6 +11,7 @@
 	/// <summary>
 	/// Combobox.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/combobox-inputfield.html")]
 	public class ComboboxInputField : MonoBehaviour, ISubmitHandler, IStylable
 	{
 		[SerializeField]
@@ -127,11 +128,6 @@
 		public bool ResetInput = true;
 
 		/// <summary>
-		/// OnSelect event.
-		/// </summary>
-		public ListViewEvent OnSelect = new ListViewEvent();
-
-		/// <summary>
 		/// Parent canvas.
 		/// </summary>
 		[SerializeField]
@@ -157,6 +153,11 @@
 		/// ListView parent.
 		/// </summary>
 		protected RectTransform ListViewParent;
+
+		/// <summary>
+		/// OnSelect event.
+		/// </summary>
+		public ListViewEvent OnSelect = new ListViewEvent();
 
 		/// <summary>
 		/// Raised when ListView opened.
@@ -245,6 +246,7 @@
 
 			if (listView != null)
 			{
+				listView.KeepHighlight = false;
 				ListViewParent = listView.transform.parent as RectTransform;
 
 				listView.OnSelectInternal.AddListener(SelectItem);
@@ -383,8 +385,7 @@
 				return;
 			}
 
-			var ev_item = eventData as ListViewItemEventData;
-			if (ev_item != null)
+			if (eventData is ListViewItemEventData ev_item)
 			{
 				if (ev_item.NewSelectedObject != null)
 				{
@@ -394,8 +395,7 @@
 				return;
 			}
 
-			var ev = eventData as PointerEventData;
-			if (ev == null)
+			if (!(eventData is PointerEventData ev))
 			{
 				HideList();
 				return;
@@ -442,7 +442,7 @@
 		/// <param name="go">Go.</param>
 		protected static SelectListener GetDeselectListener(GameObject go)
 		{
-			return Utilities.GetOrAddComponent<SelectListener>(go);
+			return Utilities.RequireComponent<SelectListener>(go);
 		}
 
 		/// <summary>
@@ -564,6 +564,8 @@
 		/// </summary>
 		protected virtual void OnDestroy()
 		{
+			ListViewPosition.ParentDestroyed();
+
 			ListView = null;
 			ToggleButton = null;
 			if (Input != null)

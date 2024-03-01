@@ -17,6 +17,7 @@
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[]
 				{
 					UtilitiesUI.GetGraphic(NameAdapter),
@@ -25,8 +26,11 @@
 					UtilitiesUI.GetGraphic(PopulationAdapter),
 					UtilitiesUI.GetGraphic(DensityAdapter),
 				};
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -224,17 +228,26 @@
 			}
 		}
 
+		/// <inheritdoc/>
+		public override void SetThemeImagesPropertiesOwner(Component owner)
+		{
+			base.SetThemeImagesPropertiesOwner(owner);
+
+			UIThemes.Utilities.SetTargetOwner(typeof(Sprite), Icon, nameof(Icon.sprite), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Icon, nameof(Icon.color), owner);
+		}
+
 		/// <summary>
 		/// Upgrade this instance.
 		/// </summary>
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Name, ref NameAdapter);
-			Utilities.GetOrAddComponent(Capital, ref CapitalAdapter);
-			Utilities.GetOrAddComponent(Area, ref AreaAdapter);
-			Utilities.GetOrAddComponent(Population, ref PopulationAdapter);
-			Utilities.GetOrAddComponent(Density, ref DensityAdapter);
+			Utilities.RequireComponent(Name, ref NameAdapter);
+			Utilities.RequireComponent(Capital, ref CapitalAdapter);
+			Utilities.RequireComponent(Area, ref AreaAdapter);
+			Utilities.RequireComponent(Population, ref PopulationAdapter);
+			Utilities.RequireComponent(Density, ref DensityAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

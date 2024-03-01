@@ -149,7 +149,7 @@
 				LayoutRebuilder.ForceRebuildLayoutImmediate(Block);
 				MaxSize = Block.rect.size;
 
-				BlockResizeListener = Utilities.GetOrAddComponent<ResizeListener>(Block);
+				BlockResizeListener = Utilities.RequireComponent<ResizeListener>(Block);
 				BlockResizeListener.OnResizeNextFrame.AddListener(BlockResize);
 
 				Layout = ScrollRect.content.GetComponent<EasyLayout>();

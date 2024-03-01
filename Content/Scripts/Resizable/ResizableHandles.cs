@@ -12,6 +12,7 @@
 	[DisallowMultipleComponent]
 	[RequireComponent(typeof(Resizable))]
 	[AddComponentMenu("UI/New UI Widgets/Interactions/Resizable Handles")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/resizable-handles.html")]
 	public class ResizableHandles : UIBehaviourConditional
 	{
 		/// <summary>
@@ -57,9 +58,9 @@
 				Handle = handle;
 				RectTransform = handle.transform as RectTransform;
 
-				Handle.OnDragStartEvent.AddListener(StartDrag);
-				Handle.OnDragEvent.AddListener(Drag);
-				Handle.OnDragEndEvent.AddListener(EndDrag);
+				Handle.OnBeginDragEvent.AddListener(OnBeginDrag);
+				Handle.OnDragEvent.AddListener(OnDrag);
+				Handle.OnEndDragEvent.AddListener(OnEndDrag);
 
 				Handle.OnSelectEvent.AddListener(owner.ShowHandles);
 				Handle.OnDeselectEvent.AddListener(owner.HideHandles);
@@ -69,9 +70,9 @@
 			/// Process begin drag event.
 			/// </summary>
 			/// <param name="eventData">Event data.</param>
-			protected virtual void StartDrag(PointerEventData eventData)
+			protected virtual void OnBeginDrag(PointerEventData eventData)
 			{
-				if (!Owner.IsActive())
+				if (!Owner.CanDrag(eventData))
 				{
 					return;
 				}
@@ -86,8 +87,13 @@
 			/// Process end drag event.
 			/// </summary>
 			/// <param name="eventData">Event data.</param>
-			protected virtual void EndDrag(PointerEventData eventData)
+			protected virtual void OnEndDrag(PointerEventData eventData)
 			{
+				if (!IsDrag)
+				{
+					return;
+				}
+
 				IsDrag = false;
 
 				Owner.OnEndResize.Invoke(Owner.Target);
@@ -97,17 +103,21 @@
 			/// Process drag event.
 			/// </summary>
 			/// <param name="eventData">Event data.</param>
-			protected virtual void Drag(PointerEventData eventData)
+			protected virtual void OnDrag(PointerEventData eventData)
 			{
 				if (!IsDrag)
 				{
 					return;
 				}
 
-				Vector2 current_point;
-				Vector2 original_point;
-				RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out current_point);
-				RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.pressPosition, eventData.pressEventCamera, out original_point);
+				if (!Owner.CanDrag(eventData))
+				{
+					OnEndDrag(eventData);
+					return;
+				}
+
+				RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out var current_point);
+				RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.pressPosition, eventData.pressEventCamera, out var original_point);
 
 				var delta = current_point - original_point;
 				Owner.Target.Resize(Regions, delta);
@@ -121,9 +131,9 @@
 			{
 				if (Handle != null)
 				{
-					Handle.OnDragStartEvent.RemoveListener(StartDrag);
-					Handle.OnDragEvent.RemoveListener(Drag);
-					Handle.OnDragEndEvent.RemoveListener(EndDrag);
+					Handle.OnBeginDragEvent.RemoveListener(OnBeginDrag);
+					Handle.OnDragEvent.RemoveListener(OnDrag);
+					Handle.OnEndDragEvent.RemoveListener(OnEndDrag);
 
 					Handle.OnSelectEvent.RemoveListener(Owner.ShowHandles);
 					Handle.OnDeselectEvent.RemoveListener(Owner.HideHandles);
@@ -214,6 +224,16 @@
 		public override bool IsActive()
 		{
 			return base.IsActive() && GroupsAllowInteraction && Interactable;
+		}
+
+		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return IsActive() && (eventData.button == DragButton);
 		}
 
 		/// <summary>
@@ -502,6 +522,12 @@
 		/// </summary>
 		protected SelectListener TargetFocusListener;
 
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
+
 		bool isInited;
 
 		/// <summary>
@@ -531,7 +557,8 @@
 		/// <summary>
 		/// Show Rotatable handle only if target (or one of handles) is selected.
 		/// </summary>
-		public static Func<ResizableHandles, BaseEventData, bool, bool> ShowHandlesOnSelect = (resizableHandles, eventData, select) =>
+		[DomainReloadExclude]
+		public static readonly Func<ResizableHandles, BaseEventData, bool, bool> ShowHandlesOnSelect = (resizableHandles, eventData, select) =>
 		{
 			if (select)
 			{
@@ -625,7 +652,7 @@
 				TargetFocusListener.onDeselect.RemoveListener(HideHandles);
 			}
 
-			TargetFocusListener = Utilities.GetOrAddComponent<SelectListener>(resizable.Target);
+			TargetFocusListener = Utilities.RequireComponent<SelectListener>(resizable.Target);
 			TargetFocusListener.onSelect.AddListener(ShowHandles);
 			TargetFocusListener.onDeselect.AddListener(HideHandles);
 			ToggleHandles();

@@ -1,11 +1,13 @@
 ﻿namespace UIWidgets
 {
 	using UnityEngine;
+	using UnityEngine.Serialization;
 	using UnityEngine.UI;
 
 	/// <summary>
 	/// Rating star.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/rating.html")]
 	public class RatingStar : MonoBehaviour
 	{
 		/// <summary>
@@ -53,7 +55,19 @@
 		/// Graphic.
 		/// </summary>
 		[SerializeField]
-		protected Graphic Graphic;
+		[FormerlySerializedAs("Graphic")]
+		protected Graphic graphic;
+
+		/// <summary>
+		/// Graphic.
+		/// </summary>
+		public Graphic Graphic
+		{
+			get
+			{
+				return graphic;
+			}
+		}
 
 		/// <summary>
 		/// Button.
@@ -121,9 +135,9 @@
 		/// </summary>
 		protected virtual void OnValidate()
 		{
-			if (Graphic == null)
+			if (graphic == null)
 			{
-				Graphic = GetComponentInChildren<Graphic>();
+				graphic = GetComponentInChildren<Graphic>();
 			}
 
 			if (Button == null)

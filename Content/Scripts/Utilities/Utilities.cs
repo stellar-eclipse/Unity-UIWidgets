@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 	using UnityEngine.UI;
 
@@ -87,10 +88,23 @@
 		/// <summary>
 		/// Get or add component.
 		/// </summary>
-		/// <returns>Component.</returns>
-		/// <param name="obj">Object.</param>
 		/// <typeparam name="T">Component type.</typeparam>
+		/// <param name="obj">Object.</param>
+		/// <returns>Component.</returns>
+		[Obsolete("Renamed to RequireComponent().")]
 		public static T GetOrAddComponent<T>(Component obj)
+			where T : Component
+		{
+			return RequireComponent<T>(obj);
+		}
+
+		/// <summary>
+		/// Get or add component.
+		/// </summary>
+		/// <typeparam name="T">Component type.</typeparam>
+		/// <param name="obj">Object.</param>
+		/// <returns>Component.</returns>
+		public static T RequireComponent<T>(Component obj)
 			where T : Component
 		{
 			var component = obj.GetComponent<T>();
@@ -105,10 +119,23 @@
 		/// <summary>
 		/// Get or add component.
 		/// </summary>
-		/// <returns>Component.</returns>
-		/// <param name="obj">Object.</param>
 		/// <typeparam name="T">Component type.</typeparam>
+		/// <param name="obj">Object.</param>
+		/// <returns>Component.</returns>
+		[Obsolete("Renamed to RequireComponent().")]
 		public static T GetOrAddComponent<T>(GameObject obj)
+			where T : Component
+		{
+			return RequireComponent<T>(obj);
+		}
+
+		/// <summary>
+		/// Get or add component.
+		/// </summary>
+		/// <typeparam name="T">Component type.</typeparam>
+		/// <param name="obj">Object.</param>
+		/// <returns>Component.</returns>
+		public static T RequireComponent<T>(GameObject obj)
 			where T : Component
 		{
 			var component = obj.GetComponent<T>();
@@ -126,7 +153,20 @@
 		/// <param name="source">Source component.</param>
 		/// <param name="target">Target component.</param>
 		/// <typeparam name="T">Component type.</typeparam>
+		[Obsolete("Renamed to RequireComponent().")]
 		public static void GetOrAddComponent<T>(Component source, ref T target)
+			where T : Component
+		{
+			RequireComponent(source, ref target);
+		}
+
+		/// <summary>
+		/// Get or add component.
+		/// </summary>
+		/// <param name="source">Source component.</param>
+		/// <param name="target">Target component.</param>
+		/// <typeparam name="T">Component type.</typeparam>
+		public static void RequireComponent<T>(Component source, ref T target)
 			where T : Component
 		{
 			if ((target != null) || (source == null))
@@ -134,7 +174,7 @@
 				return;
 			}
 
-			target = GetOrAddComponent<T>(source);
+			target = RequireComponent<T>(source);
 
 #if UNITY_EDITOR
 			Compatibility.MarkDirty(source);
@@ -167,11 +207,30 @@
 
 			var rectTransform = instance.transform as RectTransform;
 
-			rectTransform.localPosition = defaultRectTransform.localPosition;
-			rectTransform.localRotation = defaultRectTransform.localRotation;
-			rectTransform.localScale = defaultRectTransform.localScale;
-			rectTransform.anchoredPosition = defaultRectTransform.anchoredPosition;
-			rectTransform.sizeDelta = defaultRectTransform.sizeDelta;
+			if (rectTransform.localPosition != defaultRectTransform.localPosition)
+			{
+				rectTransform.localPosition = defaultRectTransform.localPosition;
+			}
+
+			if (rectTransform.localRotation != defaultRectTransform.localRotation)
+			{
+				rectTransform.localRotation = defaultRectTransform.localRotation;
+			}
+
+			if (rectTransform.localScale != defaultRectTransform.localScale)
+			{
+				rectTransform.localScale = defaultRectTransform.localScale;
+			}
+
+			if (rectTransform.anchoredPosition != defaultRectTransform.anchoredPosition)
+			{
+				rectTransform.anchoredPosition = defaultRectTransform.anchoredPosition;
+			}
+
+			if (rectTransform.sizeDelta != defaultRectTransform.sizeDelta)
+			{
+				rectTransform.sizeDelta = defaultRectTransform.sizeDelta;
+			}
 		}
 
 		/// <summary>
@@ -318,7 +377,7 @@
 		[Obsolete("Replaced with UtilitiesRectTransform.GetTopLeftCornerGlobalPosition()")]
 		public static Vector2 GetTopLeftCornerGlobalPosition(RectTransform target)
 		{
-			return UtilitiesRectTransform.GetTopLeftCornerGlobalPosition(target);
+			return UtilitiesRectTransform.GetTopLeftCornerGlobalPosition(target, null);
 		}
 
 		/// <summary>
@@ -364,6 +423,7 @@
 		/// Can be replaced with custom function.
 		/// </summary>
 		[Obsolete("Replaced with UtilitiesTime.GetTime().")]
+		[DomainReloadExclude]
 		public static readonly Func<bool, float> GetTime = UtilitiesTime.DefaultGetTime;
 
 		/// <summary>
@@ -371,6 +431,7 @@
 		/// Can be replaced with custom function.
 		/// </summary>
 		[Obsolete("Replaced with UtilitiesTime.GetTime(true)")]
+		[DomainReloadExclude]
 		public static readonly Func<float> GetUnscaledTime = UtilitiesTime.DefaultGetUnscaledTime;
 
 		/// <summary>
@@ -378,6 +439,7 @@
 		/// Can be replaced with custom function.
 		/// </summary>
 		[Obsolete("Replaced with UtilitiesTime.GetDeltaTime().")]
+		[DomainReloadExclude]
 		public static readonly Func<bool, float> GetDeltaTime = UtilitiesTime.DefaultGetDeltaTime;
 
 		/// <summary>
@@ -515,10 +577,10 @@
 		/// <param name="prefab">Prefab.</param>
 		/// <param name="undo">Support editor undo.</param>
 		/// <returns>Created gameobject.</returns>
-		[Obsolete("Replaced with UtilitiesEditor.CreateGameObject().")]
+		[Obsolete("Replaced with Widgets.CreateGameObject().")]
 		public static GameObject CreateGameObject(GameObject prefab, bool undo = true)
 		{
-			return UtilitiesEditor.CreateGameObject(prefab, undo);
+			return null;
 		}
 
 		/// <summary>
@@ -608,10 +670,10 @@
 		/// </summary>
 		/// <param name="templateLabel">Template label.</param>
 		/// <returns>Widget template.</returns>
-		[Obsolete("Replaced with UtilitiesEditor.CreateWidgetTemplateFromAsset().")]
+		[Obsolete("Replaced with Widgets.CreateTemplateFromAsset().")]
 		public static GameObject CreateWidgetTemplateFromAsset(string templateLabel)
 		{
-			return UtilitiesEditor.CreateWidgetTemplateFromAsset(templateLabel);
+			return null;
 		}
 
 		/// <summary>
@@ -621,10 +683,10 @@
 		/// <param name="applyStyle">Apply style to created widget.</param>
 		/// <param name="converter">Converter for the created widget (mostly used to replace Unity Text with TMPro Text).</param>
 		/// <returns>Created GameObject.</returns>
-		[Obsolete("Replaced with UtilitiesEditor.CreateWidgetFromAsset().")]
+		[Obsolete("Replaced with Widgets.CreateFromAsset().")]
 		public static GameObject CreateWidgetFromAsset(string widget, bool applyStyle = true, Action<GameObject> converter = null)
 		{
-			return UtilitiesEditor.CreateWidgetFromAsset(widget, applyStyle, converter);
+			return null;
 		}
 
 		/// <summary>
@@ -634,30 +696,29 @@
 		/// <param name="applyStyle">Apply style to created widget.</param>
 		/// <param name="converter">Converter for the created widget (mostly used to replace Unity Text with TMPro Text).</param>
 		/// <returns>Created GameObject.</returns>
-		[Obsolete("Replaced with UtilitiesEditor.CreateWidgetFromPrefab().")]
+		[Obsolete("Replaced with Widgets.CreateFromPrefab().")]
 		public static GameObject CreateWidgetFromPrefab(GameObject prefab, bool applyStyle = true, Action<GameObject> converter = null)
 		{
-			return UtilitiesEditor.CreateWidgetFromPrefab(prefab, applyStyle, converter);
+			return null;
 		}
 
 		/// <summary>
 		/// Replace Close button callback on Cancel instead of the Hide for the Dialog components in the specified GameObject.
 		/// </summary>
 		/// <param name="go">GameObject.</param>
-		[Obsolete("Replaced with UtilitiesEditor.FixDialogCloseButton().")]
+		[Obsolete("Replaced with Widgets.FixDialogCloseButton().")]
 		public static void FixDialogCloseButton(GameObject go)
 		{
-			UtilitiesEditor.FixDialogCloseButton(go);
 		}
 
 		/// <summary>
 		/// Gets the canvas transform.
 		/// </summary>
 		/// <returns>The canvas transform.</returns>
-		[Obsolete("Replaced with UtilitiesEditor.GetCanvasTransform().")]
+		[Obsolete("Replaced with Widgets.GetCanvasTransform().")]
 		public static Transform GetCanvasTransform()
 		{
-			return UtilitiesEditor.GetCanvasTransform();
+			return null;
 		}
 
 		/// <summary>

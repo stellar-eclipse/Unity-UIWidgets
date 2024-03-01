@@ -50,9 +50,12 @@
 		/// </summary>
 		public void ToggleDirection()
 		{
+			Tiles.ScrollTo(0);
+
 			if (ListViewPaginator != null)
 			{
 				ListViewPaginator.StopAnimation();
+				ListViewPaginator.PerPage = (Tiles.Direction == ListViewDirection.Horizontal) ? 3 : 2;
 			}
 
 			if (Tiles.Direction == ListViewDirection.Horizontal)

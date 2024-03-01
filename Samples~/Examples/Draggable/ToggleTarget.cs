@@ -37,7 +37,7 @@
 					return;
 				}
 
-				var listener = Utilities.GetOrAddComponent<SelectListener>(s);
+				var listener = Utilities.RequireComponent<SelectListener>(s);
 				listener.onSelect.AddListener(SetTarget);
 			}
 		}

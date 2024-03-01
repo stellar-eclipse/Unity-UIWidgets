@@ -90,6 +90,13 @@ namespace UIWidgets
 		DragSupportHandle handle;
 
 		/// <summary>
+		/// Select this gameobject by EventSystem on start drag.
+		/// </summary>
+		[SerializeField]
+		[Tooltip("Select this gameobject by EventSystem on start drag.")]
+		public bool EventSystemSelect = true;
+
+		/// <summary>
 		/// Drag handle.
 		/// </summary>
 		public DragSupportHandle Handle
@@ -111,7 +118,7 @@ namespace UIWidgets
 
 				handle = (value != null)
 					? value
-					: Utilities.GetOrAddComponent<DragSupportHandle>(this);
+					: Utilities.RequireComponent<DragSupportHandle>(this);
 
 				if (handle != null)
 				{
@@ -139,6 +146,12 @@ namespace UIWidgets
 				Handle = value;
 			}
 		}
+
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
 
 		/// <summary>
 		/// Event on start drag.
@@ -230,7 +243,7 @@ namespace UIWidgets
 		/// <param name="eventData">Current event data.</param>
 		public virtual bool CanDrag(PointerEventData eventData)
 		{
-			return AllowDrag;
+			return AllowDrag && (eventData.button == DragButton);
 		}
 
 		/// <summary>
@@ -245,7 +258,7 @@ namespace UIWidgets
 		/// <param name="success"><c>true</c> if Drop component received data; otherwise, <c>false</c>.</param>
 		public virtual void Dropped(bool success)
 		{
-			Data = default(TItem);
+			Data = default;
 		}
 
 		/// <summary>
@@ -254,6 +267,11 @@ namespace UIWidgets
 		/// <param name="eventData">Current event data.</param>
 		protected virtual void OnInitializePotentialDrag(PointerEventData eventData)
 		{
+			if (!CanDrag(eventData))
+			{
+				return;
+			}
+
 			SetTarget(null, eventData);
 		}
 
@@ -263,17 +281,23 @@ namespace UIWidgets
 		/// <param name="eventData">Current event data.</param>
 		protected virtual void OnBeginDrag(PointerEventData eventData)
 		{
-			if (CanDrag(eventData))
+			if (!CanDrag(eventData))
 			{
-				StartDragEvent.Invoke();
-
-				EventSystem.current.SetSelectedGameObject(gameObject);
-				IsDragged = true;
-				InitDrag(eventData);
-
-				FillRaycasts(eventData, RaycastResults);
-				FindCurrentTarget(eventData, RaycastResults);
+				return;
 			}
+
+			StartDragEvent.Invoke();
+
+			if (EventSystemSelect)
+			{
+				EventSystem.current.SetSelectedGameObject(gameObject);
+			}
+
+			IsDragged = true;
+			InitDrag(eventData);
+
+			FillRaycasts(eventData, RaycastResults);
+			FindCurrentTarget(eventData, RaycastResults);
 		}
 
 		/// <summary>
@@ -310,7 +334,7 @@ namespace UIWidgets
 				return UICursor.Cursors.Allowed;
 			}
 
-			return default(Cursors.Cursor);
+			return default;
 		}
 
 		/// <summary>
@@ -329,7 +353,7 @@ namespace UIWidgets
 				return UICursor.Cursors.Denied;
 			}
 
-			return default(Cursors.Cursor);
+			return default;
 		}
 
 		/// <summary>
@@ -343,14 +367,16 @@ namespace UIWidgets
 				return;
 			}
 
+			if (!CanDrag(eventData))
+			{
+				OnEndDrag(eventData);
+				return;
+			}
+
 			FillRaycasts(eventData, RaycastResults);
 			FindCurrentTarget(eventData, RaycastResults);
 
-			Vector2 point;
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(ParentCanvas as RectTransform, eventData.position, eventData.pressEventCamera, out point))
-			{
-				return;
-			}
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(ParentCanvas as RectTransform, eventData.position, eventData.pressEventCamera, out var point);
 
 			DragPoint.localPosition = point;
 
@@ -425,7 +451,7 @@ namespace UIWidgets
 		/// <summary>
 		/// Finds the auto-scroll target.
 		/// </summary>
-		/// <returns>The auto-scroll  target.</returns>
+		/// <returns>The auto-scroll target.</returns>
 		/// <param name="eventData">Event data.</param>
 		/// <param name="raycasts">Raycast results.</param>
 		protected virtual IAutoScroll FindAutoScrollTarget(PointerEventData eventData, List<RaycastResult> raycasts)

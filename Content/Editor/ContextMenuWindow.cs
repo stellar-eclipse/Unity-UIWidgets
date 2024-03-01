@@ -232,8 +232,8 @@ namespace UIWidgets
 			var start = fields.UpdatePosition(position.x, 0, position, this);
 
 			var action_position = new Rect(start, position.y, ActionWidth, position.height);
-			start = action_position.xMax + Spacing;
 
+			// start = action_position.xMax + Spacing;
 			fields.ShowLabels(LabelStyle);
 
 			EditorGUI.LabelField(action_position, new GUIContent("OnClick", "OnClick"), LabelStyle);
@@ -262,7 +262,7 @@ namespace UIWidgets
 			var action_position = new Rect(x, position.y, ActionWidth, position.height);
 			x = action_position.xMax;
 
-			x = ListButtons.UpdatePosition(x, position, Spacing);
+			ListButtons.UpdatePosition(x, position, Spacing);
 			ListButtons.UpdateEnabled(depth.intValue, index, result.Depth, List.arraySize);
 
 			GUILayout.Space((DepthIndent * depth.intValue) + Spacing);
@@ -272,7 +272,9 @@ namespace UIWidgets
 			GUILayout.Space(fields.Width(Spacing));
 
 			var options = new GUILayoutOption[] { GUILayout.Width(ActionWidth), GUILayout.Height(info.Height) };
-			if (GUILayout.Button(show_action.boolValue ? "Hide Action" : "Show Action", options))
+			var calls = action.FindPropertyRelative("m_PersistentCalls").FindPropertyRelative("m_Calls");
+			var label = show_action.boolValue ? "Hide Actions ({0})" : "Show Actions ({0})";
+			if (GUILayout.Button(string.Format(label, calls.arraySize.ToString()), options))
 			{
 				show_action.boolValue = !show_action.boolValue;
 			}

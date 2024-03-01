@@ -72,6 +72,7 @@
 	/// <typeparam name="TValue">Type of value.</typeparam>
 	/// <typeparam name="TListViewComponent">Type of ListView.DefaultItem.</typeparam>
 	/// <typeparam name="TListView">Type of ListView.</typeparam>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/autocomplete.html")]
 	public abstract class AutocompleteCustom<TValue, TListViewComponent, TListView> : MonoBehaviour, IStylable, IUpgradeable, IUpdatable, ILateUpdatable
 		where TListView : ListViewCustom<TListViewComponent, TValue>
 		where TListViewComponent : ListViewItem
@@ -110,13 +111,7 @@
 			/// <summary>
 			/// Tags length before caret.
 			/// </summary>
-			public int CaretDelta
-			{
-				get
-				{
-					return CaretPositionWithTags - CaretPosition;
-				}
-			}
+			public readonly int CaretDelta => CaretPositionWithTags - CaretPosition;
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="ParsedInput"/> struct.
@@ -132,7 +127,7 @@
 				CaretPositionWithTags = caretPosition;
 			}
 
-			int TagEnd(string input, int start)
+			readonly int TagEnd(string input, int start)
 			{
 				var tag_end = '>';
 				var quote_symbol = '"';
@@ -232,6 +227,14 @@
 		}
 
 		/// <summary>
+		/// Autocomplete event.
+		/// </summary>
+		[Serializable]
+		public class AutocompleteEvent : UnityEvent<AutocompleteCustom<TValue, TListViewComponent, TListView>>
+		{
+		}
+
+		/// <summary>
 		/// InputField for autocomplete.
 		/// </summary>
 		[SerializeField]
@@ -255,7 +258,7 @@
 			{
 				inputField = value;
 				inputFieldAdapter = null;
-				Utilities.GetOrAddComponent(inputField, ref inputFieldAdapter);
+				Utilities.RequireComponent(inputField, ref inputFieldAdapter);
 				InitInputField();
 			}
 		}
@@ -289,25 +292,13 @@
 		/// </summary>
 		[Obsolete("Replaced with InputFieldAdapter")]
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Obsolete.")]
-		protected IInputFieldProxy inputFieldProxy
-		{
-			get
-			{
-				return inputFieldAdapter;
-			}
-		}
+		protected IInputFieldProxy inputFieldProxy => inputFieldAdapter;
 
 		/// <summary>
 		/// Gets the InputFieldProxy.
 		/// </summary>
 		[Obsolete("Replaced with InputFieldAdapter")]
-		public virtual IInputFieldProxy InputFieldProxy
-		{
-			get
-			{
-				return inputFieldAdapter;
-			}
-		}
+		public virtual IInputFieldProxy InputFieldProxy => inputFieldAdapter;
 
 		/// <summary>
 		/// ListView to display available values.
@@ -468,6 +459,15 @@
 		public RectTransform ParentCanvas;
 
 		/// <summary>
+		/// Is options open?
+		/// </summary>
+		public bool IsOptionsOpen
+		{
+			get;
+			protected set;
+		}
+
+		/// <summary>
 		/// To keep DisplayListView position if InputField inside scrollable area.
 		/// </summary>
 		protected Vector2 DisplayListViewAnchoredPosition;
@@ -516,6 +516,16 @@
 		/// Search completed event.
 		/// </summary>
 		public UnityEvent OnSearchCompleted = new UnityEvent();
+
+		/// <summary>
+		/// Show options event.
+		/// </summary>
+		public AutocompleteEvent OnShowOptions = new AutocompleteEvent();
+
+		/// <summary>
+		/// Hide options event.
+		/// </summary>
+		public AutocompleteEvent OnHideOptions = new AutocompleteEvent();
 
 		/// <summary>
 		/// Allow cancel on deselect event.
@@ -633,7 +643,7 @@
 			InputFieldAdapter.onValueChanged.AddListener(ApplyFilter);
 			InputFieldAdapter.onEndEdit.AddListener(CheckCancel);
 
-			var inputListener = Utilities.GetOrAddComponent<InputFieldListener>(InputFieldAdapter.gameObject);
+			var inputListener = Utilities.RequireComponent<InputFieldListener>(InputFieldAdapter.gameObject);
 			inputListener.OnMoveEvent.AddListener(SelectResult);
 			inputListener.OnSubmitEvent.AddListener(SubmitResult);
 			inputListener.onDeselect.AddListener(InputDeselected);
@@ -668,9 +678,7 @@
 		/// <param name="eventData">Event data.</param>
 		protected virtual void InputDeselected(BaseEventData eventData)
 		{
-			var ev = eventData as PointerEventData;
-
-			AllowItemSelectionEvent = (ev != null)
+			AllowItemSelectionEvent = (eventData is PointerEventData ev)
 				&& (ev.pointerCurrentRaycast.gameObject != null)
 				&& ev.pointerCurrentRaycast.gameObject.transform.IsChildOf(DisplayListView.transform);
 
@@ -692,6 +700,11 @@
 		/// <param name="component">Component.</param>
 		protected virtual void ItemSelected(int index, ListViewItem component)
 		{
+			if (!IsOptionsOpen)
+			{
+				return;
+			}
+
 			if (AllowItemSelectionEvent)
 			{
 				AllowItemSelectionEvent = false;
@@ -702,20 +715,15 @@
 		/// <summary>
 		/// Closes the options.
 		/// </summary>
-		/// <param name="input">Input.</param>
-		protected virtual void HideOptions(string input)
-		{
-			HideOptions();
-		}
-
-		/// <summary>
-		/// Closes the options.
-		/// </summary>
 		protected virtual void HideOptions()
 		{
+			IsOptionsOpen = false;
+
 			ModalHelper.Close(ref ModalKey);
 			DisplayListViewPosition.Restore();
 			DisplayListView.gameObject.SetActive(false);
+
+			OnHideOptions.Invoke(this);
 		}
 
 		/// <summary>
@@ -745,9 +753,25 @@
 		/// </summary>
 		protected virtual void ShowOptions()
 		{
+			if (IsOptionsOpen)
+			{
+				return;
+			}
+
+			IsOptionsOpen = true;
+
+			var parent = transform.parent;
+			var lv_transform = DisplayListView.transform;
+			if (parent != lv_transform.parent)
+			{
+				lv_transform.SetParent(parent, false);
+			}
+
+			OnShowOptions.Invoke(this);
+
 			if (ParentCanvas == null)
 			{
-				ParentCanvas = UtilitiesUI.FindTopmostCanvas(DisplayListView.transform);
+				ParentCanvas = UtilitiesUI.FindTopmostCanvas(lv_transform);
 			}
 
 			if (!ModalKey.HasValue)
@@ -757,7 +781,7 @@
 
 			if (ParentCanvas != null)
 			{
-				DisplayListViewPosition = HierarchyPosition.SetParent(DisplayListView.transform, ParentCanvas);
+				DisplayListViewPosition = HierarchyPosition.SetParent(lv_transform, ParentCanvas);
 			}
 
 			DisplayListView.gameObject.SetActive(true);
@@ -846,11 +870,6 @@
 		/// <param name="skipIfSame">Check if InputField has focus?</param>
 		protected virtual void ApplyFilter(string input, bool skipIfSame)
 		{
-			if (SearchCoroutine != null)
-			{
-				StopCoroutine(SearchCoroutine);
-			}
-
 			if (EventSystem.current.currentSelectedGameObject != InputFieldAdapter.gameObject)
 			{
 				return;
@@ -865,6 +884,8 @@
 
 			PrevQuery = Query.Value;
 
+			SearchCancel();
+
 			if (Query.Value.Length < MinLength)
 			{
 				DisplayListView.DataSource.Clear();
@@ -875,8 +896,27 @@
 			DisplayListView.Init();
 			DisplayListView.MultipleSelect = false;
 
+			SearchStart();
+		}
+
+		/// <summary>
+		/// Start search.
+		/// </summary>
+		protected virtual void SearchStart()
+		{
 			SearchCoroutine = Search();
 			StartCoroutine(SearchCoroutine);
+		}
+
+		/// <summary>
+		/// Cancel search.
+		/// </summary>
+		protected virtual void SearchCancel()
+		{
+			if (SearchCoroutine != null)
+			{
+				StopCoroutine(SearchCoroutine);
+			}
 		}
 
 		/// <summary>
@@ -895,6 +935,15 @@
 			DisplayListView.DataSource.Clear();
 			DisplayListView.DataSource.AddRange(GetResults());
 			DisplayListView.DataSource.EndUpdate();
+
+			SearchCompleted();
+		}
+
+		/// <summary>
+		/// Search completed.
+		/// </summary>
+		protected virtual void SearchCompleted()
+		{
 			OnSearchCompleted.Invoke();
 
 			if (DisplayListView.DataSource.Count > 0)
@@ -1020,6 +1069,11 @@
 		/// <param name="isEnter">Is Enter pressed?</param>
 		protected virtual void SubmitResult(BaseEventData eventData, bool isEnter)
 		{
+			if (eventData != null)
+			{
+				eventData.Use();
+			}
+
 			if (DisplayListView.SelectedIndex == -1)
 			{
 				OnItemNotFound.Invoke(InputFieldAdapter.text);
@@ -1093,7 +1147,7 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0618
-			Utilities.GetOrAddComponent(InputField, ref inputFieldAdapter);
+			Utilities.RequireComponent(InputField, ref inputFieldAdapter);
 #pragma warning restore 0618
 		}
 
@@ -1129,6 +1183,8 @@
 		/// </summary>
 		protected virtual void OnDestroy()
 		{
+			DisplayListViewPosition.ParentDestroyed();
+
 			Localization.OnLocaleChanged -= LocaleChanged;
 
 			if (DisplayListView != null)

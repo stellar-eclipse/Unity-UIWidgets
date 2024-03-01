@@ -100,11 +100,7 @@
 		/// <returns>Order.</returns>
 		protected virtual int GetOrder(PointerEventData eventData)
 		{
-			Vector2 point;
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(transform as RectTransform, eventData.position, eventData.pressEventCamera, out point))
-			{
-				return 0;
-			}
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(transform as RectTransform, eventData.position, eventData.pressEventCamera, out var point);
 
 			var line = (-point.y) / (Owner.DefaultItemSize.y + Owner.ItemsSpacing);
 

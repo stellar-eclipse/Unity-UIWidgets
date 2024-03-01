@@ -1,7 +1,8 @@
-﻿namespace UIWidgets.Styles
+namespace UIWidgets.Styles
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 #if UNITY_EDITOR
 	using UnityEditor;
 #endif
@@ -320,29 +321,26 @@
 		[SerializeField]
 		public StyleDropdown Dropdown;
 
-		static bool NoTMProSupport(StyleText style, GameObject go)
-		{
-			return false;
-		}
-
 		/// <summary>
 		/// The function to process TMPro gameobject.
 		/// </summary>
+		[DomainReloadExclude]
 		public static readonly Func<StyleText, GameObject, bool> TMProSupport =
 			#if UIWIDGETS_TMPRO_SUPPORT
 			UIWidgets.TMProSupport.StyleTMPro.ApplyTo;
 			#else
-			NoTMProSupport;
+			(style, go) => false;
 			#endif
 
 		/// <summary>
 		/// The function to process TMPro gameobject.
 		/// </summary>
+		[DomainReloadExclude]
 		public static readonly Func<StyleText, GameObject, bool> TMProSupportGetFrom =
 			#if UIWIDGETS_TMPRO_SUPPORT
 			UIWidgets.TMProSupport.StyleTMPro.GetFrom;
 			#else
-			NoTMProSupport;
+			(style, go) => false;
 			#endif
 
 		#region ApplyTo
@@ -356,6 +354,8 @@
 		{
 			var applied_for_children = false;
 			Text.ApplyTo(component as Text);
+			TMProSupport(Text, component.gameObject);
+
 			applied_for_children |= ApplyTo(component as Scrollbar);
 			applied_for_children |= ApplyTo(component as InputField);
 			applied_for_children |= ApplyTo(component as Button);
@@ -364,6 +364,9 @@
 			ApplyTo(component as Canvas);
 #if UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER
 			applied_for_children |= ApplyTo(component as Dropdown);
+#endif
+#if UIWIDGETS_TMPRO_SUPPORT && (UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER)
+			applied_for_children |= ApplyTo(component as TMPro.TMP_InputField);
 #endif
 
 			return applied_for_children;
@@ -450,6 +453,25 @@
 
 			return true;
 		}
+
+#if UIWIDGETS_TMPRO_SUPPORT && (UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER)
+		/// <summary>
+		/// Apply style for the TMPro InputField.
+		/// </summary>
+		/// <returns><c>true</c>, if style was applied for children gameobjects, <c>false</c> otherwise.</returns>
+		/// <param name="component">Component.</param>
+		protected virtual bool ApplyTo(TMPro.TMP_InputField component)
+		{
+			if (component == null)
+			{
+				return false;
+			}
+
+			InputField.ApplyTo(component);
+
+			return true;
+		}
+#endif
 
 		/// <summary>
 		/// Apply style for the button.
@@ -899,10 +921,13 @@
 				return;
 			}
 
-			CircularSlider = new StyleCircularSlider();
-			CircularSlider.Ring = new StyleImage();
-			CircularSlider.Handle = new StyleImage();
-			CircularSlider.Arrow = new StyleImage();
+			CircularSlider = new StyleCircularSlider
+			{
+				Ring = new StyleImage(),
+				Handle = new StyleImage(),
+				Arrow = new StyleImage(),
+			};
+
 			#if UNITY_EDITOR
 			CircularSlider.SetDefaultValues();
 			#endif
@@ -919,10 +944,13 @@
 				return;
 			}
 
-			Scale = new StyleScale();
-			Scale.MainLine = new StyleImage();
-			Scale.MarkLine = new StyleImage();
-			Scale.MarkLabel = new StyleText();
+			Scale = new StyleScale
+			{
+				MainLine = new StyleImage(),
+				MarkLine = new StyleImage(),
+				MarkLabel = new StyleText(),
+			};
+
 			#if UNITY_EDITOR
 			Scale.SetDefaultValues();
 			#endif

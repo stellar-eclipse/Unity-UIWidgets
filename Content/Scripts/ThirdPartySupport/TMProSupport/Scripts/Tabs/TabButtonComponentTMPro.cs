@@ -8,6 +8,7 @@ namespace UIWidgets.TMProSupport
 	/// <summary>
 	/// Tab component.
 	/// </summary>
+	[System.Obsolete("Use TabButtonComponent with TextAdapter.")]
 	public class TabButtonComponentTMPro : TabButtonComponentBase
 	{
 		/// <summary>
@@ -24,7 +25,7 @@ namespace UIWidgets.TMProSupport
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Name, ref NameAdapter);
+			Utilities.RequireComponent(Name, ref NameAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

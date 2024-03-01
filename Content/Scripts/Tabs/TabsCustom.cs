@@ -14,6 +14,7 @@
 	/// </summary>
 	/// <typeparam name="TTab">Type of tab data.</typeparam>
 	/// <typeparam name="TButton">Type of tab button.</typeparam>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/containers/tabs.html")]
 	public class TabsCustom<TTab, TButton> : MonoBehaviour, IStylable<StyleTabs>
 		where TTab : Tab
 		where TButton : TabButton<TTab>
@@ -35,13 +36,7 @@
 			/// <summary>
 			/// Default button.
 			/// </summary>
-			public TButton DefaultButton
-			{
-				get
-				{
-					return defaultButton;
-				}
-			}
+			public TButton DefaultButton => defaultButton;
 
 			[SerializeField]
 			[FormerlySerializedAs("ActiveButton")]
@@ -50,13 +45,7 @@
 			/// <summary>
 			/// Active button.
 			/// </summary>
-			public TButton ActiveButton
-			{
-				get
-				{
-					return activeButton;
-				}
-			}
+			public TButton ActiveButton => activeButton;
 
 			[SerializeField]
 			[FormerlySerializedAs("Tab")]

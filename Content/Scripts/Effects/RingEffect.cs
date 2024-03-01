@@ -11,130 +11,49 @@ namespace UIWidgets
 	[RequireComponent(typeof(RectTransform))]
 	[RequireComponent(typeof(Graphic))]
 	[AddComponentMenu("UI/New UI Widgets/Effects/Ring Effect")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/effects/ring.html")]
 	public class RingEffect : UVEffect
 	{
 		/// <summary>
 		/// IDs of ring shader properties.
 		/// </summary>
-		protected struct RingShaderIDs : IEquatable<RingShaderIDs>
+		protected static class ShaderIDs
 		{
 			/// <summary>
 			/// Ring color ID.
 			/// </summary>
-			public readonly int RingColor;
+			[DomainReloadExclude]
+			public static readonly int RingColor = Shader.PropertyToID("_RingColor");
 
 			/// <summary>
 			/// Thickness ID.
 			/// </summary>
-			public readonly int Thickness;
+			[DomainReloadExclude]
+			public static readonly int Thickness = Shader.PropertyToID("_Thickness");
 
 			/// <summary>
 			/// Padding ID.
 			/// </summary>
-			public readonly int Padding;
+			[DomainReloadExclude]
+			public static readonly int Padding = Shader.PropertyToID("_Padding");
 
 			/// <summary>
 			/// Resolution ID.
 			/// </summary>
-			public readonly int Resolution;
+			[DomainReloadExclude]
+			public static readonly int Resolution = Shader.PropertyToID("_Resolution");
 
 			/// <summary>
 			/// Fill ID.
 			/// </summary>
-			public readonly int Fill;
+			[DomainReloadExclude]
+			public static readonly int Fill = Shader.PropertyToID("_Fill");
 
 			/// <summary>
 			/// Transparent ID.
 			/// </summary>
-			public readonly int Transparent;
-
-			private RingShaderIDs(int ringColor, int thickness, int padding, int resolution, int fill, int transparent)
-			{
-				RingColor = ringColor;
-				Thickness = thickness;
-				Padding = padding;
-				Resolution = resolution;
-				Fill = fill;
-				Transparent = transparent;
-			}
-
-			/// <summary>
-			/// Get RingShaderIDs instance.
-			/// </summary>
-			public static RingShaderIDs Instance
-			{
-				get
-				{
-					return new RingShaderIDs(
-						Shader.PropertyToID("_RingColor"),
-						Shader.PropertyToID("_Thickness"),
-						Shader.PropertyToID("_Padding"),
-						Shader.PropertyToID("_Resolution"),
-						Shader.PropertyToID("_Fill"),
-						Shader.PropertyToID("_Transparent"));
-				}
-			}
-
-			/// <summary>
-			/// Determines whether the specified object is equal to the current object.
-			/// </summary>
-			/// <param name="obj">The object to compare with the current object.</param>
-			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is RingShaderIDs)
-				{
-					return Equals((RingShaderIDs)obj);
-				}
-
-				return false;
-			}
-
-			/// <summary>
-			/// Determines whether the specified object is equal to the current object.
-			/// </summary>
-			/// <param name="other">The object to compare with the current object.</param>
-			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public bool Equals(RingShaderIDs other)
-			{
-				return RingColor == other.RingColor
-					&& Thickness == other.Thickness
-					&& Padding == other.Padding
-					&& Resolution == other.Resolution
-					&& Fill == other.Fill
-					&& Transparent == other.Transparent;
-			}
-
-			/// <summary>
-			/// Hash function.
-			/// </summary>
-			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
-			{
-				return RingColor ^ Thickness ^ Padding ^ Resolution ^ Fill ^ Transparent;
-			}
-
-			/// <summary>
-			/// Compare specified instances.
-			/// </summary>
-			/// <param name="left">Left instance.</param>
-			/// <param name="right">Right instances.</param>
-			/// <returns>true if the instances are equal; otherwise, false.</returns>
-			public static bool operator ==(RingShaderIDs left, RingShaderIDs right)
-			{
-				return left.Equals(right);
-			}
-
-			/// <summary>
-			/// Compare specified instances.
-			/// </summary>
-			/// <param name="left">Left instance.</param>
-			/// <param name="right">Right instances.</param>
-			/// <returns>true if the instances are now equal; otherwise, false.</returns>
-			public static bool operator !=(RingShaderIDs left, RingShaderIDs right)
-			{
-				return !left.Equals(right);
-			}
+			[DomainReloadExclude]
+			public static readonly int Transparent = Shader.PropertyToID("_Transparent");
 		}
 
 		[SerializeField]
@@ -240,11 +159,6 @@ namespace UIWidgets
 				UpdateMaterial();
 			}
 		}
-
-		/// <summary>
-		/// Ring shader ids.
-		/// </summary>
-		protected static RingShaderIDs ShaderIDs = RingShaderIDs.Instance;
 
 		/// <inheritdoc/>
 		protected override void OnEnable()

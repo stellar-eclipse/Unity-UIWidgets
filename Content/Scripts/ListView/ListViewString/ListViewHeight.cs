@@ -195,12 +195,8 @@
 			return Heights[item];
 		}
 
-		/// <summary>
-		/// Gets the item position.
-		/// </summary>
-		/// <returns>The item position.</returns>
-		/// <param name="index">Index.</param>
-		public override float GetItemPosition(int index)
+		/// <inheritdoc/>
+		public override float GetItemPosition(int index, bool clampPosition = true)
 		{
 			var height = 0f;
 			var n = Mathf.Min(index, DataSource.Count);
@@ -212,14 +208,10 @@
 			return height + (LayoutBridge.GetSpacing() * index);
 		}
 
-		/// <summary>
-		/// Gets the item position bottom.
-		/// </summary>
-		/// <returns>The item position bottom.</returns>
-		/// <param name="index">Index.</param>
-		public override float GetItemPositionBottom(int index)
+		/// <inheritdoc/>
+		public override float GetItemPositionBottom(int index, bool clampPosition = true)
 		{
-			return GetItemPosition(index) + GetItemHeight(DataSource[index]) + LayoutBridge.GetFullMargin() - GetScrollSize();
+			return GetItemPosition(index) + GetItemHeight(DataSource[index]) + LayoutBridge.GetMargin() - GetScrollSize();
 		}
 
 		/// <summary>

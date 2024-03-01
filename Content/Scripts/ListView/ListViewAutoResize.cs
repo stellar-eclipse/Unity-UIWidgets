@@ -9,6 +9,7 @@
 	/// Auto-resizes ListView or TileView according to item counts until specified maximum size reached.
 	/// </summary>
 	[RequireComponent(typeof(ListViewBase))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/collections/listviewautoresize.html")]
 	public class ListViewAutoResize : MonoBehaviour, ILayoutElement
 	{
 		/// <summary>

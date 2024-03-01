@@ -136,8 +136,6 @@
 		[SerializeField]
 		protected ChatLineComponent OutgoingTemplate;
 
-		Selector ChatTemplateSelector;
-
 		bool isInited;
 
 		/// <summary>
@@ -152,14 +150,6 @@
 
 			isInited = true;
 
-			ChatTemplateSelector = new Selector()
-			{
-				IncomingTemplate = IncomingTemplate,
-				OutgoingTemplate = OutgoingTemplate,
-			};
-
-			TemplateSelector = ChatTemplateSelector;
-
 			base.Init();
 
 			if (fullDataSource == null)
@@ -172,6 +162,16 @@
 			}
 		}
 		#endregion
+
+		/// <inheritdoc/>
+		protected override IListViewTemplateSelector<ChatLineComponent, ChatLine> CreateTemplateSelector()
+		{
+			return new Selector()
+			{
+				IncomingTemplate = IncomingTemplate,
+				OutgoingTemplate = OutgoingTemplate,
+			};
+		}
 
 		/// <summary>
 		/// Process the destroy event.

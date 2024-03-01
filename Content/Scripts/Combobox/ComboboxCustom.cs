@@ -15,6 +15,7 @@
 	/// <typeparam name="TListViewCustom">Type of ListView.</typeparam>
 	/// <typeparam name="TItemView">Type of ListView component.</typeparam>
 	/// <typeparam name="TItem">Type of ListView item.</typeparam>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/combobox.html")]
 	public class ComboboxCustom<TListViewCustom, TItemView, TItem> : MonoBehaviour, ISubmitHandler, IStylable
 			where TListViewCustom : ListViewCustom<TItemView, TItem>
 			where TItemView : ListViewItem
@@ -43,7 +44,9 @@
 
 			set
 			{
-				SetListView(value);
+				ListViewSubscribe();
+				listView = value;
+				ListViewUnsubscribe();
 			}
 		}
 
@@ -130,6 +133,12 @@
 		public bool HideAfterItemToggle = true;
 
 		/// <summary>
+		/// Hide ListView on Combobox submit.
+		/// </summary>
+		[SerializeField]
+		public bool ShowListViewOnSubmit = true;
+
+		/// <summary>
 		/// OnSelect event.
 		/// </summary>
 		[Obsolete("Use Combobox.ListView.OnSelect instead.")]
@@ -185,7 +194,9 @@
 
 			SetToggleButton(toggleButton);
 
-			SetListView(listView);
+			ListViewSubscribe();
+
+			Current.SetThemeImagesPropertiesOwner(this);
 
 			if (listView != null)
 			{
@@ -215,12 +226,21 @@
 					UpdateViewBase();
 				}
 
+				InitCustomWidgets();
+
 				listView.gameObject.SetActive(false);
 
 				listView.OnSelectInternal.AddListener(UpdateView);
 				listView.OnDeselectInternal.AddListener(UpdateView);
 				listView.OnUpdateView.AddListener(UpdateViewBase);
 			}
+		}
+
+		/// <summary>
+		/// Init custom widgets.
+		/// </summary>
+		protected virtual void InitCustomWidgets()
+		{
 		}
 
 		bool localeSubscription;
@@ -275,6 +295,7 @@
 			componentsCache.Clear();
 
 			current = newCurrent;
+			current.SetThemeImagesPropertiesOwner(this);
 			current.gameObject.SetActive(false);
 
 			CanSetData = current is IViewData<TItem>;
@@ -303,41 +324,66 @@
 		/// Sets the list view.
 		/// </summary>
 		/// <param name="value">Value.</param>
-		protected virtual void SetListView(TListViewCustom value)
+		/// <param name="isDestroying">Is destroying.</param>
+		protected virtual void SetListView(TListViewCustom value, bool isDestroying)
 		{
-			if (listView != null)
+			ListViewSubscribe();
+			listView = value;
+			ListViewUnsubscribe();
+		}
+
+		/// <summary>
+		/// Subscribe on ListView events.
+		/// </summary>
+		protected virtual void ListViewSubscribe()
+		{
+			if (listView == null)
+			{
+				return;
+			}
+
+			listView.KeepHighlight = false;
+
+			listView.OnSelectInternal.AddListener(UpdateView);
+			listView.OnDeselectInternal.AddListener(UpdateView);
+			listView.OnUpdateView.AddListener(UpdateViewBase);
+
+			listView.OnFocusOut.AddListener(OnFocusHideList);
+
+			listView.onCancel.AddListener(OnListViewCancel);
+			listView.InstancesEventsInternal.Cancel.AddListener(OnListViewCancel);
+			listView.InstancesEventsInternal.PointerUp.AddListener(OnListViewPointerUp);
+
+			AddDeselectCallbacks();
+		}
+
+		/// <summary>
+		/// Unsubscribe off ListView events.
+		/// </summary>
+		/// <param name="restorePosition">Restore position.</param>
+		protected virtual void ListViewUnsubscribe(bool restorePosition = true)
+		{
+			if (listView == null)
+			{
+				return;
+			}
+
+			if (restorePosition)
 			{
 				ListViewPosition.Restore();
-
-				listView.OnSelectInternal.RemoveListener(UpdateView);
-				listView.OnDeselectInternal.RemoveListener(UpdateView);
-				listView.OnUpdateView.RemoveListener(UpdateViewBase);
-
-				listView.OnFocusOut.RemoveListener(OnFocusHideList);
-
-				listView.onCancel.RemoveListener(OnListViewCancel);
-				listView.InstancesEventsInternal.Cancel.RemoveListener(OnListViewCancel);
-
-				RemoveDeselectCallbacks();
 			}
 
-			listView = value;
+			listView.OnSelectInternal.RemoveListener(UpdateView);
+			listView.OnDeselectInternal.RemoveListener(UpdateView);
+			listView.OnUpdateView.RemoveListener(UpdateViewBase);
 
-			if (listView != null)
-			{
-				listView.KeepHighlight = false;
+			listView.OnFocusOut.RemoveListener(OnFocusHideList);
 
-				listView.OnSelectInternal.AddListener(UpdateView);
-				listView.OnDeselectInternal.AddListener(UpdateView);
-				listView.OnUpdateView.AddListener(UpdateViewBase);
+			listView.onCancel.RemoveListener(OnListViewCancel);
+			listView.InstancesEventsInternal.Cancel.RemoveListener(OnListViewCancel);
+			listView.InstancesEventsInternal.PointerUp.RemoveListener(OnListViewPointerUp);
 
-				listView.OnFocusOut.AddListener(OnFocusHideList);
-
-				listView.onCancel.AddListener(OnListViewCancel);
-				listView.InstancesEventsInternal.Cancel.AddListener(OnListViewCancel);
-
-				AddDeselectCallbacks();
-			}
+			RemoveDeselectCallbacks();
 		}
 
 		/// <summary>
@@ -425,11 +471,17 @@
 
 			if (ParentCanvas != null)
 			{
-				ComboboxPosition = HierarchyPosition.SetParent(transform, ParentCanvas);
 				ListViewPosition = HierarchyPosition.SetParent(listView.transform, ParentCanvas);
+				ComboboxPosition = HierarchyPosition.SetParent(transform, ParentCanvas);
 			}
 
 			listView.gameObject.SetActive(true);
+
+			// prevent instant close of the ListView on first open, happens because of select/deselect events
+			if (!listView.gameObject.activeSelf)
+			{
+				listView.gameObject.SetActive(true);
+			}
 
 			if (listView.Layout != null)
 			{
@@ -456,12 +508,17 @@
 		{
 			ModalHelper.Close(ref ModalKey);
 
-			ComboboxPosition.Restore();
 			ListViewPosition.Restore();
+			ComboboxPosition.Restore();
 
 			if (listView != null)
 			{
 				listView.gameObject.SetActive(false);
+			}
+
+			if (toggleButton != null)
+			{
+				toggleButton.transform.SetAsLastSibling();
 			}
 
 			OnHideListView.Invoke();
@@ -483,8 +540,7 @@
 				return;
 			}
 
-			var ev_item = eventData as ListViewItemEventData;
-			if (ev_item != null)
+			if (eventData is ListViewItemEventData ev_item)
 			{
 				if (ev_item.NewSelectedObject != null)
 				{
@@ -494,14 +550,12 @@
 				return;
 			}
 
-			var ev_axis = eventData as AxisEventData;
-			if ((ev_axis != null) && ListView.Navigation)
+			if ((eventData is AxisEventData) && ListView.Navigation)
 			{
 				return;
 			}
 
-			var ev_pointer = eventData as PointerEventData;
-			if (ev_pointer == null)
+			if (!(eventData is PointerEventData ev_pointer))
 			{
 				HideList();
 				return;
@@ -549,7 +603,7 @@
 		/// <param name="go">Go.</param>
 		protected SelectListener GetDeselectListener(GameObject go)
 		{
-			return Utilities.GetOrAddComponent<SelectListener>(go);
+			return Utilities.RequireComponent<SelectListener>(go);
 		}
 
 		/// <summary>
@@ -670,6 +724,17 @@
 		/// <summary>
 		/// Hide list view.
 		/// </summary>
+		void OnListViewPointerUp(int index, ListViewItem item, BaseEventData eventData)
+		{
+			if (index == ListView.SelectedIndex && !ListView.MultipleSelect)
+			{
+				HideList();
+			}
+		}
+
+		/// <summary>
+		/// Hide list view.
+		/// </summary>
 		void OnListViewCancel(int index, ListViewItem item, BaseEventData eventData)
 		{
 			HideList();
@@ -694,18 +759,21 @@
 			else
 			{
 				component = Compatibility.Instantiate(current);
-				component.transform.SetParent(current.transform.parent, false);
+				component.SetThemeImagesPropertiesOwner(this);
+				component.RectTransform.SetParent(current.RectTransform.parent, false);
 
 				Utilities.FixInstantiated(current, component);
 			}
 
 			component.Index = -2;
-			component.transform.SetAsLastSibling();
+			component.RectTransform.SetAsLastSibling();
 			component.gameObject.SetActive(true);
 			component.onClickItem.AddListener(CurrentClick);
 			component.Owner = ListView;
 			component.ComboboxInstance = true;
 			components.Add(component);
+
+			ToggleButton.transform.SetAsLastSibling();
 		}
 
 		/// <summary>
@@ -782,7 +850,10 @@
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnSubmit(BaseEventData eventData)
 		{
-			ShowList();
+			if (ShowListViewOnSubmit)
+			{
+				ShowList();
+			}
 		}
 
 		/// <summary>
@@ -799,9 +870,14 @@
 		/// </summary>
 		protected virtual void OnDestroy()
 		{
+			ListViewPosition.ParentDestroyed();
+			ComboboxPosition.ParentDestroyed();
+
 			Localization.OnLocaleChanged -= LocaleChanged;
 
-			ListView = null;
+			ListViewUnsubscribe(restorePosition: false);
+			listView = null;
+
 			ToggleButton = null;
 		}
 
@@ -811,6 +887,11 @@
 		/// </summary>
 		protected virtual void OnValidate()
 		{
+			if (Current != null)
+			{
+				Current.SetThemeImagesPropertiesOwner(this);
+			}
+
 			if (ParentCanvas == null)
 			{
 				ParentCanvas = UtilitiesUI.FindTopmostCanvas(transform);

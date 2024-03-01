@@ -1,6 +1,7 @@
-﻿#if UIWIDGETS_TMPRO_SUPPORT
+#if UIWIDGETS_TMPRO_SUPPORT
 namespace UIWidgets
 {
+	using TMPro;
 	using UnityEngine;
 	using UnityEngine.UI;
 
@@ -15,7 +16,7 @@ namespace UIWidgets
 		/// <param name="value">Enum value.</param>
 		/// <param name="flag">Flag.</param>
 		/// <returns>true if enum has flag; otherwise false.</returns>
-		public static bool IsSet(TMPro.FontStyles value, TMPro.FontStyles flag)
+		public static bool IsSet(FontStyles value, FontStyles flag)
 		{
 			return (value & flag) == flag;
 		}
@@ -23,7 +24,7 @@ namespace UIWidgets
 		/// <summary>
 		/// Text component.
 		/// </summary>
-		protected TMPro.TextMeshProUGUI Component;
+		protected TextMeshProUGUI Component;
 
 		/// <summary>
 		/// GameObject.
@@ -112,13 +113,63 @@ namespace UIWidgets
 		}
 
 		/// <summary>
+		/// Text alignment.
+		/// </summary>
+		public TextAnchor alignment
+		{
+			get
+			{
+				return ConvertAlignment(Component.alignment);
+			}
+
+			set
+			{
+				Component.alignment = ConvertAlignment(value);
+			}
+		}
+
+		TextAnchor ConvertAlignment(TextAlignmentOptions alignment)
+		{
+			return alignment switch
+			{
+				TextAlignmentOptions.TopLeft => TextAnchor.UpperLeft,
+				TextAlignmentOptions.Top => TextAnchor.UpperCenter,
+				TextAlignmentOptions.TopRight => TextAnchor.UpperRight,
+				TextAlignmentOptions.MidlineLeft => TextAnchor.MiddleLeft,
+				TextAlignmentOptions.Center => TextAnchor.MiddleCenter,
+				TextAlignmentOptions.MidlineRight => TextAnchor.MiddleRight,
+				TextAlignmentOptions.BottomLeft => TextAnchor.LowerLeft,
+				TextAlignmentOptions.Bottom => TextAnchor.LowerCenter,
+				TextAlignmentOptions.BottomRight => TextAnchor.LowerRight,
+				_ => TextAnchor.UpperLeft,
+			};
+		}
+
+		TextAlignmentOptions ConvertAlignment(TextAnchor alignment)
+		{
+			return alignment switch
+			{
+				TextAnchor.UpperLeft => TextAlignmentOptions.TopLeft,
+				TextAnchor.UpperCenter => TextAlignmentOptions.Top,
+				TextAnchor.UpperRight => TextAlignmentOptions.TopRight,
+				TextAnchor.MiddleLeft => TextAlignmentOptions.MidlineLeft,
+				TextAnchor.MiddleCenter => TextAlignmentOptions.Center,
+				TextAnchor.MiddleRight => TextAlignmentOptions.MidlineRight,
+				TextAnchor.LowerLeft => TextAlignmentOptions.BottomLeft,
+				TextAnchor.LowerCenter => TextAlignmentOptions.Bottom,
+				TextAnchor.LowerRight => TextAlignmentOptions.BottomRight,
+				_ => TextAlignmentOptions.TopLeft,
+			};
+		}
+
+		/// <summary>
 		/// Bold.
 		/// </summary>
 		public bool Bold
 		{
 			get
 			{
-				return IsSet(Component.fontStyle, TMPro.FontStyles.Bold);
+				return IsSet(Component.fontStyle, FontStyles.Bold);
 			}
 
 			set
@@ -130,11 +181,11 @@ namespace UIWidgets
 
 				if (value)
 				{
-					Component.fontStyle |= TMPro.FontStyles.Bold;
+					Component.fontStyle |= FontStyles.Bold;
 				}
 				else
 				{
-					Component.fontStyle &= ~TMPro.FontStyles.Bold;
+					Component.fontStyle &= ~FontStyles.Bold;
 				}
 			}
 		}
@@ -146,7 +197,7 @@ namespace UIWidgets
 		{
 			get
 			{
-				return IsSet(Component.fontStyle, TMPro.FontStyles.Italic);
+				return IsSet(Component.fontStyle, FontStyles.Italic);
 			}
 
 			set
@@ -158,11 +209,11 @@ namespace UIWidgets
 
 				if (value)
 				{
-					Component.fontStyle |= TMPro.FontStyles.Italic;
+					Component.fontStyle |= FontStyles.Italic;
 				}
 				else
 				{
-					Component.fontStyle &= ~TMPro.FontStyles.Italic;
+					Component.fontStyle &= ~FontStyles.Italic;
 				}
 			}
 		}
@@ -187,7 +238,7 @@ namespace UIWidgets
 		/// Initializes a new instance of the <see cref="TextTMPro"/> class.
 		/// </summary>
 		/// <param name="component">Component.</param>
-		public TextTMPro(TMPro.TextMeshProUGUI component)
+		public TextTMPro(TextMeshProUGUI component)
 		{
 			Component = component;
 		}

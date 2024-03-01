@@ -33,55 +33,35 @@ namespace UIWidgets
 		/// </summary>
 		/// <param name="obj">The object to compare with the current object.</param>
 		/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-		public override bool Equals(object obj)
-		{
-			if (obj is TileViewStaggeredItemPosition)
-			{
-				return Equals((TileViewStaggeredItemPosition)obj);
-			}
-
-			return false;
-		}
+		public readonly override bool Equals(object obj) => (obj is TileViewStaggeredItemPosition position) && Equals(position);
 
 		/// <summary>
 		/// Determines whether the specified object is equal to the current object.
 		/// </summary>
 		/// <param name="other">The object to compare with the current object.</param>
 		/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-		public bool Equals(TileViewStaggeredItemPosition other)
-		{
-			return Position == other.Position && Block == other.Block;
-		}
+		public readonly bool Equals(TileViewStaggeredItemPosition other) => Position == other.Position && Block == other.Block;
 
 		/// <summary>
 		/// Hash function.
 		/// </summary>
 		/// <returns>A hash code for the current object.</returns>
-		public override int GetHashCode()
-		{
-			return Position.GetHashCode() ^ Block;
-		}
+		public override int GetHashCode() => Position.GetHashCode() ^ Block;
 
 		/// <summary>
 		/// Compare specified visibility data.
 		/// </summary>
-		/// <param name="obj1">First data.</param>
-		/// <param name="obj2">Second data.</param>
+		/// <param name="a">First data.</param>
+		/// <param name="b">Second data.</param>
 		/// <returns>true if the data are equal; otherwise, false.</returns>
-		public static bool operator ==(TileViewStaggeredItemPosition obj1, TileViewStaggeredItemPosition obj2)
-		{
-			return obj1.Equals(obj2);
-		}
+		public static bool operator ==(TileViewStaggeredItemPosition a, TileViewStaggeredItemPosition b) => a.Equals(b);
 
 		/// <summary>
 		/// Compare specified visibility data.
 		/// </summary>
-		/// <param name="obj1">First data.</param>
-		/// <param name="obj2">Second data.</param>
+		/// <param name="a">First data.</param>
+		/// <param name="b">Second data.</param>
 		/// <returns>true if the data not equal; otherwise, false.</returns>
-		public static bool operator !=(TileViewStaggeredItemPosition obj1, TileViewStaggeredItemPosition obj2)
-		{
-			return !obj1.Equals(obj2);
-		}
+		public static bool operator !=(TileViewStaggeredItemPosition a, TileViewStaggeredItemPosition b) => !a.Equals(b);
 	}
 }

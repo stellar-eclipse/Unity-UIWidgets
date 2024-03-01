@@ -8,6 +8,7 @@
 	/// <summary>
 	/// Base class for Slide Scale.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/scale.html")]
 	public abstract class SliderScaleBase : MonoBehaviourConditional, IStylable
 	{
 		[SerializeField]
@@ -107,10 +108,7 @@
 		{
 			get
 			{
-				if (value2MarkDataDelegate == null)
-				{
-					value2MarkDataDelegate = Value2MarkData;
-				}
+				value2MarkDataDelegate ??= Value2MarkData;
 
 				return value2MarkDataDelegate;
 			}

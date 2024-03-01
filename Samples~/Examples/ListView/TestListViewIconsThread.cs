@@ -1,10 +1,6 @@
 ﻿namespace UIWidgets.Examples
 {
-	#if NETFX_CORE
 	using System.Threading.Tasks;
-	#else
-	using System.Threading;
-	#endif
 	using UIWidgets;
 	using UnityEngine;
 
@@ -24,12 +20,7 @@
 		/// </summary>
 		public void TestAdd()
 		{
-#if NETFX_CORE
-			var t = Task.Run(() => AddInForeground());
-#else
-			var th = new Thread(AddInForeground);
-			th.Start();
-#endif
+			Task.Run(() => AddInForeground());
 		}
 
 		/// <summary>
@@ -37,12 +28,7 @@
 		/// </summary>
 		public void TestSet()
 		{
-#if NETFX_CORE
-			var t = Task.Run(() => SetInForeground());
-#else
-			var th = new Thread(SetInForeground);
-			th.Start();
-#endif
+			Task.Run(() => SetInForeground());
 		}
 
 		/// <summary>

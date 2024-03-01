@@ -6,6 +6,7 @@
 	/// <summary>
 	/// Base class for DrivesListViewComponent.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/filelistview.html")]
 	public class DrivesListViewComponentBase : ListViewItem, IViewData<FileSystemEntry>
 	{
 		/// <summary>

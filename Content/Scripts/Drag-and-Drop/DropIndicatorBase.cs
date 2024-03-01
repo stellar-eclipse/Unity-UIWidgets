@@ -10,6 +10,7 @@
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
 	[DisallowMultipleComponent]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/drag-and-drop.html")]
 	public class DropIndicatorBase : MonoBehaviour, IStylable
 	{
 		LayoutElement layoutElement;
@@ -24,7 +25,7 @@
 			{
 				if (layoutElement == null)
 				{
-					layoutElement = Utilities.GetOrAddComponent<LayoutElement>(this);
+					layoutElement = Utilities.RequireComponent<LayoutElement>(this);
 				}
 
 				return layoutElement;

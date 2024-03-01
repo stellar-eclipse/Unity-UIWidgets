@@ -6,9 +6,10 @@ namespace UIWidgets
 	using UnityEngine.EventSystems;
 
 	/// <summary>
-	/// Snap grid detector
+	/// Snap grid detector.
 	/// </summary>
 	[RequireComponent(typeof(ISnapGridSupport))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/snapgrid/snapgrid-detector.html")]
 	public class SnapGridDetector : MonoBehaviour,
 		IInitializePotentialDragHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
 	{
@@ -33,6 +34,12 @@ namespace UIWidgets
 		/// </summary>
 		[SerializeField]
 		public Modes Mode = Modes.Replace;
+
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
 
 		/// <summary>
 		/// Raycast results.
@@ -64,6 +71,13 @@ namespace UIWidgets
 		protected bool IsDragged;
 
 		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData) => eventData.button == DragButton;
+
+		/// <summary>
 		/// Process OnInitializePotentialDrag event.
 		/// </summary>
 		/// <param name="eventData">Current event data.</param>
@@ -77,6 +91,11 @@ namespace UIWidgets
 		/// <param name="eventData">Current event data.</param>
 		public virtual void OnBeginDrag(PointerEventData eventData)
 		{
+			if (!CanDrag(eventData))
+			{
+				return;
+			}
+
 			IsDragged = true;
 
 			ProcessDrag(eventData);
@@ -90,6 +109,12 @@ namespace UIWidgets
 		{
 			if (!IsDragged)
 			{
+				return;
+			}
+
+			if (!CanDrag(eventData))
+			{
+				OnEndDrag(eventData);
 				return;
 			}
 
@@ -148,10 +173,7 @@ namespace UIWidgets
 		/// <param name="snapGrid">Snap grid to add.</param>
 		protected virtual void Add(ISnapGridSupport snapGridSupport, SnapGridBase snapGrid)
 		{
-			if (snapGridSupport.SnapGrids == null)
-			{
-				snapGridSupport.SnapGrids = new List<SnapGridBase>();
-			}
+			snapGridSupport.SnapGrids ??= new List<SnapGridBase>();
 
 			// do not add if already added
 			foreach (var snap_grid in snapGridSupport.SnapGrids)
@@ -172,14 +194,8 @@ namespace UIWidgets
 		/// <param name="snapGrid">Snap grid.</param>
 		protected virtual void Replace(ISnapGridSupport snapGridSupport, SnapGridBase snapGrid)
 		{
-			if (snapGridSupport.SnapGrids == null)
-			{
-				snapGridSupport.SnapGrids = new List<SnapGridBase>();
-			}
-			else
-			{
-				snapGridSupport.SnapGrids.Clear();
-			}
+			snapGridSupport.SnapGrids ??= new List<SnapGridBase>();
+			snapGridSupport.SnapGrids.Clear();
 
 			snapGridSupport.SnapGrids.Add(snapGrid);
 		}

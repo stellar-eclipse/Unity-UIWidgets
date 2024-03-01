@@ -1,11 +1,13 @@
 ﻿namespace UIWidgets
 {
+	using UnityEngine;
 	using UnityEngine.Events;
 	using UnityEngine.EventSystems;
 
 	/// <summary>
 	/// Tree node toggle.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/treeview.html")]
 	public class TreeNodeToggle : UIBehaviour, IPointerUpHandler, IPointerDownHandler, IPointerClickHandler
 	{
 		/// <summary>

@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets
 {
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
 
@@ -8,6 +9,7 @@
 	/// Used only to attach custom editor to DragSupport.
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/drag-and-drop.html")]
 	public abstract class BaseDragSupport : UIBehaviour
 	{
 		/// <summary>
@@ -57,5 +59,14 @@
 				return DragPoints[key];
 			}
 		}
+
+#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(DragPoints))]
+		static void StaticInit()
+		{
+			DragPoints.Clear();
+		}
+#endif
 	}
 }

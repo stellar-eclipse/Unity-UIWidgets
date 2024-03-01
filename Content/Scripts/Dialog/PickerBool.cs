@@ -54,7 +54,7 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Message, ref MessageAdapter);
+			Utilities.RequireComponent(Message, ref MessageAdapter);
 #pragma warning restore 0612, 0618
 		}
 

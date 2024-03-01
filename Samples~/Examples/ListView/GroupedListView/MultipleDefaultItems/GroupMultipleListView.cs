@@ -1,5 +1,6 @@
 ﻿namespace UIWidgets.Examples
 {
+	using System;
 	using UnityEngine;
 
 	/// <summary>
@@ -36,17 +37,13 @@
 			/// <inheritdoc/>
 			public GroupMultipleComponent Select(int index, GroupMultipleItem item)
 			{
-				switch (item.Mode)
+				return item.Mode switch
 				{
-					case GroupMultipleItem.ItemMode.Group:
-						return GroupTemplate;
-					case GroupMultipleItem.ItemMode.Checkbox:
-						return CheckboxTemplate;
-					case GroupMultipleItem.ItemMode.Value:
-						return ValueTemplate;
-				}
-
-				return null;
+					GroupMultipleItem.ItemMode.Group => GroupTemplate,
+					GroupMultipleItem.ItemMode.Checkbox => CheckboxTemplate,
+					GroupMultipleItem.ItemMode.Value => ValueTemplate,
+					_ => throw new ArgumentOutOfRangeException(nameof(item), item.Mode, "Unsupported Item Mode"),
+				};
 			}
 		}
 
@@ -68,13 +65,9 @@
 		[SerializeField]
 		protected GroupMultipleComponent ValueTemplate;
 
-		Selector GroupedTemplateSelector;
-
 		bool isGroupedListViewInited;
 
-		/// <summary>
-		/// Init this instance.
-		/// </summary>
+		/// <inheritdoc/>
 		public override void Init()
 		{
 			if (isGroupedListViewInited)
@@ -84,18 +77,20 @@
 
 			isGroupedListViewInited = true;
 
-			GroupedTemplateSelector = new Selector()
+			base.Init();
+
+			CanSelect = IsItem;
+		}
+
+		/// <inheritdoc/>
+		protected override IListViewTemplateSelector<GroupMultipleComponent, GroupMultipleItem> CreateTemplateSelector()
+		{
+			return new Selector()
 			{
 				GroupTemplate = GroupTemplate,
 				CheckboxTemplate = CheckboxTemplate,
 				ValueTemplate = ValueTemplate,
 			};
-
-			TemplateSelector = GroupedTemplateSelector;
-
-			base.Init();
-
-			CanSelect = IsItem;
 		}
 
 		bool IsItem(int index)

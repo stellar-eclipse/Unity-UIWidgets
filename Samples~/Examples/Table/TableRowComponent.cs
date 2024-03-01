@@ -66,14 +66,18 @@
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[]
 				{
 					UtilitiesUI.GetGraphic(Cell01TextAdapter),
 					UtilitiesUI.GetGraphic(Cell02TextAdapter),
 					UtilitiesUI.GetGraphic(Cell04TextAdapter),
 				};
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -83,9 +87,13 @@
 		{
 			if (GraphicsBackgroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				graphicsBackground = Compatibility.EmptyArray<Graphic>();
+				#pragma warning restore
 				GraphicsBackgroundVersion = 1;
 			}
+
+			base.GraphicsBackgroundInit();
 		}
 
 		/// <summary>
@@ -149,15 +157,24 @@
 			}
 		}
 
+		/// <inheritdoc/>
+		public override void SetThemeImagesPropertiesOwner(Component owner)
+		{
+			base.SetThemeImagesPropertiesOwner(owner);
+
+			UIThemes.Utilities.SetTargetOwner(typeof(Sprite), Cell03Image, nameof(Cell03Image.sprite), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Cell03Image, nameof(Cell03Image.color), owner);
+		}
+
 		/// <summary>
 		/// Upgrade this instance.
 		/// </summary>
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Cell01Text, ref Cell01TextAdapter);
-			Utilities.GetOrAddComponent(Cell02Text, ref Cell02TextAdapter);
-			Utilities.GetOrAddComponent(Cell04Text, ref Cell04TextAdapter);
+			Utilities.RequireComponent(Cell01Text, ref Cell01TextAdapter);
+			Utilities.RequireComponent(Cell02Text, ref Cell02TextAdapter);
+			Utilities.RequireComponent(Cell04Text, ref Cell04TextAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

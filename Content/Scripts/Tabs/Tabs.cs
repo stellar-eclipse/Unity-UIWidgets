@@ -12,6 +12,7 @@
 	/// <summary>
 	/// Tabs.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/containers/tabs.html")]
 	public class Tabs : MonoBehaviour, IStylable<StyleTabs>, IUpgradeable
 	{
 		/// <summary>
@@ -769,21 +770,21 @@
 		{
 			if (DefaultTabButton != null)
 			{
-				var default_info = Utilities.GetOrAddComponent<TabButtonComponentBase>(DefaultTabButton);
+				var default_info = Utilities.RequireComponent<TabButtonComponentBase>(DefaultTabButton);
 				default_info.Upgrade();
 				if (default_info.NameAdapter == null)
 				{
-					Utilities.GetOrAddComponent(Compatibility.GetComponentInChildren<Text>(default_info, true), ref default_info.NameAdapter);
+					Utilities.RequireComponent(Compatibility.GetComponentInChildren<Text>(default_info, true), ref default_info.NameAdapter);
 				}
 			}
 
 			if (ActiveTabButton != null)
 			{
-				var active_info = Utilities.GetOrAddComponent<TabButtonComponentBase>(ActiveTabButton);
+				var active_info = Utilities.RequireComponent<TabButtonComponentBase>(ActiveTabButton);
 				active_info.Upgrade();
 				if (active_info.NameAdapter == null)
 				{
-					Utilities.GetOrAddComponent(Compatibility.GetComponentInChildren<Text>(active_info, true), ref active_info.NameAdapter);
+					Utilities.RequireComponent(Compatibility.GetComponentInChildren<Text>(active_info, true), ref active_info.NameAdapter);
 				}
 			}
 		}

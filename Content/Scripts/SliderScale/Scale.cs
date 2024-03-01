@@ -12,12 +12,13 @@ namespace UIWidgets
 	/// Scale widget.
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/scale.html")]
 	public class Scale : MonoBehaviourConditional, IObservable, INotifyPropertyChanged, IStylable
 	{
 		/// <summary>
 		/// Mark data.
 		/// </summary>
-		public struct MarkData : IEquatable<MarkData>
+		public readonly struct MarkData : IEquatable<MarkData>
 		{
 			/// <summary>
 			/// Position.
@@ -57,13 +58,7 @@ namespace UIWidgets
 			/// <summary>
 			/// Label.
 			/// </summary>
-			public string Label
-			{
-				get
-				{
-					return Value2Label != null ? Value2Label(Value) : Value.ToString();
-				}
-			}
+			public string Label => Value2Label != null ? Value2Label(Value) : Value.ToString();
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="MarkData"/> struct.
@@ -77,10 +72,10 @@ namespace UIWidgets
 			/// <param name="value2label">Convert value to label.</param>
 			public MarkData(
 				float value,
-				Vector2 position = default(Vector2),
+				Vector2 position = default,
 				float rotation = 0f,
-				Vector2 anchorMin = default(Vector2),
-				Vector2 anchorMax = default(Vector2),
+				Vector2 anchorMin = default,
+				Vector2 anchorMax = default,
 				Vector2? pivot = null,
 				Func<float, string> value2label = null)
 			{
@@ -91,7 +86,7 @@ namespace UIWidgets
 
 				AnchorMin = anchorMin;
 				AnchorMax = anchorMax;
-				Pivot = pivot.HasValue ? pivot.Value : new Vector2(0.5f, 0.5f);
+				Pivot = pivot ?? new Vector2(0.5f, 0.5f);
 
 				Value2Label = value2label;
 			}
@@ -101,15 +96,7 @@ namespace UIWidgets
 			/// </summary>
 			/// <param name="obj">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is MarkData)
-				{
-					return Equals((MarkData)obj);
-				}
-
-				return false;
-			}
+			public override bool Equals(object obj) => (obj is MarkData data) && Equals(data);
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
@@ -142,10 +129,7 @@ namespace UIWidgets
 			/// <param name="a">First instance.</param>
 			/// <param name="b">Second instance.</param>
 			/// <returns>true if the instances are equal; otherwise, false.</returns>
-			public static bool operator ==(MarkData a, MarkData b)
-			{
-				return a.Equals(b);
-			}
+			public static bool operator ==(MarkData a, MarkData b) => a.Equals(b);
 
 			/// <summary>
 			/// Compare specified instances.
@@ -153,10 +137,7 @@ namespace UIWidgets
 			/// <param name="a">First instance.</param>
 			/// <param name="b">Second instance.</param>
 			/// <returns>true if the instances not equal; otherwise, false.</returns>
-			public static bool operator !=(MarkData a, MarkData b)
-			{
-				return !a.Equals(b);
-			}
+			public static bool operator !=(MarkData a, MarkData b) => !a.Equals(b);
 		}
 
 		[SerializeField]
@@ -167,15 +148,9 @@ namespace UIWidgets
 		/// </summary>
 		public RectTransform Container
 		{
-			get
-			{
-				return container;
-			}
+			get => container;
 
-			set
-			{
-				Change(ref container, value, "Container");
-			}
+			set => Change(ref container, value, nameof(Container));
 		}
 
 		[SerializeField]
@@ -186,15 +161,9 @@ namespace UIWidgets
 		/// </summary>
 		public Image MainLine
 		{
-			get
-			{
-				return mainLine;
-			}
+			get => mainLine;
 
-			set
-			{
-				Change(ref mainLine, value, "MainLine");
-			}
+			set => Change(ref mainLine, value, nameof(MainLine));
 		}
 
 		[SerializeField]
@@ -205,15 +174,9 @@ namespace UIWidgets
 		/// </summary>
 		public bool ShowCurrentValue
 		{
-			get
-			{
-				return showCurrentValue;
-			}
+			get => showCurrentValue;
 
-			set
-			{
-				Change(ref showCurrentValue, value, "ShowCurrentValue");
-			}
+			set => Change(ref showCurrentValue, value, nameof(ShowCurrentValue));
 		}
 
 		[SerializeField]
@@ -225,15 +188,9 @@ namespace UIWidgets
 		/// </summary>
 		public ScaleMarkTemplate CurrentMarkTemplate
 		{
-			get
-			{
-				return currentMarkTemplate;
-			}
+			get => currentMarkTemplate;
 
-			set
-			{
-				Change(ref currentMarkTemplate, value, "CurrentTemplate");
-			}
+			set => Change(ref currentMarkTemplate, value, nameof(CurrentMarkTemplate));
 		}
 
 		[SerializeField]
@@ -244,15 +201,9 @@ namespace UIWidgets
 		/// </summary>
 		public bool ShowMinValue
 		{
-			get
-			{
-				return showMinValue;
-			}
+			get => showMinValue;
 
-			set
-			{
-				Change(ref showMinValue, value, "ShowMinValue");
-			}
+			set => Change(ref showMinValue, value, nameof(ShowMinValue));
 		}
 
 		[SerializeField]
@@ -264,15 +215,9 @@ namespace UIWidgets
 		/// </summary>
 		public ScaleMarkTemplate MinMark
 		{
-			get
-			{
-				return minMark;
-			}
+			get => minMark;
 
-			set
-			{
-				Change(ref minMark, value, "MinTemplate");
-			}
+			set => Change(ref minMark, value, nameof(MinMark));
 		}
 
 		[SerializeField]
@@ -283,15 +228,9 @@ namespace UIWidgets
 		/// </summary>
 		public bool ShowMaxValue
 		{
-			get
-			{
-				return showMaxValue;
-			}
+			get => showMaxValue;
 
-			set
-			{
-				Change(ref showMaxValue, value, "ShowMaxValue");
-			}
+			set => Change(ref showMaxValue, value, nameof(ShowMaxValue));
 		}
 
 		[SerializeField]
@@ -303,15 +242,9 @@ namespace UIWidgets
 		/// </summary>
 		public ScaleMarkTemplate MaxMark
 		{
-			get
-			{
-				return maxMark;
-			}
+			get => maxMark;
 
-			set
-			{
-				Change(ref maxMark, value, "MaxTemplate");
-			}
+			set => Change(ref maxMark, value, nameof(MaxMark));
 		}
 
 		[SerializeField]
@@ -326,11 +259,10 @@ namespace UIWidgets
 		{
 			get
 			{
-				if (marks == null)
+				marks ??= new ObservableList<ScaleMark>(scaleMarks)
 				{
-					marks = new ObservableList<ScaleMark>(scaleMarks);
-					marks.Comparison = MarkComparison;
-				}
+					Comparison = MarkComparison,
+				};
 
 				return marks;
 			}
@@ -706,10 +638,7 @@ namespace UIWidgets
 			Init();
 			Clear();
 
-			if (MarkValuesGenerator == null)
-			{
-				MarkValuesGenerator = DefaultGenerator;
-			}
+			MarkValuesGenerator ??= DefaultGenerator;
 
 			if (MainLine != null)
 			{

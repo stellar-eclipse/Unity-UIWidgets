@@ -11,9 +11,10 @@
 		protected override void GraphicsForegroundInit()
 		{{
 			if (GraphicsForegroundVersion == 0)
-			{{
-				Foreground = new UnityEngine.UI.Graphic[] {{ {0:TextFields@UIWidgets.UtilitiesUI.GetGraphic([0:WidgetFieldName]), } }};
-				if (!UIWidgets.UtilitiesCollections.AllNull(Foreground))
+			{{{0:TextFields@
+				foregrounds.Add(UIWidgets.UtilitiesUI.GetGraphic([0:WidgetFieldName]));}
+
+				if (!UIWidgets.UtilitiesCollections.AllNull(foregrounds))
 				{{
 					GraphicsForegroundVersion = 1;
 				}}
@@ -88,6 +89,14 @@
 				[0:WidgetFieldName].[0:WidgetValueField] = null;
 			]]
 }
+		}}
+
+		/// <inheritdoc/>
+		public override void SetThemeImagesPropertiesOwner(UnityEngine.Component owner)
+		{{
+			base.SetThemeImagesPropertiesOwner(owner);{0:ImageFields@
+			UIThemes.Utilities.SetTargetOwner(typeof([0:FieldType]), [0:WidgetFieldName], nameof([0:WidgetFieldName].[0:WidgetValueField]), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(UnityEngine.Color), [0:WidgetFieldName], nameof([0:WidgetFieldName].color), owner);}
 		}}
 	}}
 }}

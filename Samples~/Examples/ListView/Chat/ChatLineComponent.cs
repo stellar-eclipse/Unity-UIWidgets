@@ -97,9 +97,13 @@
 		{
 			if (GraphicsBackgroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				graphicsBackground = Compatibility.EmptyArray<Graphic>();
+				#pragma warning restore
 				GraphicsBackgroundVersion = 1;
 			}
+
+			base.GraphicsBackgroundInit();
 		}
 
 		/// <summary>
@@ -137,6 +141,15 @@
 			Lightbox.Show(Item.Image);
 		}
 
+		/// <inheritdoc/>
+		public override void SetThemeImagesPropertiesOwner(Component owner)
+		{
+			base.SetThemeImagesPropertiesOwner(owner);
+
+			UIThemes.Utilities.SetTargetOwner(typeof(Sprite), Image, nameof(Image.sprite), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Image, nameof(Image.color), owner);
+		}
+
 		/// <summary>
 		/// Upgrade this instance.
 		/// </summary>
@@ -145,9 +158,9 @@
 			base.Upgrade();
 
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(UserName, ref UserNameAdapter);
-			Utilities.GetOrAddComponent(Message, ref MessageAdapter);
-			Utilities.GetOrAddComponent(Time, ref TimeAdapter);
+			Utilities.RequireComponent(UserName, ref UserNameAdapter);
+			Utilities.RequireComponent(Message, ref MessageAdapter);
+			Utilities.RequireComponent(Time, ref TimeAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

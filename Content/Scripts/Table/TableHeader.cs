@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Pool;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
@@ -18,6 +19,7 @@
 	[RequireComponent(typeof(LayoutGroup))]
 	[AddComponentMenu("UI/New UI Widgets/Collections/Table Header")]
 	[DisallowMultipleComponent]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/collections/table-header.html")]
 	public class TableHeader : UIBehaviour, IDropSupport<TableHeaderDragCell>, IPointerEnterHandler, IPointerExitHandler, IStylable, ILateUpdatable
 	{
 		#region Interactable
@@ -252,6 +254,12 @@
 		[SerializeField]
 		public LayoutDropIndicator DropIndicator;
 
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
+
 		RectTransform rectTransform;
 
 		/// <summary>
@@ -468,10 +476,6 @@
 			}
 		}
 
-		List<Transform> tempList = new List<Transform>();
-
-		List<int> tempReverseOrder = new List<int>();
-
 		/// <summary>
 		/// Set the columns order.
 		/// </summary>
@@ -481,38 +485,39 @@
 			// restore original order
 			RestoreColumnsOrder();
 
+			using var _ = ListPool<int>.Get(out var temp);
+
 			// convert list of the new positions to list of the old positions
 			for (int i = 0; i < order.Count; i++)
 			{
-				tempReverseOrder.Add(order.IndexOf(i));
+				temp.Add(order.IndexOf(i));
 			}
 
 			// restore list components cells order
 			List.Init();
 			List.ForEachComponent(SetItemColumnOrder);
 
-			for (int new_position = 0; new_position < tempReverseOrder.Count; new_position++)
+			for (int new_position = 0; new_position < temp.Count; new_position++)
 			{
-				var old_position = tempReverseOrder[new_position];
+				var old_position = temp[new_position];
 				CellsInfo[old_position].Position = new_position;
 				CellsInfo[old_position].Rect.SetAsLastSibling();
 			}
-
-			tempReverseOrder.Clear();
 		}
 
 		void SetItemColumnOrder(ListViewItem component)
 		{
-			tempList.Clear();
+			using var _ = ListPool<Transform>.Get(out var temp);
+
 			var t = component.transform;
 			for (int i = 0; i < t.childCount; i++)
 			{
-				tempList.Add(t.GetChild(i));
+				temp.Add(t.GetChild(i));
 			}
 
-			for (int i = 0; i < tempReverseOrder.Count; i++)
+			for (int i = 0; i < temp.Count; i++)
 			{
-				tempList[i].SetAsLastSibling();
+				temp[i].SetAsLastSibling();
 			}
 		}
 
@@ -522,17 +527,17 @@
 		/// <param name="component">Component.</param>
 		protected void RestoreColumnsOrder(ListViewItem component)
 		{
-			tempList.Clear();
+			using var _ = ListPool<Transform>.Get(out var temp);
 
 			var t = component.RectTransform;
 			for (int i = 0; i < t.childCount; i++)
 			{
-				tempList.Add(t.GetChild(i));
+				temp.Add(t.GetChild(i));
 			}
 
 			foreach (var cell in CellsInfo)
 			{
-				tempList[cell.Position].SetAsLastSibling();
+				temp[cell.Position].SetAsLastSibling();
 			}
 		}
 
@@ -573,10 +578,10 @@
 				var child = RectTransform.GetChild(i);
 				child.gameObject.SetActive(true);
 
-				var cell = Utilities.GetOrAddComponent<TableHeaderDragCell>(child);
+				var cell = Utilities.RequireComponent<TableHeaderDragCell>(child);
 				cell.Position = -1;
 
-				var events = Utilities.GetOrAddComponent<TableHeaderCell>(child);
+				var events = Utilities.RequireComponent<TableHeaderCell>(child);
 				events.OnInitializePotentialDragEvent.RemoveListener(OnInitializePotentialDrag);
 				events.OnBeginDragEvent.RemoveListener(OnBeginDrag);
 				events.OnDragEvent.RemoveListener(OnDrag);
@@ -594,7 +599,7 @@
 			for (int i = 0; i < RectTransform.childCount; i++)
 			{
 				var child = RectTransform.GetChild(i);
-				var cell = Utilities.GetOrAddComponent<TableHeaderDragCell>(child);
+				var cell = Utilities.RequireComponent<TableHeaderDragCell>(child);
 
 				if (cell.Position == -1)
 				{
@@ -609,7 +614,7 @@
 					cell.DeniedDropCursorHotSpot = DeniedDropCursorHotSpot;
 					#pragma warning restore 0618
 
-					var events = Utilities.GetOrAddComponent<TableHeaderCell>(child);
+					var events = Utilities.RequireComponent<TableHeaderCell>(child);
 					events.OnInitializePotentialDragEvent.AddListener(OnInitializePotentialDrag);
 					events.OnBeginDragEvent.AddListener(OnBeginDrag);
 					events.OnDragEvent.AddListener(OnDrag);
@@ -618,7 +623,7 @@
 					CellsInfo.Add(new TableHeaderCellInfo()
 					{
 						Rect = child as RectTransform,
-						LayoutElement = Utilities.GetOrAddComponent<LayoutElement>(child),
+						LayoutElement = Utilities.RequireComponent<LayoutElement>(child),
 						Position = CellsInfo.Count,
 					});
 				}
@@ -748,7 +753,7 @@
 				return UICursor.Cursors.EastWestArrow;
 			}
 
-			return default(Cursors.Cursor);
+			return default;
 		}
 
 		/// <summary>
@@ -833,12 +838,7 @@
 		/// <returns>true if cursor in active region to resize; otherwise, false.</returns>
 		protected virtual bool CheckInActiveRegion(Vector2 position, Camera camera)
 		{
-			Vector2 point;
-
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, position, camera, out point))
-			{
-				return false;
-			}
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, position, camera, out var point);
 
 			if (!PointWithPivot(ref point))
 			{
@@ -883,36 +883,32 @@
 		float rightTargetSize;
 
 		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return IsActive() && (eventData.button == DragButton) && AllowResize && !ProcessCellReorder;
+		}
+
+		/// <summary>
 		/// Process the begin drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnBeginDrag(PointerEventData eventData)
 		{
-			if (!IsActive())
+			if (!CanDrag(eventData))
 			{
 				return;
 			}
 
-			if (!AllowResize)
-			{
-				return;
-			}
-
-			if (ProcessCellReorder)
-			{
-				return;
-			}
-
-			Vector2 point;
-			processDrag = false;
-
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.pressPosition, eventData.pressEventCamera, out point))
-			{
-				return;
-			}
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.pressPosition, eventData.pressEventCamera, out var point);
 
 			PointWithPivot(ref point);
+
 			var width = IsWidth;
+			processDrag = false;
 
 			foreach (var cell in CellsInfoOrdered)
 			{
@@ -1079,13 +1075,17 @@
 				return;
 			}
 
+			if (!CanDrag(eventData))
+			{
+				OnEndDrag(eventData);
+				return;
+			}
+
 			cursorChanged = true;
 			UICursor.Set(this, GetCursor());
 
-			Vector2 current_point;
-			Vector2 original_point;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out current_point);
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.pressPosition, eventData.pressEventCamera, out original_point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out var current_point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.pressPosition, eventData.pressEventCamera, out var original_point);
 
 			var delta = current_point - original_point;
 
@@ -1410,8 +1410,6 @@
 			list.Insert(newPosition, item);
 		}
 
-		readonly List<RaycastResult> raycastResults = new List<RaycastResult>();
-
 		/// <summary>
 		/// Get TableHeaderDragCell in position specified with event data.
 		/// </summary>
@@ -1419,25 +1417,27 @@
 		/// <returns>TableHeaderDragCell if found; otherwise null.</returns>
 		protected TableHeaderDragCell FindTarget(PointerEventData eventData)
 		{
-			raycastResults.Clear();
+			using var _ = ListPool<RaycastResult>.Get(out var raycasts);
 
-			EventSystem.current.RaycastAll(eventData, raycastResults);
+			EventSystem.current.RaycastAll(eventData, raycasts);
+			TableHeaderDragCell result = null;
 
-			foreach (var raycastResult in raycastResults)
+			foreach (var raycast in raycasts)
 			{
-				if (!raycastResult.isValid)
+				if (!raycast.isValid)
 				{
 					continue;
 				}
 
-				var target = raycastResult.gameObject.GetComponent<TableHeaderDragCell>();
+				var target = raycast.gameObject.GetComponent<TableHeaderDragCell>();
 				if ((target != null) && target.transform.IsChildOf(transform))
 				{
-					return target;
+					result = target;
+					break;
 				}
 			}
 
-			return null;
+			return result;
 		}
 #endregion
 
@@ -1589,7 +1589,7 @@
 			CellsInfo.RemoveAt(index);
 
 			// remove events
-			var events = Utilities.GetOrAddComponent<TableHeaderCell>(cell);
+			var events = Utilities.RequireComponent<TableHeaderCell>(cell);
 			events.OnInitializePotentialDragEvent.RemoveListener(OnInitializePotentialDrag);
 			events.OnBeginDragEvent.RemoveListener(OnBeginDrag);
 			events.OnDragEvent.RemoveListener(OnDrag);

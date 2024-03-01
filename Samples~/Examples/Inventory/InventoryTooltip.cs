@@ -2,6 +2,7 @@
 {
 	using System;
 	using UnityEngine;
+	using UnityEngine.Serialization;
 
 	/// <summary>
 	/// Inventory tooltip.
@@ -142,15 +143,45 @@
 			protected set;
 		}
 
+		[SerializeField]
+		[FormerlySerializedAs("HighlightedValueHigher")]
+		Color highlightedValueHigher = Color.green;
+
 		/// <summary>
 		/// Color if highlighted value is higher.
 		/// </summary>
-		public Color HighlightedValueHigher = Color.green;
+		public Color HighlightedValueHigher
+		{
+			get
+			{
+				return highlightedValueHigher;
+			}
+
+			set
+			{
+				highlightedValueHigher = value;
+			}
+		}
+
+		[SerializeField]
+		[FormerlySerializedAs("HighlightedValueLower")]
+		Color highlightedValueLower = Color.red;
 
 		/// <summary>
 		/// Color if highlighted value is lower.
 		/// </summary>
-		public Color HighlightedValueLower = Color.red;
+		public Color HighlightedValueLower
+		{
+			get
+			{
+				return highlightedValueLower;
+			}
+
+			set
+			{
+				highlightedValueLower = value;
+			}
+		}
 
 		/// <summary>
 		/// Set selected.

@@ -8,6 +8,7 @@ namespace UIWidgets
 	/// Cursors selector by DPI.
 	/// </summary>
 	[ExecuteInEditMode]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/integration/cursor.html")]
 	public class CursorsDPISelector : MonoBehaviour, IUpdatable
 	{
 		/// <summary>
@@ -130,12 +131,8 @@ namespace UIWidgets
 				return;
 			}
 
-			#if UNITY_2020_3_OR_NEWER
-			var obj = FindObjectOfType<CursorsDPISelector>(true);
-			#else
-			var obj = FindObjectOfType<CursorsDPISelector>();
-			#endif
-			if (obj != null)
+			var selector = Compatibility.FindFirstObjectOfType<CursorsDPISelector>(true);
+			if (selector != null)
 			{
 				return;
 			}

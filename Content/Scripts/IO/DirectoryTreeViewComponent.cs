@@ -5,6 +5,7 @@
 	/// <summary>
 	/// DirectoryTreeViewComponent
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/directorytreeview.html")]
 	public class DirectoryTreeViewComponent : TreeViewComponentBase<FileSystemEntry>
 	{
 		/// <summary>

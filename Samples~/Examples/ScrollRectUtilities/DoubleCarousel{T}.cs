@@ -14,6 +14,29 @@
 		where T : Component
 	{
 		/// <summary>
+		/// Slides count.
+		/// </summary>
+		public int Count
+		{
+			get
+			{
+				return DirectChildren.Count;
+			}
+		}
+
+		/// <summary>
+		/// Active slides count.
+		/// </summary>
+		[Obsolete("Use Count property.")]
+		public int ActiveCount
+		{
+			get
+			{
+				return DirectSlides.Count;
+			}
+		}
+
+		/// <summary>
 		/// Custom set direct slide state.
 		/// </summary>
 		public Action<T, float> CustomSetDirectSlideState;
@@ -68,6 +91,11 @@
 		protected List<RectTransform> DirectChildren = new List<RectTransform>();
 
 		/// <summary>
+		/// DirectContent slides.
+		/// </summary>
+		protected List<RectTransform> DirectSlides = new List<RectTransform>();
+
+		/// <summary>
 		/// DirectContent targets.
 		/// </summary>
 		protected List<T> DirectChildrenTargets = new List<T>();
@@ -83,6 +111,11 @@
 		protected List<RectTransform> ReverseChildren = new List<RectTransform>();
 
 		/// <summary>
+		/// ReverseContent slides.
+		/// </summary>
+		protected List<RectTransform> ReverseSlides = new List<RectTransform>();
+
+		/// <summary>
 		/// ReverseContent targets.
 		/// </summary>
 		protected List<T> ReverseChildrenTargets = new List<T>();
@@ -94,6 +127,16 @@
 		{
 			Init();
 		}
+
+		/// <summary>
+		/// Duplicate of the first slide.
+		/// </summary>
+		protected RectTransform FirstDuplicate;
+
+		/// <summary>
+		/// Duplicate of the last slide.
+		/// </summary>
+		protected RectTransform LastDuplicate;
 
 		bool isInited;
 
@@ -110,32 +153,161 @@
 
 			isInited = true;
 
+			// TODO move from examples
+			CurrentRectTransform = transform as RectTransform;
 			ReverseContent = ReverseScrollRect.content;
 			DirectContent = DirectPaginator.GetScrollRect().content;
 
-			// duplicate first and last slides
-			var first = ReverseContent.GetChild(0);
-			var last = ReverseContent.GetChild(ReverseContent.childCount - 1);
-			Instantiate(first, ReverseContent, true);
-			Instantiate(last, ReverseContent, true).SetAsFirstSibling();
+			for (int i = 0; i < DirectContent.childCount; i++)
+			{
+				DirectChildren.Add(DirectContent.GetChild(i) as RectTransform);
+			}
 
-			GetContainerComponents(ReverseContent, ReverseChildren, ReverseChildrenTargets);
-			GetContainerComponents(DirectContent, DirectChildren, DirectChildrenTargets);
+			for (int i = 0; i < ReverseContent.childCount; i++)
+			{
+				ReverseChildren.Add(ReverseContent.GetChild(i) as RectTransform);
+			}
 
-			CurrentRectTransform = transform as RectTransform;
+			CreateDuplicates();
+
+			GetSlides(ReverseChildren, ReverseSlides, ReverseChildrenTargets);
+			GetSlides(DirectChildren, DirectSlides, DirectChildrenTargets);
+
 			if (ResizeSlides)
 			{
-				EnsureSlidesImage(DirectContent);
+				EnsureSlidesImage(DirectSlides);
 
-				ResizeListener = Utilities.GetOrAddComponent<ResizeListener>(this);
+				ResizeListener = Utilities.RequireComponent<ResizeListener>(this);
 				ResizeListener.OnResizeNextFrame.AddListener(UpdateSlidesSize);
 				UpdateSlidesSize();
 			}
 
-			// init
 			DirectPaginator.OnMovement.AddListener(UpdateSlidesState);
 			DirectPaginator.Init();
 			UpdateSlidesState(DirectPaginator.CurrentPage, 0f);
+		}
+
+		/// <summary>
+		/// Destroy duplicates.
+		/// </summary>
+		protected virtual void DestroyDuplicates()
+		{
+			if (FirstDuplicate != null)
+			{
+				FirstDuplicate.gameObject.SetActive(false);
+				Destroy(FirstDuplicate.gameObject);
+				ReverseChildren.RemoveAt(0);
+			}
+
+			if (LastDuplicate != null)
+			{
+				LastDuplicate.gameObject.SetActive(false);
+				Destroy(LastDuplicate.gameObject);
+				ReverseChildren.RemoveAt(ReverseChildren.Count - 1);
+			}
+		}
+
+		/// <summary>
+		/// Create duplicates.
+		/// </summary>
+		protected virtual void CreateDuplicates()
+		{
+			DestroyDuplicates();
+
+			FirstDuplicate = Instantiate(ReverseChildren[0], ReverseContent, true);
+			FirstDuplicate.SetAsLastSibling();
+			ReverseChildren.Insert(0, FirstDuplicate);
+
+			LastDuplicate = Instantiate(ReverseChildren[ReverseChildren.Count - 1], ReverseContent, true);
+			LastDuplicate.SetAsFirstSibling();
+			ReverseChildren.Add(LastDuplicate);
+		}
+
+		/// <summary>
+		/// Refresh.
+		/// </summary>
+		public virtual void Refresh()
+		{
+			Init();
+
+			CreateDuplicates();
+
+			GetSlides(ReverseChildren, ReverseSlides, ReverseChildrenTargets);
+			GetSlides(DirectChildren, DirectSlides, DirectChildrenTargets);
+
+			if (ResizeSlides)
+			{
+				EnsureSlidesImage(DirectSlides);
+				UpdateSlidesSize();
+			}
+
+			DirectPaginator.Refresh();
+			UpdateSlidesState(DirectPaginator.CurrentPage, 0f);
+		}
+
+		/// <summary>
+		/// Add slide.
+		/// </summary>
+		/// <param name="index">Slide index.</param>
+		/// <param name="direct">Direct (foreground) slide.</param>
+		/// <param name="reverse">Reverse (background) slide.</param>
+		public virtual void AddSlide(int index, RectTransform direct, RectTransform reverse)
+		{
+			Init();
+
+			DirectChildren.Insert(index, direct);
+			direct.SetParent(DirectContent, true);
+			direct.SetSiblingIndex(index);
+
+			var reverse_index = ReverseChildren.Count - index - 2;
+			ReverseChildren.Insert(reverse_index, reverse);
+			reverse.SetParent(ReverseContent, true);
+			reverse.SetSiblingIndex(reverse_index);
+
+			Refresh();
+		}
+
+		/// <summary>
+		/// Enable slide.
+		/// </summary>
+		/// <param name="index">Slide index.</param>
+		public virtual void EnableSlide(int index)
+		{
+			ToggleSlide(index, true);
+		}
+
+		/// <summary>
+		/// Disable slide.
+		/// </summary>
+		/// <param name="index">Slide index.</param>
+		public virtual void DisableSlide(int index)
+		{
+			ToggleSlide(index, false);
+		}
+
+		/// <summary>
+		/// Remove slide.
+		/// </summary>
+		/// <param name="index">Slide index.</param>
+		[Obsolete("Renamed to DisableSlide()")]
+		public virtual void RemoveSlide(int index)
+		{
+			ToggleSlide(index, false);
+		}
+
+		/// <summary>
+		/// Toggle slide.
+		/// </summary>
+		/// <param name="index">Slide index.</param>
+		/// <param name="active">Active.</param>
+		public virtual void ToggleSlide(int index, bool active)
+		{
+			Init();
+
+			DirectChildren[index].gameObject.SetActive(active);
+			ReverseChildren[ReverseChildren.Count - index - 2].gameObject.SetActive(active);
+
+			Refresh();
 		}
 
 		/// <summary>
@@ -156,38 +328,40 @@
 		}
 
 		/// <summary>
-		/// Get container components.
+		/// Get slides.
 		/// </summary>
-		/// <param name="container">Container.</param>
-		/// <param name="children">Result children list.</param>
+		/// <param name="all">All slides.</param>
+		/// <param name="slides">Result children list.</param>
 		/// <param name="targets">Result targets list.</param>
-		protected virtual void GetContainerComponents(Transform container, List<RectTransform> children, List<T> targets)
+		protected virtual void GetSlides(List<RectTransform> all, List<RectTransform> slides, List<T> targets)
 		{
-			children.Clear();
+			slides.Clear();
 			targets.Clear();
 
-			for (int i = 0; i < container.childCount; i++)
+			foreach (var slide in all)
 			{
-				var child = container.GetChild(i);
+				if (!slide.gameObject.activeSelf)
+				{
+					continue;
+				}
 
-				children.Add(child as RectTransform);
-				targets.Add(child.GetComponent<T>());
+				slides.Add(slide);
+				targets.Add(slide.GetComponent<T>());
 			}
 		}
 
 		/// <summary>
 		/// Ensure all slides have an Image component.
 		/// </summary>
-		/// <param name="container">Container.</param>
-		protected virtual void EnsureSlidesImage(Transform container)
+		/// <param name="slides">Slides.</param>
+		protected virtual void EnsureSlidesImage(List<RectTransform> slides)
 		{
-			for (int i = 0; i < container.childCount; i++)
+			foreach (var slide in slides)
 			{
-				var child = container.GetChild(i);
-				var g = child.GetComponent<Graphic>();
+				var g = slide.GetComponent<Graphic>();
 				if (g == null)
 				{
-					var img = child.gameObject.AddComponent<Image>();
+					var img = slide.gameObject.AddComponent<Image>();
 					img.enabled = false;
 				}
 			}
@@ -208,8 +382,8 @@
 		protected virtual void SetSlidesSize(Vector2 size)
 		{
 			var page = DirectPaginator.CurrentPage;
-			SetSlidesSize(size, DirectContent);
-			SetSlidesSize(size, ReverseContent);
+			SetSlidesSize(size, DirectSlides);
+			SetSlidesSize(size, ReverseSlides);
 
 			DirectPaginator.PageSizeType = PageSizeType.Fixed;
 			DirectPaginator.PageSize = DirectPaginator.IsHorizontal() ? size.x : size.y;
@@ -220,12 +394,11 @@
 		/// Set slides size.
 		/// </summary>
 		/// <param name="size">Size.</param>
-		/// <param name="container">Container.</param>
-		protected virtual void SetSlidesSize(Vector2 size, Transform container)
+		/// <param name="slides">Slides.</param>
+		protected virtual void SetSlidesSize(Vector2 size, List<RectTransform> slides)
 		{
-			for (int i = 0; i < container.childCount; i++)
+			foreach (var slide in slides)
 			{
-				var slide = container.GetChild(i) as RectTransform;
 				slide.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
 				slide.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y);
 			}
@@ -246,8 +419,8 @@
 
 			var clamped_index = ClampDirectSlide(slideIndex);
 			var reverse_index = (slideIndex == -1)
-				? ReverseContent.childCount - 1
-				: ClampReverseSlide(ReverseContent.childCount - clamped_index - 2);
+				? ReverseSlides.Count - 1
+				: ClampReverseSlide(ReverseSlides.Count - clamped_index - 2);
 			SetReverseSlideState(reverse_index, ratio);
 			SetReverseSlideState(ClampReverseSlide(reverse_index - 1), 1f - ratio);
 
@@ -284,12 +457,12 @@
 		{
 			if (slideIndex < 0)
 			{
-				slideIndex += ReverseChildren.Count;
+				slideIndex += ReverseSlides.Count;
 			}
 
-			if (slideIndex >= ReverseChildren.Count)
+			if (slideIndex >= ReverseSlides.Count)
 			{
-				slideIndex -= ReverseChildren.Count;
+				slideIndex -= ReverseSlides.Count;
 			}
 
 			return slideIndex;
@@ -304,9 +477,9 @@
 		{
 			if (CustomSetDirectSlideState != null)
 			{
-				if (slideIndex >= DirectChildren.Count)
+				if (slideIndex >= DirectSlides.Count)
 				{
-					slideIndex = DirectChildren.Count - 1;
+					slideIndex = DirectSlides.Count - 1;
 				}
 
 				CustomSetDirectSlideState(DirectChildrenTargets[slideIndex], ratio);
@@ -326,7 +499,7 @@
 			}
 			else
 			{
-				SetReverseSlideState(ReverseChildren[slideIndex], ratio);
+				SetReverseSlideState(ReverseSlides[slideIndex], ratio);
 			}
 		}
 

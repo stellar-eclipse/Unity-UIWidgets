@@ -1,7 +1,10 @@
 ﻿namespace UIWidgets
 {
+	using System;
+	using System.Collections.Generic;
 	using UIWidgets.Styles;
 	using UnityEngine;
+	using UnityEngine.Serialization;
 	using UnityEngine.UI;
 
 	/// <summary>
@@ -9,17 +12,28 @@
 	/// </summary>
 	/// <typeparam name="T">Node type.</typeparam>
 	[RequireComponent(typeof(MultipleConnector))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/treegraph.html")]
 	public abstract class TreeGraphComponent<T> : MonoBehaviour, IStylable
 	{
 		/// <summary>
 		/// Foreground graphics for coloring.
 		/// </summary>
 		[SerializeField]
+		[HideInInspector]
+		[Obsolete("Replaced with 'foregrounds'.")]
 		protected Graphic[] graphicsForeground = Compatibility.EmptyArray<Graphic>();
+
+		/// <summary>
+		/// Foreground graphics for coloring.
+		/// </summary>
+		[SerializeField]
+		[FormerlySerializedAs("graphicsForeground")]
+		protected List<Graphic> foregrounds = new List<Graphic>();
 
 		/// <summary>
 		/// Gets foreground graphics for coloring.
 		/// </summary>
+		[Obsolete("Replaced with 'Foregrounds'.")]
 		public virtual Graphic[] GraphicsForeground
 		{
 			get
@@ -31,14 +45,37 @@
 		}
 
 		/// <summary>
+		/// Gets foreground graphics for coloring.
+		/// </summary>
+		public virtual List<Graphic> Foregrounds
+		{
+			get
+			{
+				GraphicsForegroundInit();
+
+				return foregrounds;
+			}
+		}
+
+		/// <summary>
 		/// Background graphics for coloring.
 		/// </summary>
 		[SerializeField]
+		[HideInInspector]
+		[Obsolete("Replaced with 'backgrounds'.")]
 		protected Graphic[] graphicsBackground = Compatibility.EmptyArray<Graphic>();
+
+		/// <summary>
+		/// Background graphics for coloring.
+		/// </summary>
+		[SerializeField]
+		[FormerlySerializedAs("graphicsForeground")]
+		protected List<Graphic> backgrounds = new List<Graphic>();
 
 		/// <summary>
 		/// Get background graphics for coloring.
 		/// </summary>
+		[Obsolete("Replaced with 'Backgrounds'.")]
 		public virtual Graphic[] GraphicsBackground
 		{
 			get
@@ -46,6 +83,19 @@
 				GraphicsBackgroundInit();
 
 				return graphicsBackground;
+			}
+		}
+
+		/// <summary>
+		/// Get background graphics for coloring.
+		/// </summary>
+		public virtual List<Graphic> Backgrounds
+		{
+			get
+			{
+				GraphicsBackgroundInit();
+
+				return backgrounds;
 			}
 		}
 
@@ -156,8 +206,22 @@
 		{
 			if (GraphicsBackgroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				graphicsBackground = new Graphic[] { Background };
+				#pragma warning restore
 				GraphicsBackgroundVersion = 1;
+			}
+
+			if (GraphicsBackgroundVersion == 1)
+			{
+				if (backgrounds.Count == 0)
+				{
+					#pragma warning disable 0618
+					backgrounds.AddRange(graphicsBackground);
+					#pragma warning restore
+				}
+
+				GraphicsBackgroundVersion = 2;
 			}
 		}
 
@@ -173,6 +237,37 @@
 		/// </summary>
 		protected virtual void GraphicsForegroundInit()
 		{
+			if (GraphicsForegroundVersion == 0)
+			{
+				if (foregrounds.Count == 0)
+				{
+					#pragma warning disable 0618
+					foregrounds.AddRange(graphicsForeground);
+					#pragma warning restore
+				}
+
+				GraphicsForegroundVersion = 1;
+			}
+		}
+
+		/// <summary>
+		/// Set theme properties owner.
+		/// </summary>
+		/// <param name="owner">Owner.</param>
+		public virtual void SetThemePropertyOwner(Component owner)
+		{
+			SetThemeImagesPropertiesOwner(owner);
+
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Foregrounds, nameof(Graphic.color), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Backgrounds, nameof(Graphic.color), owner);
+		}
+
+		/// <summary>
+		/// Set only images properties owner.
+		/// </summary>
+		/// <param name="owner">Owner.</param>
+		public virtual void SetThemeImagesPropertiesOwner(Component owner)
+		{
 		}
 
 #if UNITY_EDITOR
@@ -184,17 +279,7 @@
 			GraphicsBackgroundInit();
 			GraphicsForegroundInit();
 
-#if UNITY_2018_3_OR_NEWER
-			if (UnityEditor.PrefabUtility.IsPartOfAnyPrefab(this))
-#endif
-			{
-				UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(this);
-			}
-
-			if (Compatibility.IsPrefab(this))
-			{
-				UnityEditor.EditorUtility.SetDirty(this);
-			}
+			Compatibility.MarkDirty(this);
 		}
 #endif
 
@@ -210,7 +295,7 @@
 		{
 			styleBackground.ApplyTo(Background);
 
-			foreach (var gf in GraphicsForeground)
+			foreach (var gf in Foregrounds)
 			{
 				if (gf != null)
 				{
@@ -247,7 +332,7 @@
 		{
 			styleBackground.GetFrom(Background);
 
-			foreach (var gf in GraphicsForeground)
+			foreach (var gf in Foregrounds)
 			{
 				if (gf != null)
 				{

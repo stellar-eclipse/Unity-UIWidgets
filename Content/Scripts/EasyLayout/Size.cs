@@ -27,10 +27,7 @@
 		/// Serves as a hash function for a EasyLayout.Size object.
 		/// </summary>
 		/// <returns>A hash code for this instance that is suitable for use in hashing algorithms and data structures such as a hash table.</returns>
-		public override int GetHashCode()
-		{
-			return Min.GetHashCode() ^ Preferred.GetHashCode() ^ Flexible.GetHashCode();
-		}
+		public override int GetHashCode() => Min.GetHashCode() ^ Preferred.GetHashCode() ^ Flexible.GetHashCode();
 
 		/// <summary>
 		/// Determines whether the specified System.Object is equal to the current EasyLayout.Size.
@@ -38,15 +35,7 @@
 		/// <param name="obj">The System.Object to compare with the current EasyLayout.Size.</param>
 		/// <returns><c>true</c> if the specified System.Object is equal to the current EasyLayout.Size;
 		/// otherwise, <c>false</c>.</returns>
-		public override bool Equals(object obj)
-		{
-			if (!(obj is Size))
-			{
-				return false;
-			}
-
-			return Equals((Size)obj);
-		}
+		public readonly override bool Equals(object obj) => (obj is Size size) && Equals(size);
 
 		/// <summary>
 		/// Determines whether the specified EasyLayout.Size is equal to the current EasyLayout.Size.
@@ -54,20 +43,7 @@
 		/// <param name="other">The EasyLayout.Size to compare with the current EasyLayout.Size.</param>
 		/// <returns><c>true</c> if the specified EasyLayout.Size is equal to the current EasyLayout.Size;
 		/// otherwise, <c>false</c>.</returns>
-		public bool Equals(Size other)
-		{
-			if (Min != other.Min)
-			{
-				return false;
-			}
-
-			if (Preferred != other.Preferred)
-			{
-				return false;
-			}
-
-			return Flexible == other.Flexible;
-		}
+		public readonly bool Equals(Size other) => (Min == other.Min) && (Preferred == other.Preferred) && (Flexible == other.Flexible);
 
 		/// <summary>
 		/// Compare sizes.
@@ -75,10 +51,7 @@
 		/// <param name="size1">First size.</param>
 		/// <param name="size2">Seconds size.</param>
 		/// <returns>True if sizes are equals; otherwise false.</returns>
-		public static bool operator ==(Size size1, Size size2)
-		{
-			return size1.Equals(size2);
-		}
+		public static bool operator ==(Size size1, Size size2) => size1.Equals(size2);
 
 		/// <summary>
 		/// Compare sizes.
@@ -86,10 +59,7 @@
 		/// <param name="size1">First size.</param>
 		/// <param name="size2">Seconds size.</param>
 		/// <returns>True if sizes are not equals; otherwise false.</returns>
-		public static bool operator !=(Size size1, Size size2)
-		{
-			return !size1.Equals(size2);
-		}
+		public static bool operator !=(Size size1, Size size2) => !size1.Equals(size2);
 
 		/// <summary>
 		/// Get the maximum widths.

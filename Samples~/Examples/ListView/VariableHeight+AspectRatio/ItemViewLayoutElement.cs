@@ -39,13 +39,17 @@ namespace UIWidgets.Examples.VHAR
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[]
 				{
 					UtilitiesUI.GetGraphic(Name),
 					UtilitiesUI.GetGraphic(Text),
 				};
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <inheritdoc/>
@@ -53,7 +57,7 @@ namespace UIWidgets.Examples.VHAR
 		{
 			base.Init();
 
-			textureLayoutElement = Utilities.GetOrAddComponent<LayoutElement>(Texture);
+			textureLayoutElement = Utilities.RequireComponent<LayoutElement>(Texture);
 		}
 
 		/// <summary>

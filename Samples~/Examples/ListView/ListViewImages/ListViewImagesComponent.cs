@@ -247,13 +247,24 @@
 			}
 		}
 
+		/// <inheritdoc/>
+		public override void SetThemeImagesPropertiesOwner(Component owner)
+		{
+			base.SetThemeImagesPropertiesOwner(owner);
+
+			UIThemes.Utilities.SetTargetOwner(typeof(Texture), Image, nameof(Image.texture), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Image, nameof(Image.color), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(Sprite), SpriteImage, nameof(SpriteImage.sprite), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), SpriteImage, nameof(SpriteImage.color), owner);
+		}
+
 		/// <summary>
 		/// Upgrade this instance.
 		/// </summary>
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Url, ref UrlAdapter);
+			Utilities.RequireComponent(Url, ref UrlAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

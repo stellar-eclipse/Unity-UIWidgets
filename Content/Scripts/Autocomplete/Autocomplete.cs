@@ -46,6 +46,22 @@
 		}
 
 		/// <summary>
+		/// Value.
+		/// </summary>
+		public string Value
+		{
+			get
+			{
+				return InputFieldAdapter.Value;
+			}
+
+			set
+			{
+				InputFieldAdapter.Value = value;
+			}
+		}
+
+		/// <summary>
 		/// Proxy for InputField.
 		/// </summary>
 		[Obsolete("Replaced with InputFieldAdapter")]
@@ -60,7 +76,7 @@
 		{
 			get
 			{
-				return inputFieldAdapter;
+				return InputFieldAdapter;
 			}
 		}
 
@@ -159,15 +175,9 @@
 		[Obsolete("Use Query instead.")]
 		protected string Input
 		{
-			get
-			{
-				return Query;
-			}
+			get => Query;
 
-			set
-			{
-				Query = value;
-			}
+			set => Query = value;
 		}
 
 		/// <summary>
@@ -202,6 +212,16 @@
 		/// Coroutine to performs search.
 		/// </summary>
 		protected IEnumerator SearchCoroutine;
+
+		/// <summary>
+		/// Allow to handle item selection event.
+		/// </summary>
+		protected bool AllowItemSelectionEvent;
+
+		/// <summary>
+		/// Position in hierarchy.
+		/// </summary>
+		protected HierarchyPosition Position;
 
 		/// <summary>
 		/// Determines whether the beginning of value matches the Input.
@@ -259,7 +279,7 @@
 
 			InputFieldAdapter.onValueChanged.AddListener(ApplyFilter);
 
-			var inputListener = Utilities.GetOrAddComponent<InputFieldListener>(InputFieldAdapter.gameObject);
+			var inputListener = Utilities.RequireComponent<InputFieldListener>(InputFieldAdapter.gameObject);
 			inputListener.OnMoveEvent.AddListener(SelectResult);
 			inputListener.OnSubmitEvent.AddListener(SubmitResult);
 			inputListener.onDeselect.AddListener(InputDeselected);
@@ -272,27 +292,12 @@
 		}
 
 		/// <summary>
-		/// Gets the input field text.
-		/// </summary>
-		/// <returns>The input field text.</returns>
-		public virtual string GetInputFieldText()
-		{
-			return InputFieldAdapter.text;
-		}
-
-		/// <summary>
-		/// Allow to handle item selection event.
-		/// </summary>
-		protected bool AllowItemSelectionEvent;
-
-		/// <summary>
 		/// Handle input deselected event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		protected virtual void InputDeselected(BaseEventData eventData)
 		{
-			var ev = eventData as PointerEventData;
-			if ((ev != null) && (ev.pointerCurrentRaycast.gameObject != null) && ev.pointerCurrentRaycast.gameObject.transform.IsChildOf(DisplayListView.transform))
+			if ((eventData is PointerEventData ev) && (ev.pointerCurrentRaycast.gameObject != null) && ev.pointerCurrentRaycast.gameObject.transform.IsChildOf(DisplayListView.transform))
 			{
 				AllowItemSelectionEvent = true;
 			}
@@ -327,28 +332,17 @@
 		}
 
 		/// <summary>
-		/// Canvas will be used as parent for DisplayListView.
-		/// </summary>
-		protected Transform CanvasTransform;
-
-		/// <summary>
 		/// Closes the options.
 		/// </summary>
 		/// <param name="input">Input.</param>
-		protected virtual void HideOptions(string input)
-		{
-			HideOptions();
-		}
+		protected virtual void HideOptions(string input) => HideOptions();
 
 		/// <summary>
 		/// Closes the options.
 		/// </summary>
 		protected virtual void HideOptions()
 		{
-			if (CanvasTransform != null)
-			{
-				Utilities.GetOrAddComponent<HierarchyToggle>(DisplayListView).Restore();
-			}
+			Position.Restore();
 
 			DisplayListView.gameObject.SetActive(false);
 		}
@@ -358,10 +352,10 @@
 		/// </summary>
 		protected virtual void ShowOptions()
 		{
-			CanvasTransform = UtilitiesUI.FindTopmostCanvas(DisplayListView.transform);
-			if (CanvasTransform != null)
+			var canvas = UtilitiesUI.FindTopmostCanvas(DisplayListView.transform);
+			if (canvas != null)
 			{
-				Utilities.GetOrAddComponent<HierarchyToggle>(DisplayListView).SetParent(CanvasTransform);
+				Position = HierarchyPosition.SetParent(DisplayListView.transform, canvas);
 			}
 
 			DisplayListView.gameObject.SetActive(true);
@@ -583,9 +577,9 @@
 					InputFieldAdapter.caretPosition = CaretPosition;
 					break;
 				default:
-					if (Input2Query(InputFieldAdapter.text) != Query)
+					if (Input2Query(Value) != Query)
 					{
-						ApplyFilter(InputFieldAdapter.text);
+						ApplyFilter(Value);
 					}
 
 					break;
@@ -636,11 +630,12 @@
 			var value = GetStringValue(item);
 			if (Result == AutocompleteResult.Append)
 			{
+				var input = Value;
 				int end_position = (DisplayListView.gameObject.activeInHierarchy && eventData != null && !isEnter) ? InputFieldAdapter.caretPosition : CaretPosition;
-				var text = InputFieldAdapter.text.Substring(0, end_position);
+				var text = input.Substring(0, end_position);
 				var start_position = text.LastIndexOfAny(DelimiterChars) + 1;
 
-				InputFieldAdapter.text = string.Format("{0}{1}{2}", InputFieldAdapter.text.Substring(0, start_position), value, InputFieldAdapter.text.Substring(end_position));
+				Value = string.Format("{0}{1}{2}", input.Substring(0, start_position), value, input.Substring(end_position));
 
 				InputFieldAdapter.caretPosition = start_position + value.Length;
 #if UNITY_5_1 || UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER
@@ -656,7 +651,7 @@
 			}
 			else
 			{
-				InputFieldAdapter.text = value;
+				Value = value;
 #if UNITY_5_1 || UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER
 				InputFieldAdapter.caretPosition = value.Length;
 #else
@@ -701,7 +696,7 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0618
-			Utilities.GetOrAddComponent(InputField, ref inputFieldAdapter);
+			Utilities.RequireComponent(InputField, ref inputFieldAdapter);
 #pragma warning restore 0618
 		}
 

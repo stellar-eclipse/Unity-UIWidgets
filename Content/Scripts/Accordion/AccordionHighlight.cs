@@ -1,14 +1,18 @@
 namespace UIWidgets
 {
+	using System.Collections.Generic;
+	using UIThemes;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.Serialization;
+	using UnityEngine.UI;
 
 	/// <summary>
 	/// Highlight accordion.
 	/// </summary>
 	[RequireComponent(typeof(Accordion))]
-	public class AccordionHighlight : MonoBehaviour, IStylable
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/containers/accordion.html#accordionhighlight")]
+	public class AccordionHighlight : MonoBehaviour, IStylable, ITargetOwner
 	{
 		[SerializeField]
 		StyleImage defaultToggleBackground;
@@ -132,11 +136,28 @@ namespace UIWidgets
 
 			isInited = true;
 
+			SetTargetOwner();
+
 			Accordion.OnStartToggleAnimation.AddListener(OnToggle);
 			Accordion.OnToggleItem.AddListener(OnToggle);
 			Accordion.OnDataSourceChanged.AddListener(UpdateHighlights);
 
 			UpdateHighlights();
+		}
+
+		/// <summary>
+		/// Set theme target owner.
+		/// </summary>
+		public virtual void SetTargetOwner()
+		{
+			foreach (var item in Accordion)
+			{
+				UIThemes.Utilities.SetTargetOwner(typeof(Color), item.ToggleObject.GetComponent<Graphic>(), nameof(Graphic.color), this);
+				if (item.ToggleLabel != null)
+				{
+					UIThemes.Utilities.SetTargetOwner(typeof(Color), item.ToggleLabel.GetComponent<Graphic>(), nameof(Graphic.color), this);
+				}
+			}
 		}
 
 		/// <summary>
@@ -190,7 +211,7 @@ namespace UIWidgets
 		/// </summary>
 		public virtual void UpdateHighlights()
 		{
-			foreach (var item in Accordion.DataSource)
+			foreach (var item in Accordion)
 			{
 				UpdateHighlight(item);
 			}
@@ -219,5 +240,15 @@ namespace UIWidgets
 
 			return true;
 		}
+
+		#if UNITY_EDITOR
+		/// <summary>
+		/// Process the validate event.
+		/// </summary>
+		protected virtual void OnValidate()
+		{
+			SetTargetOwner();
+		}
+		#endif
 	}
 }

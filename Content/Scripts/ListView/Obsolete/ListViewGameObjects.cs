@@ -200,7 +200,7 @@ namespace UIWidgets
 			Items.Clear();
 			foreach (var item in newItems)
 			{
-				Items.Add(Utilities.GetOrAddComponent<ListViewItem>(item));
+				Items.Add(Utilities.RequireComponent<ListViewItem>(item));
 			}
 
 			SelectedIndices = new_selected_indices;
@@ -213,6 +213,11 @@ namespace UIWidgets
 			OnDeselect.RemoveListener(OnDeselectCallback);
 
 			base.OnDestroy();
+		}
+
+		/// <inheritdoc/>
+		public override void SetTargetOwner()
+		{
 		}
 	}
 }

@@ -9,6 +9,7 @@
 	/// </summary>
 	/// <typeparam name="TData">Data type.</typeparam>
 	/// <typeparam name="TPoint">Point type.</typeparam>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/tracksview.html")]
 	public abstract class TrackViewBase<TData, TPoint> : MonoBehaviour, IMovableToCache
 		where TData : class, ITrackData<TPoint>
 		where TPoint : IComparable<TPoint>
@@ -56,6 +57,7 @@
 		/// <summary>
 		/// Owner.
 		/// </summary>
+		[NonSerialized]
 		public TracksViewBase<TData, TPoint> Owner;
 
 		/// <summary>
@@ -80,7 +82,7 @@
 
 			isInited = true;
 
-			var click = Utilities.GetOrAddComponent<ClickListener>(this);
+			var click = Utilities.RequireComponent<ClickListener>(this);
 			click.DoubleClickEvent.AddListener(OnDoubleClick);
 		}
 

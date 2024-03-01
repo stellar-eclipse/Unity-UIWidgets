@@ -2,6 +2,7 @@
 {
 	using System.Collections;
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 
 	/// <summary>
@@ -28,6 +29,7 @@
 	/// <summary>
 	/// Notification sequence manager.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/dialogs/notify.html")]
 	public class NotifySequenceManager : MonoBehaviour, IUpdatable
 	{
 		static readonly List<NotificationBase> NotificationSequence = new List<NotificationBase>();
@@ -39,6 +41,7 @@
 		/// Reload support.
 		/// </summary>
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(currentNotification), nameof(NotificationSequence))]
 		protected static void StaticInit()
 		{
 			currentNotification = null;

@@ -9,6 +9,7 @@
 	/// Allow to control the maximum preferred sizes of the LayoutGroup.
 	/// </summary>
 	[RequireComponent(typeof(LayoutGroup))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/layout/layoutelementmax.html")]
 	public class LayoutElementMax : UIBehaviour, ILayoutElement, ILayoutIgnorer
 	{
 		LayoutGroup layoutGroup;
@@ -48,10 +49,7 @@
 		/// </summary>
 		public virtual float MaxHeight
 		{
-			get
-			{
-				return maxHeight;
-			}
+			get => maxHeight;
 
 			set
 			{
@@ -68,10 +66,7 @@
 		/// </summary>
 		public virtual float MaxWidth
 		{
-			get
-			{
-				return maxWidth;
-			}
+			get => maxWidth;
 
 			set
 			{
@@ -91,10 +86,7 @@
 		/// </remarks>
 		public bool ignoreLayout
 		{
-			get
-			{
-				return pignoreLayout;
-			}
+			get => pignoreLayout;
 
 			set
 			{
@@ -111,82 +103,40 @@
 		/// </summary>
 		public int layoutPriority
 		{
-			get
-			{
-				return playoutPriority;
-			}
+			get => playoutPriority;
 
-			set
-			{
-				playoutPriority = value;
-			}
+			set => playoutPriority = value;
 		}
 
 		/// <summary>
 		/// The minimum height this layout element may be allocated.
 		/// </summary>
-		public float minHeight
-		{
-			get
-			{
-				return -1;
-			}
-		}
+		public float minHeight => -1;
 
 		/// <summary>
 		/// The minimum width this layout element may be allocated.
 		/// </summary>
-		public float minWidth
-		{
-			get
-			{
-				return -1;
-			}
-		}
+		public float minWidth => -1;
 
 		/// <summary>
 		/// The preferred width this layout element should be allocated if there is sufficient space. The preferredWidth can be set to -1 to remove the size.
 		/// </summary>
-		public float preferredHeight
-		{
-			get
-			{
-				return Mathf.Min(Layout.preferredHeight, MaxHeight);
-			}
-		}
+		public float preferredHeight => Mathf.Min(Layout.preferredHeight, MaxHeight);
 
 		/// <summary>
 		/// The preferred width this layout element should be allocated if there is sufficient space. The preferredWidth can be set to -1 to remove the size.
 		/// </summary>
-		public float preferredWidth
-		{
-			get
-			{
-				return Mathf.Min(Layout.preferredWidth, MaxWidth);
-			}
-		}
+		public float preferredWidth => Mathf.Min(Layout.preferredWidth, MaxWidth);
 
 		/// <summary>
 		/// The extra relative height this layout element should be allocated if there is additional available space.
 		/// </summary>
-		public float flexibleHeight
-		{
-			get
-			{
-				return -1;
-			}
-		}
+		public float flexibleHeight => -1;
 
 		/// <summary>
 		/// The extra relative width this layout element should be allocated if there is additional available space.
 		/// </summary>
-		public float flexibleWidth
-		{
-			get
-			{
-				return -1;
-			}
-		}
+		public float flexibleWidth => -1;
 
 		/// <summary>
 		/// Calculates the layout input horizontal.

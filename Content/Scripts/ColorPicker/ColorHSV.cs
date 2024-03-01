@@ -37,13 +37,7 @@
 		/// Color to use in shader.
 		/// </summary>
 		/// <value>The color.</value>
-		public Color ShaderColor
-		{
-			get
-			{
-				return new Color(H / 359f, S / 255f, V / 255f, A / 255f);
-			}
-		}
+		public readonly Color ShaderColor => new Color(H / 359f, S / 255f, V / 255f, A / 255f);
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="UIWidgets.ColorHSV"/> struct.
@@ -107,29 +101,20 @@
 		/// </summary>
 		/// <param name="color">Color HSV.</param>
 		/// <returns>Color.</returns>
-		public static Color32 ToColor32(ColorHSV color)
-		{
-			return (Color)color;
-		}
+		public static Color32 ToColor32(ColorHSV color) => (Color)color;
 
 		/// <summary>
 		/// ColorHSV can be implicitly converted to Color32.
 		/// </summary>
 		/// <param name="color">Color.</param>
-		public static implicit operator Color32(ColorHSV color)
-		{
-			return (Color)color;
-		}
+		public static implicit operator Color32(ColorHSV color) => (Color)color;
 
 		/// <summary>
 		/// ColorHSV can be converted to Color.
 		/// </summary>
 		/// <param name="color">Color HSV.</param>
 		/// <returns>Color.</returns>
-		public static Color ToColor(ColorHSV color)
-		{
-			return color;
-		}
+		public static Color ToColor(ColorHSV color) => color;
 
 		/// <summary>
 		/// ColorHSV can be implicitly converted to Color.
@@ -145,31 +130,26 @@
 			saturation = Mathf.Clamp(saturation, 0.001f, 0.999f);
 			value = Mathf.Clamp(value, 0.001f, 0.999f);
 
-			float h6 = hue * 6f;
+			var h6 = hue * 6f;
 			if (h6 == 6f)
 			{
 				h6 = 0f;
 			}
 
-			int ihue = (int)h6;
-			float p = value * (1f - saturation);
-			float q = value * (1f - (saturation * (h6 - (float)ihue)));
-			float t = value * (1f - (saturation * (1f - (h6 - (float)ihue))));
-			switch (ihue)
+			var ihue = (int)h6;
+			var p = value * (1f - saturation);
+			var q = value * (1f - (saturation * (h6 - ihue)));
+			var t = value * (1f - (saturation * (1f - (h6 - ihue))));
+
+			return ihue switch
 			{
-				case 0:
-					return new Color(value, t, p, color.A / 255f);
-				case 1:
-					return new Color(q, value, p, color.A / 255f);
-				case 2:
-					return new Color(p, value, t, color.A / 255f);
-				case 3:
-					return new Color(p, q, value, color.A / 255f);
-				case 4:
-					return new Color(t, p, value, color.A / 255f);
-				default:
-					return new Color(value, p, q, color.A / 255f);
-			}
+				0 => new Color(value, t, p, color.A / 255f),
+				1 => new Color(q, value, p, color.A / 255f),
+				2 => new Color(p, value, t, color.A / 255f),
+				3 => new Color(p, q, value, color.A / 255f),
+				4 => new Color(t, p, value, color.A / 255f),
+				_ => new Color(value, p, q, color.A / 255f),
+			};
 		}
 
 		/// <summary>
@@ -177,34 +157,20 @@
 		/// </summary>
 		/// <param name="obj">The object to compare with the current object.</param>
 		/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-		public override bool Equals(object obj)
-		{
-			if (obj is ColorHSV)
-			{
-				return Equals((ColorHSV)obj);
-			}
-
-			return false;
-		}
+		public readonly override bool Equals(object obj) => (obj is ColorHSV color) && Equals(color);
 
 		/// <summary>
 		/// Determines whether the specified object is equal to the current object.
 		/// </summary>
 		/// <param name="other">The object to compare with the current object.</param>
 		/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-		public bool Equals(ColorHSV other)
-		{
-			return H == other.H && S == other.S && V == other.V && A == other.A;
-		}
+		public readonly bool Equals(ColorHSV other) => H == other.H && S == other.S && V == other.V && A == other.A;
 
 		/// <summary>
 		/// Hash function.
 		/// </summary>
 		/// <returns>A hash code for the current object.</returns>
-		public override int GetHashCode()
-		{
-			return H ^ S ^ V ^ A.GetHashCode();
-		}
+		public override int GetHashCode() => H ^ S ^ V ^ A.GetHashCode();
 
 		/// <summary>
 		/// Compare specified colors.
@@ -212,10 +178,7 @@
 		/// <param name="color1">First color.</param>
 		/// <param name="color2">Second color.</param>
 		/// <returns>true if the colors are equal; otherwise, false.</returns>
-		public static bool operator ==(ColorHSV color1, ColorHSV color2)
-		{
-			return color1.Equals(color2);
-		}
+		public static bool operator ==(ColorHSV color1, ColorHSV color2) => color1.Equals(color2);
 
 		/// <summary>
 		/// Compare specified colors.
@@ -223,20 +186,14 @@
 		/// <param name="color1">First color.</param>
 		/// <param name="color2">Second color.</param>
 		/// <returns>true if the colors not equal; otherwise, false.</returns>
-		public static bool operator !=(ColorHSV color1, ColorHSV color2)
-		{
-			return !color1.Equals(color2);
-		}
+		public static bool operator !=(ColorHSV color1, ColorHSV color2) => !color1.Equals(color2);
 
 		/// <summary>
 		/// Returns a string that represents the current object.
 		/// </summary>
 		/// <returns>A string that represents the current object.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0101:Array allocation for params parameter", Justification = "Required.")]
-		public override string ToString()
-		{
-			return string.Format("HSVA({0}, {1}, {2}, {3})", H.ToString(), S.ToString(), V.ToString(), A.ToString());
-		}
+		public override string ToString() => string.Format("HSVA({0}, {1}, {2}, {3})", H.ToString(), S.ToString(), V.ToString(), A.ToString());
 
 		/// <summary>
 		/// Returns a string that represents the current object.

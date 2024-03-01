@@ -6,7 +6,8 @@
 	/// <summary>
 	/// Color picker color view block.
 	/// </summary>
-	public class ColorPickerColorBlock : MonoBehaviour
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/colorpicker.html")]
+	public class ColorPickerColorBlock : MonoBehaviour, UIThemes.ITargetOwner
 	{
 		[SerializeField]
 		Image colorView;
@@ -17,10 +18,7 @@
 		/// <value>The color view.</value>
 		public Image ColorView
 		{
-			get
-			{
-				return colorView;
-			}
+			get => colorView;
 
 			set
 			{
@@ -41,10 +39,7 @@
 		/// <value>The alpha view.</value>
 		public RectTransform AlphaView
 		{
-			get
-			{
-				return alphaView;
-			}
+			get => alphaView;
 
 			set
 			{
@@ -64,15 +59,9 @@
 		/// <value>The input mode.</value>
 		public ColorPickerInputMode InputMode
 		{
-			get
-			{
-				return inputMode;
-			}
+			get => inputMode;
 
-			set
-			{
-				inputMode = value;
-			}
+			set => inputMode = value;
 		}
 
 		ColorPickerPaletteMode paletteMode;
@@ -83,15 +72,9 @@
 		/// <value>The palette mode.</value>
 		public ColorPickerPaletteMode PaletteMode
 		{
-			get
-			{
-				return paletteMode;
-			}
+			get => paletteMode;
 
-			set
-			{
-				paletteMode = value;
-			}
+			set => paletteMode = value;
 		}
 
 		/// <summary>
@@ -185,6 +168,15 @@
 				main_color.a = 1f;
 				colorView.color = main_color;
 			}
+		}
+
+		/// <summary>
+		/// Set target owner.
+		/// </summary>
+		public void SetTargetOwner()
+		{
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), colorView, nameof(Graphic.color), this);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), alphaView, nameof(Graphic.color), this);
 		}
 	}
 }

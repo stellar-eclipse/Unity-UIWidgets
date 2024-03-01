@@ -10,6 +10,7 @@
 	/// Scroll buttons.
 	/// </summary>
 	[RequireComponent(typeof(ScrollRect))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/scroll-buttons.html")]
 	public class ScrollButtons : MonoBehaviour
 	{
 		/// <summary>
@@ -51,15 +52,9 @@
 		/// <value>The scroll button left.</value>
 		public RectTransform ScrollButtonLeft
 		{
-			get
-			{
-				return scrollButtonLeft;
-			}
+			get => scrollButtonLeft;
 
-			set
-			{
-				scrollButtonLeft = SetScrollButton(scrollButtonLeft, value, ScrollOnHoldLeft, ScrollOnClickLeft);
-			}
+			set => scrollButtonLeft = SetScrollButton(scrollButtonLeft, value, ScrollOnHoldLeft, ScrollOnClickLeft);
 		}
 
 		/// <summary>
@@ -74,15 +69,9 @@
 		/// <value>The scroll button right.</value>
 		public RectTransform ScrollButtonRight
 		{
-			get
-			{
-				return scrollButtonRight;
-			}
+			get => scrollButtonRight;
 
-			set
-			{
-				scrollButtonRight = SetScrollButton(scrollButtonRight, value, ScrollOnHoldRight, ScrollOnClickRight);
-			}
+			set => scrollButtonRight = SetScrollButton(scrollButtonRight, value, ScrollOnHoldRight, ScrollOnClickRight);
 		}
 
 		/// <summary>
@@ -97,15 +86,9 @@
 		/// <value>The scroll button top.</value>
 		public RectTransform ScrollButtonTop
 		{
-			get
-			{
-				return scrollButtonTop;
-			}
+			get => scrollButtonTop;
 
-			set
-			{
-				scrollButtonTop = SetScrollButton(scrollButtonTop, value, ScrollOnHoldTop, ScrollOnClickTop);
-			}
+			set => scrollButtonTop = SetScrollButton(scrollButtonTop, value, ScrollOnHoldTop, ScrollOnClickTop);
 		}
 
 		/// <summary>
@@ -120,15 +103,9 @@
 		/// <value>The scroll button bottom.</value>
 		public RectTransform ScrollButtonBottom
 		{
-			get
-			{
-				return scrollButtonBottom;
-			}
+			get => scrollButtonBottom;
 
-			set
-			{
-				scrollButtonBottom = SetScrollButton(scrollButtonBottom, value, ScrollOnHoldBottom, ScrollOnClickBottom);
-			}
+			set => scrollButtonBottom = SetScrollButton(scrollButtonBottom, value, ScrollOnHoldBottom, ScrollOnClickBottom);
 		}
 
 		/// <summary>
@@ -169,10 +146,7 @@
 		/// <value>The curve.</value>
 		public AnimationCurve Curve
 		{
-			get
-			{
-				return curve;
-			}
+			get => curve;
 
 			set
 			{
@@ -235,40 +209,28 @@
 		/// <summary>
 		/// Scroll on hold left button.
 		/// </summary>
-		protected virtual void ScrollOnHoldLeft()
-		{
-			ScrolOnHold(ScrollButtonType.Left);
-		}
+		protected virtual void ScrollOnHoldLeft() => ScrollOnHold(ScrollButtonType.Left);
 
 		/// <summary>
 		/// Scroll on hold right button.
 		/// </summary>
-		protected virtual void ScrollOnHoldRight()
-		{
-			ScrolOnHold(ScrollButtonType.Right);
-		}
+		protected virtual void ScrollOnHoldRight() => ScrollOnHold(ScrollButtonType.Right);
 
 		/// <summary>
 		/// Scroll on hold top button.
 		/// </summary>
-		protected virtual void ScrollOnHoldTop()
-		{
-			ScrolOnHold(ScrollButtonType.Top);
-		}
+		protected virtual void ScrollOnHoldTop() => ScrollOnHold(ScrollButtonType.Top);
 
 		/// <summary>
 		/// Scroll on hold bottom button.
 		/// </summary>
-		protected virtual void ScrollOnHoldBottom()
-		{
-			ScrolOnHold(ScrollButtonType.Bottom);
-		}
+		protected virtual void ScrollOnHoldBottom() => ScrollOnHold(ScrollButtonType.Bottom);
 
 		/// <summary>
 		/// Scroll on hold.
 		/// </summary>
 		/// <param name="type">Type.</param>
-		public void ScrolOnHold(ScrollButtonType type)
+		public void ScrollOnHold(ScrollButtonType type)
 		{
 			if (!Interactable)
 			{
@@ -309,16 +271,16 @@
 		{
 			if (oldButton != null)
 			{
-				Utilities.GetOrAddComponent<ScrollButton>(oldButton).OnDown.RemoveListener(downAction);
-				Utilities.GetOrAddComponent<ScrollButton>(oldButton).OnUp.RemoveListener(AnimationStop);
-				Utilities.GetOrAddComponent<ScrollButton>(oldButton).OnClick.RemoveListener(clickAction);
+				Utilities.RequireComponent<ScrollButton>(oldButton).OnDown.RemoveListener(downAction);
+				Utilities.RequireComponent<ScrollButton>(oldButton).OnUp.RemoveListener(AnimationStop);
+				Utilities.RequireComponent<ScrollButton>(oldButton).OnClick.RemoveListener(clickAction);
 			}
 
 			if (newButton != null)
 			{
-				Utilities.GetOrAddComponent<ScrollButton>(newButton).OnDown.AddListener(downAction);
-				Utilities.GetOrAddComponent<ScrollButton>(newButton).OnUp.AddListener(AnimationStop);
-				Utilities.GetOrAddComponent<ScrollButton>(newButton).OnClick.AddListener(clickAction);
+				Utilities.RequireComponent<ScrollButton>(newButton).OnDown.AddListener(downAction);
+				Utilities.RequireComponent<ScrollButton>(newButton).OnUp.AddListener(AnimationStop);
+				Utilities.RequireComponent<ScrollButton>(newButton).OnClick.AddListener(clickAction);
 			}
 
 			return newButton;
@@ -327,34 +289,22 @@
 		/// <summary>
 		/// Scroll on click left.
 		/// </summary>
-		public void ScrollOnClickLeft()
-		{
-			ScrollOnClick(ScrollButtonType.Left);
-		}
+		public void ScrollOnClickLeft() => ScrollOnClick(ScrollButtonType.Left);
 
 		/// <summary>
 		/// Scroll on click right.
 		/// </summary>
-		public void ScrollOnClickRight()
-		{
-			ScrollOnClick(ScrollButtonType.Right);
-		}
+		public void ScrollOnClickRight() => ScrollOnClick(ScrollButtonType.Right);
 
 		/// <summary>
 		/// Scroll on click top.
 		/// </summary>
-		public void ScrollOnClickTop()
-		{
-			ScrollOnClick(ScrollButtonType.Top);
-		}
+		public void ScrollOnClickTop() => ScrollOnClick(ScrollButtonType.Top);
 
 		/// <summary>
 		/// Scroll on click bottom.
 		/// </summary>
-		public void ScrollOnClickBottom()
-		{
-			ScrollOnClick(ScrollButtonType.Bottom);
-		}
+		public void ScrollOnClickBottom() => ScrollOnClick(ScrollButtonType.Bottom);
 
 		/// <summary>
 		/// Scroll on click.

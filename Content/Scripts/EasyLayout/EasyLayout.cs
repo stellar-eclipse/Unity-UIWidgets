@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.ComponentModel;
+	using EasyLayoutNS.Extensions;
 	using UIWidgets;
 	using UnityEngine;
 	using UnityEngine.Events;
@@ -16,6 +17,7 @@
 	[ExecuteInEditMode]
 	[RequireComponent(typeof(RectTransform))]
 	[AddComponentMenu("UI/New UI Widgets/Layout/EasyLayout")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/layout/easylayout.html")]
 	public class EasyLayout : LayoutGroup, INotifyPropertyChanged, IObservable, ILateUpdatable
 	{
 		readonly List<LayoutElementInfo> elements = new List<LayoutElementInfo>();
@@ -1186,7 +1188,7 @@
 		{
 			UpdateElements();
 
-			PerformLayout(true, ResizeType.Horizontal);
+			PerformLayout(true, true, ResizeType.Horizontal);
 		}
 
 		/// <summary>
@@ -1196,7 +1198,7 @@
 		{
 			UpdateElements();
 
-			PerformLayout(true, ResizeType.Vertical);
+			PerformLayout(true, true, ResizeType.Vertical);
 		}
 
 		/// <summary>
@@ -1207,7 +1209,7 @@
 			base.CalculateLayoutInputHorizontal();
 			UpdateElements();
 
-			PerformLayout(false, ResizeType.None);
+			PerformLayout(false, false, ResizeType.None);
 		}
 
 		/// <summary>
@@ -1217,7 +1219,7 @@
 		{
 			UpdateElements();
 
-			PerformLayout(false, ResizeType.None);
+			PerformLayout(false, false, ResizeType.None);
 		}
 
 		/// <summary>
@@ -1235,7 +1237,7 @@
 		{
 			UpdateElements();
 
-			PerformLayout(false);
+			PerformLayout(false, false);
 		}
 
 		/// <summary>
@@ -1291,9 +1293,9 @@
 		/// </summary>
 		protected void ClearElements()
 		{
-			for (int i = 0; i < elements.Count; i++)
+			foreach (var e in elements)
 			{
-				elementsCache.Push(elements[i]);
+				elementsCache.Push(e);
 			}
 
 			elements.Clear();
@@ -1382,10 +1384,16 @@
 		/// <summary>
 		/// Perform layout.
 		/// </summary>
-		/// <param name="setPositions">Is need to set elements position?</param>
+		/// <param name="setPositions">Set elements position.</param>
+		/// <param name="setSizes">Set elements size.</param>
 		/// <param name="resizeType">Resize type.</param>
-		protected void PerformLayout(bool setPositions, ResizeType resizeType = ResizeType.Horizontal | ResizeType.Vertical)
+		protected void PerformLayout(bool setPositions, bool setSizes, ResizeType resizeType = ResizeType.Horizontal | ResizeType.Vertical)
 		{
+			if (!gameObject.activeInHierarchy)
+			{
+				return;
+			}
+
 			if (LayoutGroup == null)
 			{
 				Debug.LogWarning(string.Format("Layout group not found: {0}", EnumHelper<LayoutTypes>.ToString(LayoutType)));
@@ -1395,7 +1403,7 @@
 			PropertiesTracker.Clear();
 
 			LayoutGroup.LoadSettings(this);
-			CurrentSize = LayoutGroup.PerformLayout(elements, setPositions, resizeType);
+			CurrentSize = LayoutGroup.PerformLayout(elements, setPositions, setSizes, resizeType);
 
 			BlockSize = elements.Count > 0 ? new Vector2(CurrentSize.Width, CurrentSize.Height) : Vector2.zero;
 
@@ -1558,61 +1566,25 @@
 		/// <param name="sb">String builder.</param>
 		public virtual void GetDebugInfo(System.Text.StringBuilder sb)
 		{
-			sb.Append("RectTransform.size: ");
-			sb.Append(rectTransform.rect.size.ToString());
-			sb.AppendLine();
-
-			sb.Append("localScale: ");
-			sb.Append(rectTransform.localScale.ToString());
-			sb.AppendLine();
-
-			sb.Append("Main Axis: ");
-			sb.Append(EnumHelper<Axis>.ToString(MainAxis));
-			sb.AppendLine();
-
-			sb.Append("Type: ");
-			sb.Append(EnumHelper<LayoutTypes>.ToString(LayoutType));
-			sb.AppendLine();
+			sb.AppendValue("RectTransform.size: ", rectTransform.rect.size);
+			sb.AppendValue("localScale: ", rectTransform.localScale);
+			sb.AppendValueEnum("Main Axis: ", MainAxis);
+			sb.AppendValueEnum("Type: ", LayoutType);
 
 			switch (LayoutType)
 			{
 				case LayoutTypes.Compact:
-					sb.Append("\tGroup Position: ");
-					sb.Append(EnumHelper<Anchors>.ToString(GroupPosition));
-					sb.AppendLine();
-
-					sb.Append("\tRow Align: ");
-					sb.Append(EnumHelper<HorizontalAligns>.ToString(RowAlign));
-					sb.AppendLine();
-
-					sb.Append("\tInner Align: ");
-					sb.Append(EnumHelper<InnerAligns>.ToString(InnerAlign));
-					sb.AppendLine();
-
-					sb.Append("\tCompact Constraint: ");
-					sb.Append(EnumHelper<CompactConstraints>.ToString(CompactConstraint));
-					sb.AppendLine();
-
-					sb.Append("\tCompact Constraint Count: ");
-					sb.Append(CompactConstraintCount);
-					sb.AppendLine();
+					sb.AppendValueEnum("\tGroup Position: ", GroupPosition);
+					sb.AppendValueEnum("\tRow Align: ", RowAlign);
+					sb.AppendValueEnum("\tInner Align: ", InnerAlign);
+					sb.AppendValueEnum("\tCompact Constraint: ", CompactConstraint);
+					sb.AppendValue("\tCompact Constraint Count: ", CompactConstraintCount);
 					break;
 				case LayoutTypes.Grid:
-					sb.Append("\tGroup Position: ");
-					sb.Append(EnumHelper<Anchors>.ToString(GroupPosition));
-					sb.AppendLine();
-
-					sb.Append("\tCell Align: ");
-					sb.Append(EnumHelper<Anchors>.ToString(CellAlign));
-					sb.AppendLine();
-
-					sb.Append("\tGrid Constraint: ");
-					sb.Append(EnumHelper<GridConstraints>.ToString(GridConstraint));
-					sb.AppendLine();
-
-					sb.Append("\tGrid Constraint Count: ");
-					sb.Append(GridConstraintCount);
-					sb.AppendLine();
+					sb.AppendValueEnum("\tGroup Position: ", GroupPosition);
+					sb.AppendValueEnum("\tCell Align: ", CellAlign);
+					sb.AppendValueEnum("\tGrid Constraint: ", GridConstraint);
+					sb.AppendValue("\tGrid Constraint Count: ", GridConstraintCount);
 					break;
 				case LayoutTypes.Flex:
 					FlexSettings.GetDebugInfo(sb);
@@ -1628,66 +1600,29 @@
 					break;
 			}
 
-			sb.Append("PaddingInner: ");
-			sb.Append(PaddingInner.ToString());
-			sb.AppendLine();
-
-			sb.Append("Spacing: ");
-			sb.Append(Spacing.ToString());
-			sb.AppendLine();
-
-			sb.Append("Margin Symmetric: ");
-			sb.Append(Symmetric);
-			sb.AppendLine();
+			sb.AppendValue("PaddingInner: ", PaddingInner);
+			sb.AppendValue("Spacing: ", Spacing);
+			sb.AppendValue("Margin Symmetric: ", Symmetric);
 
 			if (Symmetric)
 			{
-				sb.Append("Margin: ");
-				sb.Append(Margin.ToString());
-				sb.AppendLine();
+				sb.AppendValue("Margin: ", Margin);
 			}
 			else
 			{
-				sb.Append("Margin Left: ");
-				sb.Append(MarginLeft);
-				sb.AppendLine();
-
-				sb.Append("Margin Right: ");
-				sb.Append(MarginRight);
-				sb.AppendLine();
-
-				sb.Append("Margin Top: ");
-				sb.Append(MarginTop);
-				sb.AppendLine();
-
-				sb.Append("Margin Bottom: ");
-				sb.Append(MarginBottom);
-				sb.AppendLine();
+				sb.AppendValue("Margin Left: ", MarginLeft);
+				sb.AppendValue("Margin Right: ", MarginRight);
+				sb.AppendValue("Margin Top: ", MarginTop);
+				sb.AppendValue("Margin Bottom: ", MarginBottom);
 			}
 
-			sb.Append("TopToBottom: ");
-			sb.Append(TopToBottom);
-			sb.AppendLine();
+			sb.AppendValue("TopToBottom: ", TopToBottom);
+			sb.AppendValue("RightToLeft: ", RightToLeft);
+			sb.AppendValue("Skip Inactive: ", SkipInactive);
+			sb.AppendValue("Reset Rotation: ", ResetRotation);
 
-			sb.Append("RightToLeft: ");
-			sb.Append(RightToLeft);
-			sb.AppendLine();
-
-			sb.Append("Skip Inactive: ");
-			sb.Append(SkipInactive);
-			sb.AppendLine();
-
-			sb.Append("Reset Rotation: ");
-			sb.Append(ResetRotation);
-			sb.AppendLine();
-
-			sb.Append("Children Width: ");
-			sb.Append(EnumHelper<ChildrenSize>.ToString(ChildrenWidth));
-			sb.AppendLine();
-
-			sb.Append("Children Height: ");
-			sb.Append(EnumHelper<ChildrenSize>.ToString(ChildrenHeight));
-			sb.AppendLine();
+			sb.AppendValueEnum("Children Width: ", ChildrenWidth);
+			sb.AppendValueEnum("Children Height: ", ChildrenHeight);
 
 			sb.Append("Children: ");
 			foreach (var c in elements)

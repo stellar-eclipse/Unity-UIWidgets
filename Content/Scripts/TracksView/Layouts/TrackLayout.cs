@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Pool;
 
 	/// <summary>
 	/// Base class for the track layouts.
@@ -12,18 +13,6 @@
 		where TData : class, ITrackData<TPoint>
 		where TPoint : IComparable<TPoint>
 	{
-		/// <summary>
-		/// Temporary list to avoid memory allocations.
-		/// Used by SetItemsOrder() function and Layout function.
-		/// </summary>
-		readonly List<TData> tempItems = new List<TData>();
-
-		/// <summary>
-		/// Temporary list to avoid memory allocations.
-		/// Used by SetItemsOrder() function and Layout function.
-		/// </summary>
-		readonly List<TData> tempUsedItems = new List<TData>();
-
 		/// <summary>
 		/// Set order for the specified items.
 		/// </summary>
@@ -45,10 +34,10 @@
 				return;
 			}
 
-			Layout(items, tempItems, tempUsedItems);
+			using var _ = ListPool<TData>.Get(out var temp_items);
+			using var __ = ListPool<TData>.Get(out var temp_used_items);
 
-			tempItems.Clear();
-			tempUsedItems.Clear();
+			Layout(items, temp_items, temp_used_items);
 		}
 
 		/// <summary>

@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets
 {
 	using System;
+	using System.Collections;
 	using UIWidgets.Attributes;
 	using UIWidgets.Styles;
 	using UnityEngine;
@@ -10,6 +11,7 @@
 	/// Base class for the ScrollBlock.
 	/// </summary>
 	[RequireComponent(typeof(EasyLayoutNS.EasyLayout))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/scroll-block.html")]
 	public abstract class ScrollBlockBase : UIBehaviourConditional, IStylable, ILateUpdatable,
 		IBeginDragHandler, IDragHandler, IEndDragHandler, IInitializePotentialDragHandler, IScrollHandler
 	{
@@ -189,6 +191,12 @@
 		public float TimeToStop = 0.5f;
 
 		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
+
+		/// <summary>
 		/// Velocity.
 		/// </summary>
 		[NonSerialized]
@@ -316,7 +324,7 @@
 
 			UpdateLayout();
 
-			var resizer = Utilities.GetOrAddComponent<ResizeListener>(this);
+			var resizer = Utilities.RequireComponent<ResizeListener>(this);
 			resizer.OnResizeNextFrame.AddListener(Resize);
 
 			Resize();
@@ -447,6 +455,46 @@
 		}
 
 		/// <summary>
+		/// Scroll on specified amount of steps.
+		/// </summary>
+		/// <param name="steps">Steps.</param>
+		/// <param name="curve">Animation curve.</param>
+		public void Scroll(int steps, AnimationCurve curve = null)
+		{
+			StartCoroutine(ScrollAnimation(steps, curve));
+		}
+
+		/// <summary>
+		/// Scroll animation on specified amount of steps.
+		/// </summary>
+		/// <param name="steps">Steps.</param>
+		/// <param name="curve">Animation curve.</param>
+		/// <returns>Animation coroutine.</returns>
+		public IEnumerator ScrollAnimation(int steps, AnimationCurve curve = null)
+		{
+			curve ??= AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+			var direction = steps > 0 ? -1 : 1;
+			var total = steps * ItemFullSize() * direction;
+			var prev = 0f;
+
+			var time = 0f;
+			var duration = curve[curve.length - 1].time;
+
+			while (time < duration)
+			{
+				var current = Mathf.Lerp(0f, total, time / duration);
+				Padding += current - prev;
+				prev = current;
+				yield return null;
+
+				time += UtilitiesTime.GetDeltaTime(UnscaledTime);
+			}
+
+			Padding += total - prev;
+		}
+
+		/// <summary>
 		/// Position to items count.
 		/// </summary>
 		/// <param name="position">Position.</param>
@@ -454,15 +502,12 @@
 		/// <returns>Items count.</returns>
 		protected int Position2Count(float position, bool increase)
 		{
-			switch (BasePosition)
+			return BasePosition switch
 			{
-				case Position.Start:
-					return increase ? Mathf.FloorToInt(position) : Mathf.CeilToInt(position);
-				case Position.Center:
-					return Mathf.RoundToInt(position);
-				default:
-					return 0;
-			}
+				Position.Start => increase ? Mathf.FloorToInt(position) : Mathf.CeilToInt(position),
+				Position.Center => Mathf.RoundToInt(position),
+				_ => 0,
+			};
 		}
 
 		/// <summary>
@@ -557,17 +602,22 @@
 		}
 
 		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return IsActive() && (eventData.button == DragButton);
+		}
+
+		/// <summary>
 		/// Process the begin drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnBeginDrag(PointerEventData eventData)
 		{
-			if (eventData.button != PointerEventData.InputButton.Left)
-			{
-				return;
-			}
-
-			if (!IsActive())
+			if (!CanDrag(eventData))
 			{
 				return;
 			}
@@ -591,13 +641,9 @@
 				return;
 			}
 
-			if (eventData.button != PointerEventData.InputButton.Left)
+			if (!CanDrag(eventData))
 			{
-				return;
-			}
-
-			if (!IsActive())
-			{
+				OnEndDrag(eventData);
 				return;
 			}
 
@@ -644,11 +690,6 @@
 		public virtual void OnEndDrag(PointerEventData eventData)
 		{
 			if (!IsDragging)
-			{
-				return;
-			}
-
-			if (eventData.button != PointerEventData.InputButton.Left)
 			{
 				return;
 			}
@@ -754,15 +795,12 @@
 		/// <returns>Position.</returns>
 		protected float GetBasePosition()
 		{
-			switch (BasePosition)
+			return BasePosition switch
 			{
-				case Position.Start:
-					return 0f;
-				case Position.Center:
-					return -(ContentSize() - ContainerSize()) / 2f;
-				default:
-					return 0f;
-			}
+				Position.Start => 0f,
+				Position.Center => -(ContentSize() - ContainerSize()) / 2f,
+				_ => 0f,
+			};
 		}
 
 		/// <summary>

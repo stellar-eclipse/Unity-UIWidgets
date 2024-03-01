@@ -9,6 +9,7 @@
 	/// Range slider handle.
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/rangeslider.html")]
 	public class RangeSliderHandle : Selectable, IDragHandler, IInitializePotentialDragHandler, ISubmitHandler
 	{
 		/// <summary>
@@ -104,8 +105,7 @@
 				return;
 			}
 
-			Vector2 position;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out position);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out var position);
 
 			PositionChanged(IsHorizontal() ? position.x : position.y);
 		}

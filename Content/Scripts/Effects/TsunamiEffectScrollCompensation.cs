@@ -7,6 +7,7 @@
 	/// <summary>
 	/// Scroll compensation for Tsunami effect.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/effects/tsunami.html")]
 	public class TsunamiEffectScrollCompensation : MonoBehaviour, ILateUpdatable
 	{
 		/// <summary>

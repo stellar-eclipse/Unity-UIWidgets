@@ -7,6 +7,7 @@ namespace UIWidgets.TMProSupport
 	/// <summary>
 	/// FileDialog TMPro.
 	/// </summary>
+	[System.Obsolete("Use FileDialog with TextAdapter.")]
 	public class FileDialogTMPro : FileDialog
 	{
 		/// <summary>
@@ -23,7 +24,7 @@ namespace UIWidgets.TMProSupport
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(FilenameInputTMPro, ref FilenameInputAdapter);
+			Utilities.RequireComponent(FilenameInputTMPro, ref FilenameInputAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

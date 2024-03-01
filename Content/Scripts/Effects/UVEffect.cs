@@ -10,6 +10,7 @@
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
 	[RequireComponent(typeof(Graphic))]
+	[DisallowMultipleComponent]
 	public abstract class UVEffect : BaseMeshEffect, IMaterialModifier, IMeshModifier
 	{
 		/// <summary>
@@ -60,7 +61,7 @@
 		/// <summary>
 		/// Mesh sizes.
 		/// </summary>
-		protected struct MeshSize
+		protected readonly struct MeshSize
 		{
 			/// <summary>
 			/// Minimal x and y values.
@@ -134,21 +135,14 @@
 			static Vector2 CalculateAspectRatio(Vector2 size, UVMode mode)
 			{
 				// calculate aspect ratio
-				switch (mode)
+				return mode switch
 				{
-					case UVMode.X:
-						return new Vector2(1f, size.x / size.y);
-					case UVMode.Y:
-						return new Vector2(size.y / size.x, 1f);
-					case UVMode.One:
-						return Vector2.one;
-					case UVMode.Max:
-						return (size.x >= size.y)
-							? new Vector2(1f, size.x / size.y)
-							: new Vector2(size.y / size.x, 1f);
-					default:
-						throw new NotSupportedException(string.Format("Unknown UVMode: {0}", EnumHelper<UVMode>.ToString(mode)));
-				}
+					UVMode.X => new Vector2(1f, size.x / size.y),
+					UVMode.Y => new Vector2(size.y / size.x, 1f),
+					UVMode.One => Vector2.one,
+					UVMode.Max => (size.x >= size.y) ? new Vector2(1f, size.x / size.y) : new Vector2(size.y / size.x, 1f),
+					_ => throw new NotSupportedException(string.Format("Unknown UVMode: {0}", EnumHelper<UVMode>.ToString(mode))),
+				};
 			}
 
 			/// <summary>
@@ -259,6 +253,7 @@
 					graphic.canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
 				}
 
+				graphic.SetMaterialDirty();
 				graphic.SetVerticesDirty();
 			}
 		}

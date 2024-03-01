@@ -480,31 +480,20 @@
 		/// <returns>String.</returns>
 		protected virtual string Key2String(Key key)
 		{
-			switch (key)
+			return key switch
 			{
-				case Key.Digit0:
-					return "0";
-				case Key.Digit1:
-					return "1";
-				case Key.Digit2:
-					return "2";
-				case Key.Digit3:
-					return "3";
-				case Key.Digit4:
-					return "4";
-				case Key.Digit5:
-					return "5";
-				case Key.Digit6:
-					return "6";
-				case Key.Digit7:
-					return "7";
-				case Key.Digit8:
-					return "8";
-				case Key.Digit9:
-					return "9";
-			}
-
-			return EnumHelper<Key>.ToString(key);
+				Key.Digit0 => "0",
+				Key.Digit1 => "1",
+				Key.Digit2 => "2",
+				Key.Digit3 => "3",
+				Key.Digit4 => "4",
+				Key.Digit5 => "5",
+				Key.Digit6 => "6",
+				Key.Digit7 => "7",
+				Key.Digit8 => "8",
+				Key.Digit9 => "9",
+				_ => EnumHelper<Key>.ToString(key),
+			};
 		}
 
 		/// <summary>

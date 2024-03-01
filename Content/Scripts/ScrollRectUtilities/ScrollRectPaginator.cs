@@ -4,6 +4,7 @@
 	using System.Collections;
 	using System.Collections.Generic;
 	using EasyLayoutNS;
+	using UIWidgets.Attributes;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
@@ -13,6 +14,7 @@
 	/// <summary>
 	/// ScrollRect Paginator.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/controls/paginator.html")]
 	public class ScrollRectPaginator : MonoBehaviour, IStylable, IUpgradeable
 	{
 		/// <summary>
@@ -65,6 +67,38 @@
 		/// </summary>
 		protected ScrollRectPage SRNextPage;
 
+		[SerializeField]
+		[Tooltip("Number of visible page buttons.\nThe first and last page buttons are always shown.\nSet to 0 to display buttons for all pages.")]
+		int visiblePagesCount = 0;
+
+		/// <summary>
+		/// Count of the visible pages.
+		/// </summary>
+		public int VisiblePagesCount
+		{
+			get => visiblePagesCount;
+
+			set
+			{
+				if (value < 0)
+				{
+					value = 0;
+				}
+
+				if (visiblePagesCount != value)
+				{
+					visiblePagesCount = value;
+					UpdateObjects(currentPage);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Skip page template.
+		/// </summary>
+		[SerializeField]
+		protected RectTransform SkipPage;
+
 		/// <summary>
 		/// The direction.
 		/// </summary>
@@ -88,16 +122,34 @@
 		/// </summary>
 		public float PageSpacing
 		{
-			get
-			{
-				return pageSpacing;
-			}
+			get => pageSpacing;
 
 			set
 			{
 				pageSpacing = value;
 
 				RecalculatePages();
+			}
+		}
+
+		/// <summary>
+		/// Current page rounding.
+		/// </summary>
+		[SerializeField]
+		protected PaginatorRounding pageRounding = PaginatorRounding.Round;
+
+		/// <summary>
+		/// Current page rounding.
+		/// </summary>
+		public PaginatorRounding PageRounding
+		{
+			get => pageRounding;
+
+			set
+			{
+				pageRounding = value;
+
+				CurrentPage = GetPage();
 			}
 		}
 
@@ -119,10 +171,7 @@
 		/// <value>The type of the page size.</value>
 		public virtual PageSizeType PageSizeType
 		{
-			get
-			{
-				return pageSizeType;
-			}
+			get => pageSizeType;
 
 			set
 			{
@@ -143,10 +192,7 @@
 		/// <value>The size of the page.</value>
 		public virtual float PageSize
 		{
-			get
-			{
-				return pageSize;
-			}
+			get => pageSize;
 
 			set
 			{
@@ -163,15 +209,12 @@
 		/// <value>The pages.</value>
 		public virtual int Pages
 		{
-			get
-			{
-				return pages;
-			}
+			get => pages;
 
 			protected set
 			{
 				pages = Mathf.Max(1, value);
-				UpdatePageButtons();
+				UpdateObjects(currentPage);
 			}
 		}
 
@@ -187,10 +230,7 @@
 		/// <value>The current page.</value>
 		public int CurrentPage
 		{
-			get
-			{
-				return currentPage;
-			}
+			get => currentPage;
 
 			set
 			{
@@ -211,15 +251,9 @@
 		[Obsolete("Replace with ForcedPosition.")]
 		public bool ForceScrollOnPage
 		{
-			get
-			{
-				return ForcedPosition == PaginatorPagePosition.OnStart;
-			}
+			get => ForcedPosition == PaginatorPagePosition.OnStart;
 
-			set
-			{
-				ForcedPosition = value ? PaginatorPagePosition.OnStart : PaginatorPagePosition.None;
-			}
+			set => ForcedPosition = value ? PaginatorPagePosition.OnStart : PaginatorPagePosition.None;
 		}
 
 		/// <summary>
@@ -287,10 +321,7 @@
 		/// </summary>
 		public bool LastPageFullSize
 		{
-			get
-			{
-				return lastPageFullSize;
-			}
+			get => lastPageFullSize;
 
 			set
 			{
@@ -310,16 +341,19 @@
 		/// </summary>
 		public float RoundingError
 		{
-			get
-			{
-				return roundingError;
-			}
+			get => roundingError;
 
 			set
 			{
 				roundingError = value;
 			}
 		}
+
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
 
 		/// <summary>
 		/// ScrollRect.content layout.
@@ -351,15 +385,31 @@
 		/// </summary>
 		protected Vector2 CursorStartPosition;
 
+		/// <summary>
+		/// Visible pages.
+		/// </summary>
+		protected List<int> VisiblePages = new List<int>();
+
+		/// <summary>
+		/// SkipPage instances.
+		/// </summary>
+		[SerializeField]
+		[HideInInspector]
+		protected List<RectTransform> SkipPages = new List<RectTransform>();
+
+		/// <summary>
+		/// Cache of SkipPage instances.
+		/// </summary>
+		[SerializeField]
+		[HideInInspector]
+		protected List<RectTransform> SkipPagesCache = new List<RectTransform>();
+
 		bool isInited;
 
 		/// <summary>
 		/// Start this instance.
 		/// </summary>
-		protected virtual void Start()
-		{
-			Init();
-		}
+		protected virtual void Start() => Init();
 
 		/// <summary>
 		/// Init this instance.
@@ -373,45 +423,56 @@
 
 			isInited = true;
 
+			if ((ScrollRect == null) || (ScrollRect.content == null))
+			{
+				Debug.LogWarning("ScrollRect is not specified and ScrollRect.content is not specified.", this);
+				return;
+			}
+
 			LayoutRebuilder.ForceRebuildLayoutImmediate(ScrollRect.content);
 
-			var resizeListener = Utilities.GetOrAddComponent<ResizeListener>(ScrollRect);
+			var resizeListener = Utilities.RequireComponent<ResizeListener>(ScrollRect);
 			resizeListener.OnResizeNextFrame.AddListener(RecalculatePages);
 
-			var contentResizeListener = Utilities.GetOrAddComponent<ResizeListener>(ScrollRect.content);
+			var contentResizeListener = Utilities.RequireComponent<ResizeListener>(ScrollRect.content);
 			contentResizeListener.OnResizeNextFrame.AddListener(RecalculatePages);
 
-			var dragListener = Utilities.GetOrAddComponent<DragListener>(ScrollRect);
-			dragListener.OnDragStartEvent.AddListener(OnScrollRectDragStart);
+			var dragListener = Utilities.RequireComponent<DragListener>(ScrollRect);
+			dragListener.OnBeginDragEvent.AddListener(OnScrollRectDragStart);
 			dragListener.OnDragEvent.AddListener(OnScrollRectDrag);
-			dragListener.OnDragEndEvent.AddListener(OnScrollRectDragEnd);
+			dragListener.OnEndDragEvent.AddListener(OnScrollRectDragEnd);
 
 			ScrollRect.onValueChanged.AddListener(OnScrollRectValueChanged);
 
-			var scroll_listener = Utilities.GetOrAddComponent<ScrollListener>(ScrollRect);
+			var scroll_listener = Utilities.RequireComponent<ScrollListener>(ScrollRect);
 			scroll_listener.ScrollEvent.AddListener(ContainerScroll);
+
+			if (SkipPage != null)
+			{
+				SkipPage.gameObject.SetActive(false);
+			}
 
 			if (DefaultPage != null)
 			{
-				SRDefaultPage = Utilities.GetOrAddComponent<ScrollRectPage>(DefaultPage);
+				SRDefaultPage = Utilities.RequireComponent<ScrollRectPage>(DefaultPage);
 				SRDefaultPage.gameObject.SetActive(false);
 			}
 
 			if (ActivePage != null)
 			{
-				SRActivePage = Utilities.GetOrAddComponent<ScrollRectPage>(ActivePage);
+				SRActivePage = Utilities.RequireComponent<ScrollRectPage>(ActivePage);
 			}
 
 			if (PrevPage != null)
 			{
-				SRPrevPage = Utilities.GetOrAddComponent<ScrollRectPage>(PrevPage);
+				SRPrevPage = Utilities.RequireComponent<ScrollRectPage>(PrevPage);
 				SRPrevPage.SetPage(0);
 				SRPrevPage.OnPageSelect.AddListener(Prev);
 			}
 
 			if (NextPage != null)
 			{
-				SRNextPage = Utilities.GetOrAddComponent<ScrollRectPage>(NextPage);
+				SRNextPage = Utilities.RequireComponent<ScrollRectPage>(NextPage);
 				SRNextPage.OnPageSelect.AddListener(Next);
 			}
 
@@ -428,10 +489,7 @@
 		/// <summary>
 		/// Processing the enable event.
 		/// </summary>
-		protected virtual void OnEnable()
-		{
-			Refresh();
-		}
+		protected virtual void OnEnable() => Refresh();
 
 		/// <summary>
 		/// Refresh this instance.
@@ -447,10 +505,7 @@
 		/// Get ScrollRect.
 		/// </summary>
 		/// <returns>ScrollRect</returns>
-		public ScrollRect GetScrollRect()
-		{
-			return ScrollRect;
-		}
+		public ScrollRect GetScrollRect() => ScrollRect;
 
 		/// <summary>
 		/// Invoke OnMovement event.
@@ -502,24 +557,11 @@
 		/// <returns>Margin.</returns>
 		protected virtual float GetLastPageMargin()
 		{
-			var list_view_size = IsHorizontal() ? ScrollRect.content.rect.width : ScrollRect.content.rect.height;
-			list_view_size -= IsHorizontal() ? Layout.MarginFullHorizontal : Layout.MarginFullVertical;
+			var content_size = IsHorizontal() ? ScrollRect.content.rect.width : ScrollRect.content.rect.height;
+			content_size -= IsHorizontal() ? Layout.MarginFullHorizontal : Layout.MarginFullVertical;
+			var page_size = GetPageSize();
 
-			var page_size = PageSpacing;
-			if (PageSizeType == PageSizeType.Fixed)
-			{
-				page_size += PageSize;
-			}
-			else if (IsHorizontal())
-			{
-				page_size += (ScrollRect.transform as RectTransform).rect.width;
-			}
-			else
-			{
-				page_size += (ScrollRect.transform as RectTransform).rect.height;
-			}
-
-			var last_page_size = list_view_size % page_size;
+			var last_page_size = content_size % page_size;
 			var margin = last_page_size > 0.1f
 				? page_size - last_page_size - PageSpacing
 				: 0f;
@@ -556,62 +598,132 @@
 		/// <summary>
 		/// Determines whether the specified pageComponent is null.
 		/// </summary>
-		/// <returns><c>true</c> if the specified pageComponent is null; otherwise, <c>false</c>.</returns>
-		/// <param name="pageComponent">Page component.</param>
-		protected static bool IsNullComponent(object pageComponent)
+		[DomainReloadExclude]
+		protected static readonly Predicate<object> IsNullComponent = pageComponent => pageComponent == null;
+
+		/// <summary>
+		/// Calculate visible pages.
+		/// </summary>
+		/// <param name="page">Current page.</param>
+		protected virtual void CalculateVisiblePages(int page)
 		{
-			return pageComponent == null;
+			VisiblePages.Clear();
+
+			if (VisiblePagesCount == 0)
+			{
+				for (int i = 0; i < Pages; i++)
+				{
+					VisiblePages.Add(i);
+				}
+
+				return;
+			}
+
+			if (Pages > 0)
+			{
+				VisiblePages.Add(0);
+			}
+
+			if (Pages > 1)
+			{
+				var min = Mathf.Max(1, page - (VisiblePagesCount / 2));
+				var max = Mathf.Min(Pages, min + VisiblePagesCount);
+				if ((min == 1) && ((max - min) == VisiblePagesCount))
+				{
+					max -= 1;
+				}
+				else if ((max > VisiblePagesCount) && ((max - min) != VisiblePagesCount))
+				{
+					min = max - VisiblePagesCount;
+				}
+
+				for (int i = min; i < max; i++)
+				{
+					VisiblePages.Add(i);
+				}
+
+				if (max < Pages)
+				{
+					VisiblePages.Add(Pages - 1);
+				}
+			}
 		}
 
 		/// <summary>
-		/// Updates the page buttons.
+		/// Create required instances of the DefaultPage.
 		/// </summary>
-		protected virtual void UpdatePageButtons()
+		/// <param name="required">Required instances.</param>
+		protected virtual void RequireDefaultPages(int required)
 		{
-			if (SRDefaultPage == null)
-			{
-				return;
-			}
-
 			DefaultPages.RemoveAll(IsNullComponent);
+			DefaultPagesCache.RemoveAll(IsNullComponent);
 
-			if (DefaultPages.Count == Pages)
+			if (DefaultPages.Count < required)
 			{
-				return;
-			}
-
-			if (DefaultPages.Count < Pages)
-			{
-				DefaultPagesCache.RemoveAll(IsNullComponent);
-
-				for (int i = DefaultPages.Count; i < Pages; i++)
+				for (int i = DefaultPages.Count; i < required; i++)
 				{
 					AddComponent(i);
-				}
-
-				if (SRNextPage != null)
-				{
-					SRNextPage.SetPage(Pages - 1);
-					SRNextPage.transform.SetAsLastSibling();
 				}
 			}
 			else
 			{
-				for (int i = Pages; i < DefaultPages.Count; i++)
+				for (int i = required; i < DefaultPages.Count; i++)
 				{
 					DefaultPages[i].gameObject.SetActive(false);
 					DefaultPagesCache.Add(DefaultPages[i]);
 				}
 
-				DefaultPages.RemoveRange(Pages, DefaultPages.Count - Pages);
+				DefaultPages.RemoveRange(required, DefaultPages.Count - required);
+			}
+		}
 
-				if (SRNextPage != null)
-				{
-					SRNextPage.SetPage(Pages - 1);
-				}
+		/// <summary>
+		/// Reset skip pages.
+		/// </summary>
+		protected virtual void ResetSkipPages()
+		{
+			foreach (var skip in SkipPages)
+			{
+				skip.gameObject.SetActive(false);
+				skip.SetAsLastSibling();
 			}
 
-			LayoutUtilities.UpdateLayout(DefaultPage.parent.GetComponent<LayoutGroup>());
+			SkipPagesCache.AddRange(SkipPages);
+			SkipPages.Clear();
+		}
+
+		/// <summary>
+		/// Set SkipPage.
+		/// </summary>
+		/// <param name="nextTransform">Next transform.</param>
+		/// <returns>SkipPage instance.</returns>
+		protected virtual RectTransform SetSkipPage(RectTransform nextTransform)
+		{
+			RectTransform skip;
+			if (SkipPagesCache.Count > 0)
+			{
+				skip = SkipPagesCache[SkipPagesCache.Count - 1];
+				SkipPagesCache.RemoveAt(SkipPagesCache.Count - 1);
+			}
+			else
+			{
+				skip = Compatibility.Instantiate(SkipPage);
+				skip.transform.SetParent(SkipPage.transform.parent, false);
+
+				Utilities.FixInstantiated(SkipPage, skip);
+			}
+
+			skip.gameObject.SetActive(true);
+			skip.SetSiblingIndex(nextTransform.GetSiblingIndex());
+			var index = nextTransform.GetSiblingIndex();
+			if (skip.GetSiblingIndex() > index)
+			{
+				skip.SetSiblingIndex(index);
+			}
+
+			SkipPages.Add(skip);
+
+			return skip;
 		}
 
 		/// <summary>
@@ -685,14 +797,16 @@
 				return PageSize + PageSpacing;
 			}
 
-			if (IsHorizontal())
+			var size = IsHorizontal()
+				? ScrollRect.viewport.rect.width + PageSpacing
+				: ScrollRect.viewport.rect.height + PageSpacing;
+
+			if (Layout != null)
 			{
-				return (ScrollRect.transform as RectTransform).rect.width + PageSpacing;
+				size -= IsHorizontal() ? Layout.MarginHorizontal : Layout.MarginVertical;
 			}
-			else
-			{
-				return (ScrollRect.transform as RectTransform).rect.height + PageSpacing;
-			}
+
+			return size;
 		}
 
 		/// <summary>
@@ -701,7 +815,7 @@
 		/// <returns>Size.</returns>
 		protected float ScrollRectSize()
 		{
-			var size = (ScrollRect.transform as RectTransform).rect.size;
+			var size = ScrollRect.viewport.rect.size;
 
 			return IsHorizontal() ? size.x : size.y;
 		}
@@ -783,7 +897,7 @@
 				return false;
 			}
 
-			if (eventData.button != PointerEventData.InputButton.Left)
+			if (eventData.button != DragButton)
 			{
 				return false;
 			}
@@ -812,7 +926,7 @@
 			isDragging = true;
 
 			CursorStartPosition = Vector2.zero;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(ScrollRect.transform as RectTransform, eventData.position, eventData.pressEventCamera, out CursorStartPosition);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(ScrollRect.viewport, eventData.position, eventData.pressEventCamera, out CursorStartPosition);
 
 			DragStarted = UtilitiesTime.GetTime(UnscaledTime);
 
@@ -837,16 +951,18 @@
 		{
 			MovementInvoke();
 
-			if (!IsValidDrag(eventData))
+			if (!isDragging)
 			{
 				return;
 			}
 
-			Vector2 current_cursor;
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(ScrollRect.transform as RectTransform, eventData.position, eventData.pressEventCamera, out current_cursor))
+			if (!IsValidDrag(eventData))
 			{
+				OnScrollRectDragEnd(eventData);
 				return;
 			}
+
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(ScrollRect.viewport, eventData.position, eventData.pressEventCamera, out var current_cursor);
 
 			DragDelta = current_cursor - CursorStartPosition;
 		}
@@ -857,7 +973,7 @@
 		/// <param name="eventData">Event data.</param>
 		protected virtual void OnScrollRectDragEnd(PointerEventData eventData)
 		{
-			if (!IsValidDrag(eventData))
+			if (!isDragging)
 			{
 				return;
 			}
@@ -880,7 +996,16 @@
 				return;
 			}
 
-			if (ForcedPosition != PaginatorPagePosition.None)
+			if (ForcedPosition == PaginatorPagePosition.None)
+			{
+				var page = Mathf.Clamp(GetPage(), 0, Pages - 1);
+				if (currentPage != page)
+				{
+					UpdateObjects(page);
+					currentPage = page;
+				}
+			}
+			else
 			{
 				ScrollChanged();
 			}
@@ -895,13 +1020,29 @@
 		protected virtual int GetPage()
 		{
 			var position = GetCalculatedPosition();
-			var page = Mathf.RoundToInt(position / GetPageSize());
+			var page = Rounding(position / GetPageSize());
 			if (page >= Pages)
 			{
 				page = Pages - 1;
 			}
 
 			return page;
+		}
+
+		/// <summary>
+		/// Rounding page.
+		/// </summary>
+		/// <param name="page">Page.</param>
+		/// <returns>Rounded page.</returns>
+		protected int Rounding(float page)
+		{
+			return PageRounding switch
+			{
+				PaginatorRounding.Floor => Mathf.FloorToInt(page),
+				PaginatorRounding.Round => Mathf.RoundToInt(page),
+				PaginatorRounding.Ceil => Mathf.CeilToInt(page),
+				_ => throw new NotSupportedException(string.Format("Unknown PageRounding: {0}", EnumHelper<PaginatorRounding>.ToString(PageRounding))),
+			};
 		}
 
 		/// <summary>
@@ -976,7 +1117,14 @@
 		{
 			SetScrollRectMaxDrag();
 
-			Pages = Mathf.Max(1, Mathf.CeilToInt((GetContentSize() - RoundingError) / GetPageSize()));
+			var size = GetContentSize() + PageSpacing;
+			if (Layout != null)
+			{
+				size -= IsHorizontal() ? Layout.MarginFullHorizontal : Layout.MarginFullVertical;
+			}
+
+			var page_size = GetPageSize();
+			Pages = Mathf.Max(1, Mathf.CeilToInt((size - RoundingError) / page_size));
 
 			UpdateLastPageMargin();
 
@@ -1117,10 +1265,7 @@
 		/// Can animate?
 		/// </summary>
 		/// <returns>true if animation allowed; otherwise false.</returns>
-		protected virtual bool CanAnimate()
-		{
-			return Animation;
-		}
+		protected virtual bool CanAnimate() => Animation;
 
 		/// <summary>
 		/// Start animation.
@@ -1218,10 +1363,7 @@
 		/// Set ScrollRect content position.
 		/// </summary>
 		/// <param name="position">Position.</param>
-		public virtual void SetPosition(float position)
-		{
-			SetPosition(position, IsHorizontal());
-		}
+		public virtual void SetPosition(float position) => SetPosition(position, IsHorizontal());
 
 		/// <summary>
 		/// Update objects.
@@ -1236,24 +1378,61 @@
 
 			if (SRDefaultPage != null)
 			{
-				foreach (var dp in DefaultPages)
+				CalculateVisiblePages(page);
+
+				RequireDefaultPages(VisiblePages.Count);
+
+				ResetSkipPages();
+
+				var current_index = 0;
+				for (int i = 0; i < DefaultPages.Count; i++)
 				{
-					dp.gameObject.SetActive(true);
+					var dp = DefaultPages[i];
+					var visible_page = VisiblePages[i];
+					var current = visible_page == page;
+
+					dp.SetPage(visible_page);
+					dp.gameObject.SetActive(!current);
+
+					if (current)
+					{
+						current_index = dp.RectTransform.GetSiblingIndex();
+					}
 				}
 
-				DefaultPages[page].gameObject.SetActive(false);
 				SRActivePage.SetPage(page);
-				SRActivePage.transform.SetSiblingIndex(DefaultPages[page].transform.GetSiblingIndex());
+				SRActivePage.transform.SetSiblingIndex(current_index);
+
+				if (SkipPage != null)
+				{
+					var prev = VisiblePages.Count > 0 ? VisiblePages[0] - 1 : 0;
+					for (int i = 0; i < DefaultPages.Count; i++)
+					{
+						var visible_page = VisiblePages[i];
+						if (visible_page - prev != 1)
+						{
+							SetSkipPage(DefaultPages[i].RectTransform);
+						}
+
+						prev = visible_page;
+					}
+				}
+
+				LayoutUtilities.UpdateLayout(DefaultPage.parent.GetComponent<LayoutGroup>());
 			}
 
 			if (SRPrevPage != null)
 			{
 				SRPrevPage.SetState(IsPrevAvailable(page));
+				SRPrevPage.SetPage(0);
+				SRPrevPage.transform.SetAsFirstSibling();
 			}
 
 			if (SRNextPage != null)
 			{
 				SRNextPage.SetState(IsNextAvailable(page));
+				SRNextPage.SetPage(Pages - 1);
+				SRNextPage.transform.SetAsLastSibling();
 			}
 		}
 
@@ -1262,20 +1441,14 @@
 		/// </summary>
 		/// <param name="page">Current page.</param>
 		/// <returns>true if previous page available; otherwise false.</returns>
-		protected virtual bool IsPrevAvailable(int page)
-		{
-			return (page != 0) && (Pages > 0);
-		}
+		protected virtual bool IsPrevAvailable(int page) => (page != 0) && (Pages > 0);
 
 		/// <summary>
 		/// Is next page available?
 		/// </summary>
 		/// <param name="page">Current page.</param>
 		/// <returns>true if next page available; otherwise false.</returns>
-		protected virtual bool IsNextAvailable(int page)
-		{
-			return (page != (Pages - 1)) && (Pages > 0);
-		}
+		protected virtual bool IsNextAvailable(int page) => (page != (Pages - 1)) && (Pages > 0);
 
 		/// <summary>
 		/// Runs the animation.
@@ -1313,10 +1486,7 @@
 		/// Removes the callback.
 		/// </summary>
 		/// <param name="page">Page.</param>
-		protected virtual void RemoveCallback(ScrollRectPage page)
-		{
-			page.OnPageSelect.RemoveListener(GoToPage);
-		}
+		protected virtual void RemoveCallback(ScrollRectPage page) => page.OnPageSelect.RemoveListener(GoToPage);
 
 		/// <summary>
 		/// This function is called when the MonoBehaviour will be destroyed.
@@ -1346,9 +1516,9 @@
 				var dragListener = ScrollRect.GetComponent<DragListener>();
 				if (dragListener != null)
 				{
-					dragListener.OnDragStartEvent.RemoveListener(OnScrollRectDragStart);
+					dragListener.OnBeginDragEvent.RemoveListener(OnScrollRectDragStart);
 					dragListener.OnDragEvent.RemoveListener(OnScrollRectDrag);
-					dragListener.OnDragEndEvent.RemoveListener(OnScrollRectDragEnd);
+					dragListener.OnEndDragEvent.RemoveListener(OnScrollRectDragEnd);
 				}
 
 				var resizeListener = ScrollRect.GetComponent<ResizeListener>();
@@ -1388,27 +1558,27 @@
 			if (DefaultPage != null)
 			{
 				style.Paginator.DefaultBackground.ApplyTo(DefaultPage.GetComponent<Image>());
-				Utilities.GetOrAddComponent<ScrollRectPage>(DefaultPage).SetStyle(style.Paginator.DefaultText, style);
+				Utilities.RequireComponent<ScrollRectPage>(DefaultPage).SetStyle(style.Paginator.DefaultText, style);
 			}
 
 			if (ActivePage != null)
 			{
 				style.Paginator.ActiveBackground.ApplyTo(ActivePage.GetComponent<Image>());
-				Utilities.GetOrAddComponent<ScrollRectPage>(ActivePage).SetStyle(style.Paginator.ActiveText, style);
+				Utilities.RequireComponent<ScrollRectPage>(ActivePage).SetStyle(style.Paginator.ActiveText, style);
 			}
 
 			for (int i = 0; i < DefaultPages.Count; i++)
 			{
 				var page = DefaultPages[i];
 				style.Paginator.DefaultBackground.ApplyTo(page.GetComponent<Image>());
-				Utilities.GetOrAddComponent<ScrollRectPage>(page).SetStyle(style.Paginator.DefaultText, style);
+				Utilities.RequireComponent<ScrollRectPage>(page).SetStyle(style.Paginator.DefaultText, style);
 			}
 
 			for (int i = 0; i < DefaultPagesCache.Count; i++)
 			{
 				var page = DefaultPagesCache[i];
 				style.Paginator.DefaultBackground.ApplyTo(page.GetComponent<Image>());
-				Utilities.GetOrAddComponent<ScrollRectPage>(page).SetStyle(style.Paginator.DefaultText, style);
+				Utilities.RequireComponent<ScrollRectPage>(page).SetStyle(style.Paginator.DefaultText, style);
 			}
 
 			if (PrevPage != null)
@@ -1434,13 +1604,13 @@
 			if (DefaultPage != null)
 			{
 				style.Paginator.DefaultBackground.GetFrom(DefaultPage.GetComponent<Image>());
-				Utilities.GetOrAddComponent<ScrollRectPage>(DefaultPage).GetStyle(style.Paginator.DefaultText, style);
+				Utilities.RequireComponent<ScrollRectPage>(DefaultPage).GetStyle(style.Paginator.DefaultText, style);
 			}
 
 			if (ActivePage != null)
 			{
 				style.Paginator.ActiveBackground.GetFrom(ActivePage.GetComponent<Image>());
-				Utilities.GetOrAddComponent<ScrollRectPage>(ActivePage).GetStyle(style.Paginator.ActiveText, style);
+				Utilities.RequireComponent<ScrollRectPage>(ActivePage).GetStyle(style.Paginator.ActiveText, style);
 			}
 
 			if (PrevPage != null)

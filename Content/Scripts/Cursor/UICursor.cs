@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets
 {
 	using System;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 
 	/// <summary>
@@ -122,11 +123,27 @@
 
 		#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(
+			#pragma warning disable CS0618
+			nameof(Replacement),
+			nameof(DefaultCursor),
+			nameof(DefaultCursorHotSpot),
+			nameof(Default),
+			#pragma warning restore
+			nameof(cursors),
+			nameof(cursorsWarningDisplayed),
+			nameof(currentOwner),
+			nameof(Current),
+			nameof(Mode),
+			nameof(CanSet),
+			nameof(Set),
+			nameof(Reset))]
 		static void StaticInit()
 		{
-			Cursors = null;
+			cursors = null;
 			cursorsWarningDisplayed = false;
 			currentOwner = null;
+			Current = default;
 
 			Mode =
 #if UNITY_WEBGL
@@ -138,6 +155,13 @@
 			CanSet = DefaultCanSet;
 			Set = DefaultSet;
 			Reset = DefaultReset;
+
+			#pragma warning disable CS0618
+			Replacement = null;
+			DefaultCursor = null;
+			DefaultCursorHotSpot = Vector2.zero;
+			Default = default;
+			#pragma warning restore
 		}
 		#endif
 
@@ -223,7 +247,7 @@
 			}
 
 			currentOwner = null;
-			SetCursor(Cursors != null ? Cursors.Default : default(Cursors.Cursor));
+			SetCursor(Cursors != null ? Cursors.Default : default);
 		}
 
 		/// <summary>

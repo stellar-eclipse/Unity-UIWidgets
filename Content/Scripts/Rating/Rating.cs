@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using UIThemes;
 	using UIWidgets.Attributes;
 	using UnityEngine;
 	using UnityEngine.Events;
@@ -10,7 +11,8 @@
 	/// <summary>
 	/// Rating.
 	/// </summary>
-	public class Rating : UIBehaviour
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/rating.html")]
+	public class Rating : UIBehaviour, ITargetOwner
 	{
 		/// <summary>
 		/// Rating event.
@@ -285,10 +287,7 @@
 		{
 			get
 			{
-				if (value2Color == null)
-				{
-					value2Color = DefaultValue2Color;
-				}
+				value2Color ??= DefaultValue2Color;
 
 				return value2Color;
 			}
@@ -418,13 +417,15 @@
 
 			isInited = true;
 
+			SetTargetOwner();
+
 			foreach (var star in StarsPoolEmpty.GetEnumerator(PoolEnumeratorMode.All))
 			{
 				OnStarCreate(star);
 			}
 
 			StarsPoolEmpty.OnCreate = OnStarCreate;
-			StarsPoolEmpty.OnDestroy = OnStarDestoy;
+			StarsPoolEmpty.OnDestroy = OnStarDestroy;
 
 			foreach (var star in StarsPoolFull.GetEnumerator(PoolEnumeratorMode.All))
 			{
@@ -432,11 +433,20 @@
 			}
 
 			StarsPoolFull.OnCreate = OnStarCreate;
-			StarsPoolFull.OnDestroy = OnStarDestoy;
+			StarsPoolFull.OnDestroy = OnStarDestroy;
 
 			UpdateStars();
 			Coloring();
 			InteractableChanged();
+		}
+
+		/// <summary>
+		/// Set theme target owner.
+		/// </summary>
+		public virtual void SetTargetOwner()
+		{
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), StarEmpty.Graphic, nameof(StarEmpty.Graphic.color), this);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), StarFull.Graphic, nameof(StarFull.Graphic.color), this);
 		}
 
 		/// <summary>
@@ -447,15 +457,17 @@
 		{
 			star.Init();
 			star.Owner = this;
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), star.Graphic, nameof(star.Graphic.color), this);
 		}
 
 		/// <summary>
 		/// Process destroyed star.
 		/// </summary>
 		/// <param name="star">Star.</param>
-		protected virtual void OnStarDestoy(RatingStar star)
+		protected virtual void OnStarDestroy(RatingStar star)
 		{
 			star.Owner = null;
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), star.Graphic, nameof(star.Graphic.color), null);
 		}
 
 		/// <summary>

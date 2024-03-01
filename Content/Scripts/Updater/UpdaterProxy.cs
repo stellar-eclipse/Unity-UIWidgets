@@ -2,12 +2,15 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UnityEngine;
+	using UnityEngine.SceneManagement;
 
 	/// <summary>
 	/// Updater proxy.
 	/// Replace Unity Update() with custom one without reflection.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/integration/updater.html")]
 	public class UpdaterProxy : MonoBehaviour, IUpdaterProxy
 	{
 		/// <summary>
@@ -16,9 +19,9 @@
 		/// <typeparam name="T">Target type.</typeparam>
 		protected class TargetsList<T>
 		{
-			LinkedHashSet<T> targets = new LinkedHashSet<T>();
+			readonly LinkedHashSet<T> targets = new LinkedHashSet<T>();
 
-			List<T> temp = new List<T>();
+			readonly List<T> temp = new List<T>();
 
 			/// <summary>
 			/// Add.
@@ -73,9 +76,9 @@
 		/// <typeparam name="T">Target type.</typeparam>
 		protected class TargetsOnceList<T>
 		{
-			List<T> targets = new List<T>();
+			readonly List<T> targets = new List<T>();
 
-			List<T> temp = new List<T>();
+			readonly List<T> temp = new List<T>();
 
 			/// <summary>
 			/// Add.
@@ -145,9 +148,9 @@
 			/// </summary>
 			public int Frame;
 
-			TargetsOnceList<T> once;
+			readonly List<T> targets = new List<T>();
 
-			List<T> targets = new List<T>();
+			readonly TargetsOnceList<T> once;
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="TargetsNextList{T}"/> class.
@@ -254,6 +257,30 @@
 		[HideInInspector]
 		bool destroyWithGameObject;
 
+		static UpdaterProxy GetInstance()
+		{
+			for (var i = 0; i < SceneManager.sceneCount; i++)
+			{
+				var scene = SceneManager.GetSceneAt(i);
+
+				foreach (var go in scene.GetRootGameObjects())
+				{
+					var updater = go.GetComponent<UpdaterProxy>();
+					if (updater != null)
+					{
+						updater.Init();
+						return updater;
+					}
+				}
+			}
+
+			var updater_go = new GameObject("New UI Widgets Updater Proxy");
+			var instance = updater_go.AddComponent<UpdaterProxy>();
+			instance.destroyWithGameObject = true;
+
+			return instance;
+		}
+
 		/// <summary>
 		/// Proxy instance.
 		/// </summary>
@@ -263,9 +290,7 @@
 			{
 				if (instance == null)
 				{
-					var go = new GameObject("New UI Widgets Updater Proxy");
-					Instance = go.AddComponent<UpdaterProxy>();
-					Instance.destroyWithGameObject = true;
+					instance = GetInstance();
 				}
 
 				return instance;
@@ -289,6 +314,7 @@
 
 		#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(instance))]
 		static void StaticInit()
 		{
 			if (instance != null)
@@ -334,15 +360,8 @@
 		/// </summary>
 		public virtual void Init()
 		{
-			if (TargetsOnceNext == null)
-			{
-				TargetsOnceNext = new TargetsNextList<IUpdatable>(TargetsOnce);
-			}
-
-			if (ActionsOnceNext == null)
-			{
-				ActionsOnceNext = new TargetsNextList<Action>(ActionsOnce);
-			}
+			TargetsOnceNext ??= new TargetsNextList<IUpdatable>(TargetsOnce);
+			ActionsOnceNext ??= new TargetsNextList<Action>(ActionsOnce);
 		}
 
 		/// <summary>

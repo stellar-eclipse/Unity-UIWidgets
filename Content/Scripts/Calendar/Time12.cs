@@ -126,7 +126,7 @@
 			base.Upgrade();
 
 #pragma warning disable 0618
-			Utilities.GetOrAddComponent(AMPMText, ref ampmTextAdapter);
+			Utilities.RequireComponent(AMPMText, ref ampmTextAdapter);
 #pragma warning restore 0618
 		}
 

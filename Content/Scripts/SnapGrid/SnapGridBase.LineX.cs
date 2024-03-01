@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets
 {
 	using System;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 
 	/// <summary>
@@ -20,13 +21,7 @@
 			/// <summary>
 			/// X.
 			/// </summary>
-			public float X
-			{
-				get
-				{
-					return x;
-				}
-			}
+			public readonly float X => x;
 
 			[SerializeField]
 			bool snapLeft;
@@ -34,13 +29,7 @@
 			/// <summary>
 			/// Snap by target left side.
 			/// </summary>
-			public bool SnapLeft
-			{
-				get
-				{
-					return snapLeft;
-				}
-			}
+			public readonly bool SnapLeft => snapLeft;
 
 			[SerializeField]
 			bool snapRight;
@@ -48,17 +37,12 @@
 			/// <summary>
 			/// Snap by target right side.
 			/// </summary>
-			public bool SnapRight
-			{
-				get
-				{
-					return snapRight;
-				}
-			}
+			public readonly bool SnapRight => snapRight;
 
 			/// <summary>
 			/// Create instance.
 			/// </summary>
+			[DomainReloadExclude]
 			public static readonly Func<float, bool, bool, LineX> Create = (x, left, right) => new LineX(x, left, right);
 
 			/// <summary>

@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets.Styles
 {
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UnityEditor;
 	using UnityEngine;
 	using UnityEngine.UI;
@@ -29,6 +30,7 @@
 		/// <summary>
 		/// The labels.
 		/// </summary>
+		[DomainReloadExclude]
 		protected static Dictionary<string, string> Labels = new Dictionary<string, string>()
 		{
 			{ "Background", "Background" },

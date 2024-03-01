@@ -7,6 +7,7 @@ namespace UIWidgets.TMProSupport
 	/// <summary>
 	/// FileListView component TMPro.
 	/// </summary>
+	[System.Obsolete("Use FileListViewComponent with TextAdapter.")]
 	public class FileListViewComponentTMPro : FileListViewComponentBase
 	{
 		/// <summary>
@@ -23,7 +24,7 @@ namespace UIWidgets.TMProSupport
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Name, ref NameAdapter);
+			Utilities.RequireComponent(Name, ref NameAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

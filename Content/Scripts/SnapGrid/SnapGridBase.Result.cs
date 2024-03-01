@@ -10,7 +10,7 @@
 		/// <summary>
 		/// Result.
 		/// </summary>
-		public struct Result
+		public readonly struct Result
 		{
 			/// <summary>
 			/// Distance to snap.

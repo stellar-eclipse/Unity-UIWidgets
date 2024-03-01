@@ -14,6 +14,7 @@ namespace UIWidgets
 	/// <typeparam name="TTreeView">TreeView type.</typeparam>
 	/// <typeparam name="TItemView">ItemView type.</typeparam>
 	/// <typeparam name="TItem">Item type.</typeparam>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/collections/treeview-toggle-animation.html")]
 	public class TreeViewCustomToggleAnimation<TTreeView, TItemView, TItem> : MonoBehaviourConditional, IUpdatable
 		where TTreeView : TreeViewCustom<TItemView, TItem>
 		where TItemView : TreeViewComponentBase<TItem>
@@ -51,15 +52,9 @@ namespace UIWidgets
 					ViewUpdated = updated;
 				}
 
-				public ResizeResult Finished()
-				{
-					return new ResizeResult(true, ViewUpdated);
-				}
+				public readonly ResizeResult Finished() => new ResizeResult(true, ViewUpdated);
 
-				public ResizeResult Updated()
-				{
-					return new ResizeResult(Finish, true);
-				}
+				public readonly ResizeResult Updated() => new ResizeResult(Finish, true);
 			}
 
 			TTreeView treeView;
@@ -81,21 +76,19 @@ namespace UIWidgets
 			/// <summary>
 			/// Collapse animation.
 			/// </summary>
-			public bool Collapse
-			{
-				get
-				{
-					return !Expand;
-				}
-			}
+			public bool Collapse => !Expand;
+
+			readonly List<TreeNode<TItem>> displayedNodes = new List<TreeNode<TItem>>();
 
 			int nodeIndex;
-			TItemView nodeInstance;
-			RectTransform nodeToggleRect;
-			Vector3 rotation;
-			float rotationSpeed;
 
-			List<TreeNode<TItem>> displayedNodes = new List<TreeNode<TItem>>();
+			TItemView nodeInstance;
+
+			RectTransform nodeToggleRect;
+
+			Vector3 rotation;
+
+			float rotationSpeed;
 
 			bool horizontal;
 			int index = 0;
@@ -105,7 +98,19 @@ namespace UIWidgets
 			Vector2 currentSize;
 			TreeNode<TItem> currentNode;
 
-			static List<ToggleAnimation> cache = new List<ToggleAnimation>();
+			static readonly List<ToggleAnimation> Cache = new List<ToggleAnimation>();
+
+			#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+			/// <summary>
+			/// Reload support.
+			/// </summary>
+			[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+			[DomainReload(nameof(Cache))]
+			static void StaticInit()
+			{
+				Cache.Clear();
+			}
+			#endif
 
 			/// <summary>
 			/// Create animation.
@@ -119,7 +124,7 @@ namespace UIWidgets
 			/// <returns>Animation.</returns>
 			public static ToggleAnimation Create(TTreeView treeView, TreeNode<TItem> node, bool expand, ModeType mode, float time, float speed)
 			{
-				var animation = (cache.Count > 0) ? cache.Pop() : new ToggleAnimation();
+				var animation = (Cache.Count > 0) ? Cache.Pop() : new ToggleAnimation();
 				animation.Start(treeView, node, expand, mode, time, speed);
 
 				return animation;
@@ -367,7 +372,7 @@ namespace UIWidgets
 				currentNode = null;
 				displayedNodes.Clear();
 
-				cache.Add(this);
+				Cache.Add(this);
 			}
 
 			/// <summary>

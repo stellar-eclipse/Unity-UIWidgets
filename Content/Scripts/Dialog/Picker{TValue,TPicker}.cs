@@ -2,8 +2,7 @@ namespace UIWidgets
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Collections.ObjectModel;
-	using System.Threading.Tasks;
+	using UIWidgets.Attributes;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.UI;
@@ -19,7 +18,7 @@ namespace UIWidgets
 		/// <summary>
 		/// Picker result.
 		/// </summary>
-		public struct Result
+		public readonly struct Result
 		{
 			/// <summary>
 			/// Selected value or default value if nothing selected.
@@ -71,10 +70,7 @@ namespace UIWidgets
 		{
 			get
 			{
-				if (templates == null)
-				{
-					templates = new Templates<TPicker>();
-				}
+				templates ??= new Templates<TPicker>();
 
 				return templates;
 			}
@@ -98,14 +94,14 @@ namespace UIWidgets
 		/// <summary>
 		/// Opened pickers.
 		/// </summary>
-		public static ReadOnlyCollection<TPicker> OpenedPickers
+		public static IReadOnlyList<TPicker> OpenedPickers
 		{
 			get
 			{
 				OpenedPickersList.Clear();
 				OpenedPickersList.AddRange(openedPickers);
 
-				return OpenedPickersList.AsReadOnly();
+				return OpenedPickersList;
 			}
 		}
 
@@ -165,6 +161,19 @@ namespace UIWidgets
 		{
 			output.AddRange(openedPickers);
 		}
+
+#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(openedPickers), nameof(OpenedPickersList), nameof(OnInstanceOpen), nameof(OnInstanceClose), nameof(templates))]
+		static void StaticInit()
+		{
+			openedPickers.Clear();
+			OpenedPickersList.Clear();
+			OnInstanceOpen = null;
+			OnInstanceClose = null;
+			templates = null;
+		}
+#endif
 
 		/// <summary>
 		/// Value.
@@ -253,7 +262,7 @@ namespace UIWidgets
 		/// <param name="modalColor">Modal color.</param>
 		/// <param name="canvas">Canvas.</param>
 		public virtual void Show(
-			TValue defaultValue = default(TValue),
+			TValue defaultValue = default,
 			Action<TValue> onSelect = null,
 			Action onCancel = null,
 			Sprite modalSprite = null,
@@ -293,7 +302,7 @@ namespace UIWidgets
 		/// <param name="canvas">Canvas.</param>
 		/// <returns>Selected value and confirmation.</returns>
 		public virtual Picker<TValue, TPicker> ShowAsync(
-			TValue defaultValue = default(TValue),
+			TValue defaultValue = default,
 			Sprite modalSprite = null,
 			Color? modalColor = null,
 			Canvas canvas = null)

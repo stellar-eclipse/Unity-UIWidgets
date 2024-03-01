@@ -59,14 +59,18 @@
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[]
 				{
 					UtilitiesUI.GetGraphic(Field1Adapter),
 					UtilitiesUI.GetGraphic(Field2Adapter),
 					UtilitiesUI.GetGraphic(Field3Adapter),
 				};
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -76,9 +80,13 @@
 		{
 			if (GraphicsBackgroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				graphicsBackground = Compatibility.EmptyArray<Graphic>();
+				#pragma warning restore
 				GraphicsBackgroundVersion = 1;
 			}
+
+			base.GraphicsBackgroundInit();
 		}
 
 		/// <summary>
@@ -115,9 +123,9 @@
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Field1, ref Field1Adapter);
-			Utilities.GetOrAddComponent(Field2, ref Field2Adapter);
-			Utilities.GetOrAddComponent(Field3, ref Field3Adapter);
+			Utilities.RequireComponent(Field1, ref Field1Adapter);
+			Utilities.RequireComponent(Field2, ref Field2Adapter);
+			Utilities.RequireComponent(Field3, ref Field3Adapter);
 #pragma warning restore 0612, 0618
 		}
 	}

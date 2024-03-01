@@ -9,6 +9,7 @@
 	/// <summary>
 	/// Tab button.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/containers/tabs.html")]
 	public abstract class TabButtonBase : Button, ILocalizationSupport
 	{
 		[SerializeField]
@@ -20,15 +21,9 @@
 		/// </summary>
 		public bool LocalizationSupport
 		{
-			get
-			{
-				return localizationSupport;
-			}
+			get => localizationSupport;
 
-			set
-			{
-				localizationSupport = value;
-			}
+			set => localizationSupport = value;
 		}
 
 		/// <summary>

@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.ComponentModel;
+	using EasyLayoutNS.Extensions;
 	using UIWidgets;
 	using UnityEngine;
 
@@ -331,63 +332,24 @@
 		/// <param name="sb">String builder.</param>
 		public virtual void GetDebugInfo(System.Text.StringBuilder sb)
 		{
-			sb.Append("\tWidth Auto: ");
-			sb.Append(WidthAuto);
-			sb.AppendLine();
+			sb.AppendValue("\tWidth Auto: ", WidthAuto);
+			sb.AppendValue("\tWidth: ", Width);
+			sb.AppendValue("\tHeight Auto: ", HeightAuto);
+			sb.AppendValue("\tHeight: ", Height);
 
-			sb.Append("\tWidth: ");
-			sb.Append(Width);
-			sb.AppendLine();
-
-			sb.Append("\tHeight Auto: ");
-			sb.Append(HeightAuto);
-			sb.AppendLine();
-
-			sb.Append("\tHeight: ");
-			sb.Append(Height);
-			sb.AppendLine();
-
-			sb.Append("\tAngle Start: ");
-			sb.Append(AngleStart);
-			sb.AppendLine();
-
-			sb.Append("\tAngle Step Auto: ");
-			sb.Append(AngleStepAuto);
-			sb.AppendLine();
-
-			sb.Append("\tAngle Step: ");
-			sb.Append(AngleStep);
-			sb.AppendLine();
-
-			sb.Append("\tAlign: ");
-			sb.Append(EnumHelper<EllipseAlign>.ToString(Align));
-			sb.AppendLine();
-
-			sb.Append("\tElements Rotate: ");
-			sb.Append(ElementsRotate);
-			sb.AppendLine();
-
-			sb.Append("\tElements Rotation Start: ");
-			sb.Append(ElementsRotationStart);
-			sb.AppendLine();
+			sb.AppendValue("\tAngle Start: ", AngleStart);
+			sb.AppendValue("\tAngle Step Auto: ", AngleStepAuto);
+			sb.AppendValue("\tAngle Step: ", AngleStep);
+			sb.AppendValueEnum("\tAlign: ", Align);
+			sb.AppendValue("\tElements Rotate: ", ElementsRotate);
+			sb.AppendValue("\tElements Rotation Start: ", ElementsRotationStart);
 
 			sb.AppendLine("\t#####");
 
-			sb.Append("\tFill: ");
-			sb.Append(EnumHelper<EllipseFill>.ToString(Fill));
-			sb.AppendLine();
-
-			sb.Append("\tAngle Filler: ");
-			sb.Append(AngleFiller);
-			sb.AppendLine();
-
-			sb.Append("\tAngle Scroll: ");
-			sb.Append(AngleScroll);
-			sb.AppendLine();
-
-			sb.Append("\tArc Length: ");
-			sb.Append(ArcLength);
-			sb.AppendLine();
+			sb.AppendValueEnum("\tFill: ", Fill);
+			sb.AppendValue("\tAngle Filler: ", AngleFiller);
+			sb.AppendValue("\tAngle Scroll: ", AngleScroll);
+			sb.AppendValue("\tArc Length: ", ArcLength);
 		}
 	}
 }

@@ -233,8 +233,10 @@ namespace UIWidgets
 			/// </summary>
 			protected bool IsArray = false;
 
+			[DomainReloadExclude]
 			static readonly GUILayoutOption[] ToggleOptions = new GUILayoutOption[] { GUILayout.ExpandWidth(true) };
 
+			[DomainReloadExclude]
 			static readonly Func<SerializedProperty, bool> AllowAll = x => true;
 
 			/// <summary>
@@ -505,8 +507,7 @@ namespace UIWidgets
 					var attrs = field.GetCustomAttributes(typeof(EditorConditionBlockAttribute), true);
 					foreach (var a in attrs)
 					{
-						var attr = a as EditorConditionBlockAttribute;
-						if (attr != null)
+						if (a is EditorConditionBlockAttribute attr)
 						{
 							return attr.Block;
 						}
@@ -611,14 +612,12 @@ namespace UIWidgets
 			/// <param name="property">Property.</param>
 			protected void ShowProperty(string name, SerializedProperty property)
 			{
-				TypeData nested;
-
 				var condition = PropertyDisplayConditions[name];
 				var is_visible = condition.IsValid(SerializedProperties);
 				if (is_visible)
 				{
 					var indent = condition.Conditions.Count;
-					var has_nested = NestedObjects.TryGetValue(name, out nested);
+					var has_nested = NestedObjects.TryGetValue(name, out var nested);
 
 					EditorGUI.indentLevel += indent;
 					EditorGUILayout.PropertyField(property, !has_nested);

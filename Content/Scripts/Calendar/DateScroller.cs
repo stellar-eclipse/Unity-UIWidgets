@@ -10,6 +10,7 @@
 	/// <summary>
 	/// Date ScrollBlock widget.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/datetime-scroller.html")]
 	public class DateScroller : DateBase
 	{
 		/// <summary>
@@ -95,7 +96,19 @@
 		[SerializeField]
 		[EditorConditionBool("years")]
 		[FormerlySerializedAs("YearsScroller")]
-		protected ScrollBlockBase YearsScrollBlock;
+		[FormerlySerializedAs("YearsScrollBlock")]
+		protected ScrollBlockBase yearsScrollBlock;
+
+		/// <summary>
+		/// ScrollBlock for the years.
+		/// </summary>
+		public ScrollBlockBase YearsScrollBlock
+		{
+			get
+			{
+				return yearsScrollBlock;
+			}
+		}
 
 		/// <summary>
 		/// Step to change year.
@@ -141,7 +154,19 @@
 		[SerializeField]
 		[EditorConditionBool("months")]
 		[FormerlySerializedAs("MonthsScroller")]
-		protected ScrollBlockBase MonthsScrollBlock;
+		[FormerlySerializedAs("MonthsScrollBlock")]
+		protected ScrollBlockBase monthsScrollBlock;
+
+		/// <summary>
+		/// ScrollBlock for the months.
+		/// </summary>
+		public ScrollBlockBase MonthsScrollBlock
+		{
+			get
+			{
+				return monthsScrollBlock;
+			}
+		}
 
 		/// <summary>
 		/// Step to change month.
@@ -187,7 +212,19 @@
 		[SerializeField]
 		[EditorConditionBool("days")]
 		[FormerlySerializedAs("DaysScroller")]
-		protected ScrollBlockBase DaysScrollBlock;
+		[FormerlySerializedAs("DaysScrollBlock")]
+		protected ScrollBlockBase daysScrollBlock;
+
+		/// <summary>
+		/// ScrollBlock for the days.
+		/// </summary>
+		public ScrollBlockBase DaysScrollBlock
+		{
+			get
+			{
+				return daysScrollBlock;
+			}
+		}
 
 		/// <summary>
 		/// Step to change day.
@@ -485,27 +522,18 @@
 		/// <returns>true if dates equals; otherwise false.</returns>
 		protected static bool DateTimeEquals(DateTime date1, DateTime date2, Precision precision)
 		{
-			switch (precision)
+			return precision switch
 			{
-				case Precision.Years:
-					return date1.Year == date2.Year;
-				case Precision.Months:
-					return (date1.Year == date2.Year) && (date1.Month == date2.Month);
-				case Precision.Days:
-					return date1.Date == date2.Date;
-				case Precision.Hours:
-					return (date1.Date == date2.Date) && (date1.Hour == date2.Hour);
-				case Precision.Minutes:
-					return (date1.Date == date2.Date) && (date1.Hour == date2.Hour) && (date1.Minute == date2.Minute);
-				case Precision.Seconds:
-					return (date1.Date == date2.Date) && (date1.Hour == date2.Hour) && (date1.Minute == date2.Minute) && (date1.Second == date2.Second);
-				case Precision.Milliseconds:
-					return (date1.Date == date2.Date) && (date1.Hour == date2.Hour) && (date1.Minute == date2.Minute) && (date1.Second == date2.Second) && (date1.Millisecond == date2.Millisecond);
-				case Precision.Ticks:
-					return date1 == date2;
-				default:
-					throw new NotSupportedException(string.Format("Unknown precision: {0}", EnumHelper<Precision>.ToString(precision)));
-			}
+				Precision.Years => date1.Year == date2.Year,
+				Precision.Months => (date1.Year == date2.Year) && (date1.Month == date2.Month),
+				Precision.Days => date1.Date == date2.Date,
+				Precision.Hours => (date1.Date == date2.Date) && (date1.Hour == date2.Hour),
+				Precision.Minutes => (date1.Date == date2.Date) && (date1.Hour == date2.Hour) && (date1.Minute == date2.Minute),
+				Precision.Seconds => (date1.Date == date2.Date) && (date1.Hour == date2.Hour) && (date1.Minute == date2.Minute) && (date1.Second == date2.Second),
+				Precision.Milliseconds => (date1.Date == date2.Date) && (date1.Hour == date2.Hour) && (date1.Minute == date2.Minute) && (date1.Second == date2.Second) && (date1.Millisecond == date2.Millisecond),
+				Precision.Ticks => date1 == date2,
+				_ => throw new NotSupportedException(string.Format("Unknown precision: {0}", EnumHelper<Precision>.ToString(precision))),
+			};
 		}
 
 		/// <summary>

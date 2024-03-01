@@ -40,9 +40,9 @@
 		public override void Upgrade()
 		{
 #pragma warning disable 0618
-			Utilities.GetOrAddComponent(InputHours, ref InputHoursAdapter);
-			Utilities.GetOrAddComponent(InputMinutes, ref InputMinutesAdapter);
-			Utilities.GetOrAddComponent(InputSeconds, ref InputSecondsAdapter);
+			Utilities.RequireComponent(InputHours, ref InputHoursAdapter);
+			Utilities.RequireComponent(InputMinutes, ref InputMinutesAdapter);
+			Utilities.RequireComponent(InputSeconds, ref InputSecondsAdapter);
 #pragma warning restore 0618
 		}
 	}

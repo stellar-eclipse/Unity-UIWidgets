@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.ComponentModel;
+	using UIWidgets.Pool;
 	using UnityEngine;
 
 	/// <summary>
@@ -92,7 +93,7 @@
 
 			base.Init();
 
-			BaseValue = default(TimeSpan);
+			BaseValue = default;
 		}
 
 		/// <summary>
@@ -200,11 +201,10 @@
 				return false;
 			}
 
-			GetPossibleIntersections(track.Data, order, target, TempList);
+			using var _ = ListPool<TData>.Get(out var temp);
 
-			var result = ListIntersection(TempList, start, end, order, target);
-
-			TempList.Clear();
+			GetPossibleIntersections(track.Data, order, target, temp);
+			var result = ListIntersection(temp, start, end, order, target);
 
 			return result;
 		}

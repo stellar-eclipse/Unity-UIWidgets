@@ -17,13 +17,7 @@
 		/// <summary>
 		/// Key.
 		/// </summary>
-		public HotKeyCode Key
-		{
-			get
-			{
-				return key;
-			}
-		}
+		public HotKeyCode Key => key;
 
 		[SerializeField]
 		bool ctrl;
@@ -31,13 +25,7 @@
 		/// <summary>
 		/// Should be control key pressed?
 		/// </summary>
-		public bool Ctrl
-		{
-			get
-			{
-				return ctrl;
-			}
-		}
+		public bool Ctrl => ctrl;
 
 		[SerializeField]
 		bool alt;
@@ -45,13 +33,7 @@
 		/// <summary>
 		/// Should be alt key pressed?
 		/// </summary>
-		public bool Alt
-		{
-			get
-			{
-				return alt;
-			}
-		}
+		public bool Alt => alt;
 
 		[SerializeField]
 		bool shift;
@@ -59,13 +41,7 @@
 		/// <summary>
 		/// Should be shift key pressed?
 		/// </summary>
-		public bool Shift
-		{
-			get
-			{
-				return shift;
-			}
-		}
+		public bool Shift => shift;
 
 		/// <summary>
 		/// Is pressed?
@@ -114,13 +90,7 @@
 		/// <summary>
 		/// Is hot key valid?
 		/// </summary>
-		public bool Valid
-		{
-			get
-			{
-				return key != HotKeyCode.None;
-			}
-		}
+		public bool Valid => key != HotKeyCode.None;
 
 		/// <summary>
 		/// Modifiers count.
@@ -170,15 +140,7 @@
 		/// </summary>
 		/// <param name="obj">The object to compare with the current object.</param>
 		/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-		public override bool Equals(object obj)
-		{
-			if (obj is HotKey)
-			{
-				return Equals((HotKey)obj);
-			}
-
-			return false;
-		}
+		public override bool Equals(object obj) => (obj is HotKey hotKey) && Equals(hotKey);
 
 		/// <summary>
 		/// Determines whether the specified object is equal to the current object.
@@ -187,7 +149,7 @@
 		/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
 		public bool Equals(HotKey other)
 		{
-			if (ReferenceEquals(other, null))
+			if (other is null)
 			{
 				return false;
 			}
@@ -213,9 +175,9 @@
 		/// <returns>true if the hot keys are equal; otherwise, false.</returns>
 		public static bool operator ==(HotKey hotkey1, HotKey hotkey2)
 		{
-			if (ReferenceEquals(hotkey1, null))
+			if (hotkey1 is null)
 			{
-				return ReferenceEquals(hotkey2, null);
+				return hotkey2 is null;
 			}
 
 			return hotkey1.Equals(hotkey2);
@@ -227,10 +189,7 @@
 		/// <param name="hotkey1">First hot key.</param>
 		/// <param name="hotkey2">Second hot key.</param>
 		/// <returns>true if the hot keys not equal; otherwise, false.</returns>
-		public static bool operator !=(HotKey hotkey1, HotKey hotkey2)
-		{
-			return !(hotkey1 == hotkey2);
-		}
+		public static bool operator !=(HotKey hotkey1, HotKey hotkey2) => !(hotkey1 == hotkey2);
 
 		/// <summary>
 		/// Returns a string that represents the current object.

@@ -1,10 +1,12 @@
 ﻿namespace UIWidgets
 {
+	using UIWidgets.Attributes;
 	using UnityEngine;
 
 	/// <summary>
 	/// Scripts templates.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/generator.html")]
 	public class ScriptsTemplates : ScriptableObject
 	{
 #if UNITY_EDITOR
@@ -30,6 +32,18 @@
 				instance = value;
 			}
 		}
+
+		#if UNITY_2019_3_OR_NEWER
+		/// <summary>
+		/// Reload support.
+		/// </summary>
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(instance))]
+		static void StaticInit()
+		{
+			instance = null;
+		}
+		#endif
 #endif
 
 		/// <summary>

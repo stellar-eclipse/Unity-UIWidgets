@@ -18,6 +18,7 @@
 	[DisallowMultipleComponent]
 	[RequireComponent(typeof(RectTransform))]
 	[AddComponentMenu("UI/New UI Widgets/Sidebar")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/controls/sidebar.html")]
 	public class Sidebar : UIBehaviourConditional, IBeginDragHandler, IEndDragHandler, IDragHandler, IStylable
 	{
 		#region Interactable
@@ -271,13 +272,27 @@
 			}
 		}
 
+		[SerializeField]
+		[EditorConditionBool("modal")]
+		[FormerlySerializedAs("ModalColor")]
+		[Tooltip("Background color.")]
+		Color modalColor = new Color(1f, 1f, 1f, 0f);
+
 		/// <summary>
 		/// Modal background color.
 		/// </summary>
-		[SerializeField]
-		[EditorConditionBool("modal")]
-		[Tooltip("Background color.")]
-		public Color ModalColor = new Color(1f, 1f, 1f, 0f);
+		public Color ModalColor
+		{
+			get
+			{
+				return modalColor;
+			}
+
+			set
+			{
+				modalColor = value;
+			}
+		}
 
 		[SerializeField]
 		bool scrollRectSupport;
@@ -396,6 +411,12 @@
 		/// </summary>
 		[SerializeField]
 		public bool UnscaledTime = false;
+
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
 
 		/// <summary>
 		/// OnOpen event.
@@ -693,7 +714,7 @@
 		/// <param name="handleObject">Handle object.</param>
 		protected void AddHandleEvents(GameObject handleObject)
 		{
-			var handle = Utilities.GetOrAddComponent<SidebarHandle>(handleObject);
+			var handle = Utilities.RequireComponent<SidebarHandle>(handleObject);
 			handle.BeginDragEvent.AddListener(OnBeginDrag);
 			handle.DragEvent.AddListener(OnDrag);
 			handle.EndDragEvent.AddListener(OnEndDrag);
@@ -804,12 +825,16 @@
 			var parent = (Content != null) ? Content.parent : transform.parent;
 			ModalKey = ModalHelper.Open(this, null, ModalColor, Close, ParentCanvas);
 
-			var modal_rt = ModalHelper.GetInstance(ModalKey.Value).transform as RectTransform;
-			modal_rt.SetParent(parent, false);
-
-			if (Content != null)
+			var modal_instance = ModalHelper.GetInstance(ModalKey.Value);
+			if (modal_instance != null)
 			{
-				modal_rt.localPosition = Content.localPosition;
+				var modal_rt = modal_instance.transform as RectTransform;
+				modal_rt.SetParent(parent, false);
+
+				if (Content != null)
+				{
+					modal_rt.localPosition = Content.localPosition;
+				}
 			}
 
 			if (
@@ -828,7 +853,11 @@
 		{
 			if (ModalKey.HasValue)
 			{
-				ModalHelper.GetInstance(ModalKey.Value).transform.SetParent(UtilitiesUI.FindTopmostCanvas(transform), false);
+				var instance = ModalHelper.GetInstance(ModalKey.Value);
+				if (instance != null)
+				{
+					instance.transform.SetParent(UtilitiesUI.FindTopmostCanvas(transform), false);
+				}
 			}
 
 			ModalHelper.Close(ref ModalKey);
@@ -850,12 +879,29 @@
 		}
 
 		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return IsActive() && (eventData.button == DragButton);
+		}
+
+		bool isDrag;
+
+		/// <summary>
 		/// Called by a BaseInputModule before a drag is started.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnBeginDrag(PointerEventData eventData)
 		{
-			// do nothing
+			if (!CanDrag(eventData))
+			{
+				return;
+			}
+
+			isDrag = true;
 		}
 
 		/// <summary>
@@ -864,10 +910,12 @@
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnEndDrag(PointerEventData eventData)
 		{
-			if (!IsActive())
+			if (!isDrag)
 			{
 				return;
 			}
+
+			isDrag = false;
 
 			var k = ActionOpenState[AnimationTypeInt]();
 
@@ -899,18 +947,21 @@
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnDrag(PointerEventData eventData)
 		{
-			if (!IsActive())
+			if (!isDrag)
 			{
+				return;
+			}
+
+			if (!CanDrag(eventData))
+			{
+				OnEndDrag(eventData);
 				return;
 			}
 
 			StopAllCoroutines();
 
-			Vector2 current_point;
-			Vector2 original_point;
-
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(SidebarRect, eventData.position, eventData.pressEventCamera, out current_point);
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(SidebarRect, eventData.pressPosition, eventData.pressEventCamera, out original_point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(SidebarRect, eventData.position, eventData.pressEventCamera, out var current_point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(SidebarRect, eventData.pressPosition, eventData.pressEventCamera, out var original_point);
 
 			var delta = current_point - original_point;
 
@@ -1143,19 +1194,14 @@
 		/// <returns>Open position for specified progress.</returns>
 		protected Vector2 RectOpenPosition(RectTransform rect, Vector2 position, float rate = 1f)
 		{
-			switch (Direction)
+			return Direction switch
 			{
-				case SidebarAxis.LeftToRight:
-					return new Vector2(position.x + (SidebarSize() * rate), rect.anchoredPosition.y);
-				case SidebarAxis.RightToLeft:
-					return new Vector2(position.x - (SidebarSize() * rate), rect.anchoredPosition.y);
-				case SidebarAxis.TopToBottom:
-					return new Vector2(rect.anchoredPosition.x, position.y - (SidebarSize() * rate));
-				case SidebarAxis.BottomToTop:
-					return new Vector2(rect.anchoredPosition.x, position.y + (SidebarSize() * rate));
-				default:
-					throw new NotSupportedException(string.Format("Unknown sidebar axis: {0}", EnumHelper<SidebarAxis>.ToString(Direction)));
-			}
+				SidebarAxis.LeftToRight => new Vector2(position.x + (SidebarSize() * rate), rect.anchoredPosition.y),
+				SidebarAxis.RightToLeft => new Vector2(position.x - (SidebarSize() * rate), rect.anchoredPosition.y),
+				SidebarAxis.TopToBottom => new Vector2(rect.anchoredPosition.x, position.y - (SidebarSize() * rate)),
+				SidebarAxis.BottomToTop => new Vector2(rect.anchoredPosition.x, position.y + (SidebarSize() * rate)),
+				_ => throw new NotSupportedException(string.Format("Unknown sidebar axis: {0}", EnumHelper<SidebarAxis>.ToString(Direction))),
+			};
 		}
 
 		/// <summary>
@@ -1912,19 +1958,14 @@
 		/// <returns>Layout padding.</returns>
 		protected float GetLayoutPadding()
 		{
-			switch (Direction)
+			return Direction switch
 			{
-				case SidebarAxis.LeftToRight:
-					return LayoutUtilities.GetPaddingLeft(ContentLayout);
-				case SidebarAxis.RightToLeft:
-					return LayoutUtilities.GetPaddingRight(ContentLayout);
-				case SidebarAxis.TopToBottom:
-					return LayoutUtilities.GetPaddingTop(ContentLayout);
-				case SidebarAxis.BottomToTop:
-					return LayoutUtilities.GetPaddingBottom(ContentLayout);
-				default:
-					throw new NotSupportedException(string.Format("Unknown sidebar axis: {0}", EnumHelper<SidebarAxis>.ToString(Direction)));
-			}
+				SidebarAxis.LeftToRight => LayoutUtilities.GetPaddingLeft(ContentLayout),
+				SidebarAxis.RightToLeft => LayoutUtilities.GetPaddingRight(ContentLayout),
+				SidebarAxis.TopToBottom => LayoutUtilities.GetPaddingTop(ContentLayout),
+				SidebarAxis.BottomToTop => LayoutUtilities.GetPaddingBottom(ContentLayout),
+				_ => throw new NotSupportedException(string.Format("Unknown sidebar axis: {0}", EnumHelper<SidebarAxis>.ToString(Direction))),
+			};
 		}
 
 		/// <summary>
@@ -2009,27 +2050,16 @@
 		/// <returns>Size delta.</returns>
 		protected float ResizeDragDelta(Vector2 delta)
 		{
-			float resize_delta;
 			var direction = IsOpen ? -1 : 1;
 			var sidebar_size = SidebarSize();
-			switch (Direction)
+			var resize_delta = Direction switch
 			{
-				case SidebarAxis.LeftToRight:
-					resize_delta = delta.x * direction;
-					break;
-				case SidebarAxis.RightToLeft:
-					resize_delta = -(delta.x * direction);
-					break;
-				case SidebarAxis.TopToBottom:
-					resize_delta = -(delta.y * direction);
-					break;
-				case SidebarAxis.BottomToTop:
-					resize_delta = delta.y * direction;
-					break;
-				default:
-					throw new NotSupportedException(string.Format("Unknown sidebar axis: {0}", EnumHelper<SidebarAxis>.ToString(Direction)));
-			}
-
+				SidebarAxis.LeftToRight => delta.x * direction,
+				SidebarAxis.RightToLeft => -(delta.x * direction),
+				SidebarAxis.TopToBottom => -(delta.y * direction),
+				SidebarAxis.BottomToTop => delta.y * direction,
+				_ => throw new NotSupportedException(string.Format("Unknown sidebar axis: {0}", EnumHelper<SidebarAxis>.ToString(Direction))),
+			};
 			resize_delta = Mathf.Clamp(resize_delta, 0, sidebar_size);
 			if (IsOpen)
 			{
@@ -2212,11 +2242,14 @@
 		/// </summary>
 		protected override void OnValidate()
 		{
-			var valid_layout = (Content.GetComponent<HorizontalOrVerticalLayoutGroup>() != null)
-				|| (Content.GetComponent<EasyLayout>() != null);
-			if (!valid_layout)
+			if (Content != null)
 			{
-				Debug.LogError("Sidebar.Content should have HorizontalLayoutGroup or VerticalLayoutGroup or EasyLayout component.", this);
+				var valid_layout = (Content.GetComponent<HorizontalOrVerticalLayoutGroup>() != null)
+					|| (Content.GetComponent<EasyLayout>() != null);
+				if (!valid_layout)
+				{
+					Debug.LogError("Sidebar.Content should have HorizontalLayoutGroup or VerticalLayoutGroup or EasyLayout component.", this);
+				}
 			}
 
 			base.OnValidate();

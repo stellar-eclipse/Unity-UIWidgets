@@ -9,6 +9,7 @@
 	/// <typeparam name="TTreeView">Type of the TreeView.</typeparam>
 	/// <typeparam name="TTreeViewComponent">Type of the TreeView component.</typeparam>
 	/// <typeparam name="TTreeViewItem">Type of the TreeView item.</typeparam>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/drag-and-drop.html")]
 	public class TreeViewCustomDropSupport<TTreeView, TTreeViewComponent, TTreeViewItem> : MonoBehaviour, IDropSupport<TreeNode<TTreeViewItem>>, IDropSupport<TTreeViewItem>
 		where TTreeView : TreeViewCustom<TTreeViewComponent, TTreeViewItem>
 		where TTreeViewComponent : TreeViewComponentBase<TTreeViewItem>

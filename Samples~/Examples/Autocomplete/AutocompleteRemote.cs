@@ -2,7 +2,9 @@
 {
 	using System.Collections;
 	using UIWidgets;
+	using UIWidgets.Attributes;
 	using UnityEngine;
+	using UnityEngine.Networking;
 
 	/// <summary>
 	/// Autocomplete for ListViewIcons.
@@ -22,9 +24,8 @@
 				yield return UtilitiesTime.Wait(SearchDelay, UnscaledTime);
 			}
 
-#if UNITY_2018_3_OR_NEWER
-			var url = string.Format("http://example.com/?search={0}", UnityEngine.Networking.UnityWebRequest.EscapeURL(Query));
-			using (var www = UnityEngine.Networking.UnityWebRequest.Get(new System.Uri(url)))
+			var url = string.Format("http://example.com/?search={0}", UnityWebRequest.EscapeURL(Query));
+			using (var www = UnityWebRequest.Get(new System.Uri(url)))
 			{
 				yield return www.SendWebRequest();
 
@@ -37,27 +38,11 @@
 					DisplayListView.DataSource = Text2List(www.downloadHandler.text);
 				}
 			}
-#else
-			var url = string.Format("http://example.com/?search={0}", WWW.EscapeURL(Query));
-			WWW www = new WWW(url);
-			yield return www;
 
-			DisplayListView.DataSource = Text2List(www.text);
-
-			www.Dispose();
-#endif
-
-			if (DisplayListView.DataSource.Count > 0)
-			{
-				ShowOptions();
-				DisplayListView.SelectedIndex = 0;
-			}
-			else
-			{
-				HideOptions();
-			}
+			SearchCompleted();
 		}
 
+		[DomainReloadExclude]
 		static readonly string[] LineSeparators = new string[] { "\r\n", "\r", "\n" };
 
 		/// <summary>

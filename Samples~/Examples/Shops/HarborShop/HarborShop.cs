@@ -221,8 +221,8 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(TradeTotal, ref TradeTotalAdapter);
-			Utilities.GetOrAddComponent(PlayerMoney, ref PlayerMoneyAdapter);
+			Utilities.RequireComponent(TradeTotal, ref TradeTotalAdapter);
+			Utilities.RequireComponent(PlayerMoney, ref PlayerMoneyAdapter);
 #pragma warning restore 0612, 0618
 		}
 

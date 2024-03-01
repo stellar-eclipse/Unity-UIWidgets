@@ -2,7 +2,6 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Collections.ObjectModel;
 	using System.ComponentModel;
 	using UnityEngine;
 
@@ -102,13 +101,7 @@
 		/// <summary>
 		/// Visible items.
 		/// </summary>
-		public ReadOnlyCollection<TData> VisibleItems
-		{
-			get
-			{
-				return visibleItems.AsReadOnly();
-			}
-		}
+		public IReadOnlyList<TData> VisibleItems => visibleItems;
 
 		TrackLayout<TData, TPoint> layout;
 

@@ -13,6 +13,7 @@
 	/// <typeparam name="TListViewComponent">ListView.DefaultItem type.</typeparam>
 	/// <typeparam name="TAutocomplete">Autocomplete type.</typeparam>
 	/// <typeparam name="TCombobox">Combobox type.</typeparam>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/autocombobox.html")]
 	public abstract class AutoCombobox<TItem, TListView, TListViewComponent, TAutocomplete, TCombobox> : MonoBehaviour, IStylable
 		where TListView : ListViewCustom<TListViewComponent, TItem>
 		where TListViewComponent : ListViewItem
@@ -84,16 +85,21 @@
 			Autocomplete.ResetListViewSelection = !KeepSelection;
 
 			Combobox.Init();
+			Combobox.ShowListViewOnSubmit = false;
 			Combobox.ListView.OnSelectInternal.AddListener(OnSelect);
-			Combobox.OnCurrentClick.AddListener(AutocompleteShow);
+			Combobox.OnCurrentClick.AddListener(ComboboxCurrentClick);
 			Combobox.ListView.OnDataSourceChanged.AddListener(ListViewDataSourceChanged);
+			if (Combobox.ListView.DataSource.Count > 0)
+			{
+				Combobox.ListView.Select(0);
+			}
 
-			AutocompleteInputListener = Utilities.GetOrAddComponent<SelectListener>(Autocomplete.InputFieldAdapter);
+			AutocompleteInputListener = Utilities.RequireComponent<SelectListener>(Autocomplete.InputFieldAdapter);
 			AutocompleteInputListener.onDeselect.AddListener(InputFocusLost);
 
 			Autocomplete.DataSource = Combobox.ListView.DataSource.ListReference();
 
-			AutocompleteHide();
+			AutocompleteHide(false);
 		}
 
 		/// <summary>
@@ -136,7 +142,7 @@
 			if (Combobox != null)
 			{
 				Combobox.ListView.OnSelectInternal.RemoveListener(OnSelect);
-				Combobox.OnCurrentClick.RemoveListener(AutocompleteShow);
+				Combobox.OnCurrentClick.RemoveListener(ComboboxCurrentClick);
 				Combobox.ListView.OnDataSourceChanged.RemoveListener(ListViewDataSourceChanged);
 			}
 
@@ -155,7 +161,7 @@
 			var index = Combobox.ListView.DataSource.IndexOf(item);
 			Combobox.ListView.Select(index);
 
-			AutocompleteHide();
+			AutocompleteHide(false);
 		}
 
 		/// <summary>
@@ -171,7 +177,7 @@
 				Combobox.ListView.Select(index);
 			}
 
-			AutocompleteHide();
+			AutocompleteHide(false);
 		}
 
 		/// <summary>
@@ -179,7 +185,7 @@
 		/// </summary>
 		protected virtual void ProcessCancel()
 		{
-			AutocompleteHide();
+			AutocompleteHide(false);
 		}
 
 		/// <summary>
@@ -215,10 +221,7 @@
 		/// </summary>
 		/// <param name="input">Input.</param>
 		/// <returns>New item.</returns>
-		protected virtual TItem Input2Item(string input)
-		{
-			return default(TItem);
-		}
+		protected virtual TItem Input2Item(string input) => default;
 
 		/// <summary>
 		/// Process the select event.
@@ -246,11 +249,11 @@
 		}
 
 		/// <summary>
-		/// Show autocomplete.
+		/// Process combobox OnCurrentClick.
 		/// </summary>
 		/// <param name="index">Index.</param>
 		/// <param name="item">Item.</param>
-		protected virtual void AutocompleteShow(int index, TItem item)
+		protected virtual void ComboboxCurrentClick(int index, TItem item)
 		{
 			AutocompleteShow();
 		}
@@ -280,15 +283,16 @@
 		/// <param name="eventData">Event data.</param>
 		protected void InputFocusLost(BaseEventData eventData)
 		{
-			AutocompleteHide();
+			AutocompleteHide(false);
 		}
 
 		/// <summary>
 		/// Hide autocomplete.
 		/// </summary>
-		protected virtual void AutocompleteHide()
+		/// <param name="requireSelected">Require selected item.</param>
+		protected virtual void AutocompleteHide(bool requireSelected)
 		{
-			if (HasSelected())
+			if (!requireSelected || HasSelected())
 			{
 				Autocomplete.gameObject.SetActive(false);
 				Combobox.ShowCurrent();

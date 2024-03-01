@@ -4,6 +4,7 @@
 	using System.Collections.Generic;
 	using UIWidgets.Attributes;
 	using UIWidgets.l10n;
+	using UIWidgets.Pool;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
@@ -11,6 +12,7 @@
 	using UnityEngine.InputSystem;
 #endif
 	using UnityEngine.Serialization;
+	using UnityEngine.UI;
 
 	/// <summary>
 	/// Context menu.
@@ -20,6 +22,7 @@
 	[DisallowMultipleComponent]
 	[AddComponentMenu("UI/New UI Widgets/ContextMenu")]
 	[DataBindSupport]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/controls/contextmenu.html")]
 	public partial class ContextMenu : UIBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler, IStylable
 		#if !ENABLE_INPUT_SYSTEM
 		, IUpdatable
@@ -614,8 +617,7 @@
 		/// <param name="eventData">Event data.</param>
 		public virtual void Open(PointerEventData eventData)
 		{
-			Vector2 position;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(ParentCanvas, eventData.position, eventData.pressEventCamera, out position);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(ParentCanvas, eventData.position, eventData.pressEventCamera, out var position);
 			var size = ParentCanvas.rect.size;
 			var pivot = ParentCanvas.pivot;
 
@@ -652,10 +654,19 @@
 		/// <returns>Position.</returns>
 		protected virtual Vector2 GetDefaultPosition()
 		{
-			var canvas_position = UtilitiesRectTransform.GetTopLeftCornerGlobalPosition(ParentCanvas);
-			var rt_position = UtilitiesRectTransform.GetTopLeftCornerGlobalPosition(RectTransform);
+			var position = UtilitiesRectTransform.GetTopLeftCornerGlobalPosition(RectTransform, ParentCanvas);
+			if (CompatibilityInput.MousePresent)
+			{
+				RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, CompatibilityInput.MousePosition, Camera.main, out var delta);
 
-			return rt_position - canvas_position;
+				var size = RectTransform.rect.size;
+				var pivot = RectTransform.pivot;
+				delta += new Vector2(size.x * pivot.x, size.y * (pivot.y - 1f));
+
+				return position + delta;
+			}
+
+			return position;
 		}
 
 		/// <summary>
@@ -665,10 +676,12 @@
 		{
 			if (Instance.IsOpened)
 			{
+				CurrentMenu = null;
 				Instance.Close();
 			}
 			else
 			{
+				CurrentMenu = this;
 				Instance.Open(GetDefaultPosition());
 				Instance.SelectFirst();
 			}
@@ -787,11 +800,6 @@
 		protected static ContextMenu CurrentMenu;
 
 		/// <summary>
-		/// Nested menu.
-		/// </summary>
-		protected static List<ContextMenu> NestedMenu = new List<ContextMenu>();
-
-		/// <summary>
 		/// Toggle active menu.
 		/// </summary>
 		protected static void ToggleActiveMenuByKey()
@@ -801,7 +809,7 @@
 				return;
 			}
 
-			if ((CurrentMenu != null) && CurrentMenu.OpenOnContextMenuKey)
+			if ((CurrentMenu != null) && CurrentMenu.OpenOnContextMenuKey && CurrentMenu.Instance.IsOpened)
 			{
 				CurrentMenu.Toggle();
 			}
@@ -818,59 +826,108 @@
 		}
 
 		/// <summary>
+		/// Check if RectTransform contains screen point.
+		/// </summary>
+		/// <param name="point">Point.</param>
+		/// <param name="camera">Camera.</param>
+		/// <returns>true if RectTransform contains screen point; otherwise false.</returns>
+		protected virtual bool ContainsScreenPoint(Vector2 point, Camera camera)
+		{
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, point, camera, out var position);
+			return RectTransform.rect.Contains(position);
+		}
+
+		/// <summary>
+		/// Is menu open.
+		/// </summary>
+		[DomainReloadExclude]
+		protected static readonly Predicate<ContextMenu> IsOpenMenu = menu => menu.IsActiveMenu() && menu.OpenOnContextMenuKey;
+
+		/// <summary>
+		/// Is default menu.
+		/// </summary>
+		[DomainReloadExclude]
+		protected static readonly Predicate<ContextMenu> IsDefaultMenu = menu => menu.OpenOnContextMenuKey && menu.gameObject.activeInHierarchy && menu.IsDefault;
+
+		/// <summary>
+		/// Find menu.
+		/// </summary>
+		/// <param name="predicate">Predicate.</param>
+		/// <returns>true if menu matches predicate; otherwise false.</returns>
+		protected static ContextMenu FindMenu(Predicate<ContextMenu> predicate)
+		{
+			using var _ = ListPool<ContextMenu>.Get(out var nested);
+
+			foreach (var active in ActiveMenu)
+			{
+				if (predicate(active))
+				{
+					nested.Add(active);
+				}
+			}
+
+			if (nested.Count == 0)
+			{
+				return null;
+			}
+
+			StableSort.Sort(nested, MenuComparison);
+
+			return nested[0];
+		}
+
+		/// <summary>
 		/// Find active menu.
 		/// </summary>
 		/// <returns>Active menu.</returns>
 		protected static ContextMenu FindActiveMenu()
 		{
-			for (int i = 0; i < ActiveMenu.Count; i++)
+			var menu = FindMenu(IsOpenMenu);
+			if (menu != null)
 			{
-				if (ActiveMenu[i].IsActiveMenu() && ActiveMenu[i].OpenOnContextMenuKey)
-				{
-					NestedMenu.Add(ActiveMenu[i]);
-				}
+				return menu;
 			}
 
-			if (NestedMenu.Count > 0)
+			var camera = Camera.main;
+			var cursor = CompatibilityInput.MousePosition;
+			var position = Display.RelativeMouseAt(cursor);
+			if (position == Vector3.zero)
 			{
-				NestedMenu.Sort(MenuComparison);
-				var result = NestedMenu[0];
-				NestedMenu.Clear();
-
-				return result;
+				position = cursor;
 			}
 
-			for (int i = 0; i < ActiveMenu.Count; i++)
+			bool UnderCursor(ContextMenu x) => x.OpenOnContextMenuKey && x.gameObject.activeInHierarchy && x.ContainsScreenPoint(position, camera);
+
+			menu = FindMenu(UnderCursor);
+			if (menu != null)
 			{
-				if (ActiveMenu[i].IsDefault && ActiveMenu[i].OpenOnContextMenuKey)
-				{
-					return ActiveMenu[i];
-				}
+				return menu;
 			}
 
-			return null;
+			return FindMenu(IsDefaultMenu);
 		}
 
 		/// <summary>
 		/// Menu comparison.
 		/// </summary>
-		/// <param name="x">X.</param>
-		/// <param name="y">Y.</param>
-		/// <returns>Comparison result.</returns>
-		protected static int MenuComparison(ContextMenu x, ContextMenu y)
+		[DomainReloadExclude]
+		protected static readonly Comparison<ContextMenu> MenuComparison = (x, y) =>
 		{
 			var x_depth = Utilities.GetDepth(x.transform);
 			var y_depth = Utilities.GetDepth(y.transform);
 
 			return -x_depth.CompareTo(y_depth);
-		}
+		};
 
 		#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(ActiveMenu), nameof(LastToggledByKey), nameof(CurrentMenu), "ToggleAction")]
 		static void StaticInit()
 		{
+			ActiveMenu.Clear();
 			LastToggledByKey = -2;
-			NestedMenu.Clear();
+			CurrentMenu = null;
+
 			#if ENABLE_INPUT_SYSTEM
 			ToggleAction = null;
 			#endif

@@ -121,12 +121,7 @@
 		/// <inheritdoc/>
 		public override bool CanDrag(PointerEventData eventData)
 		{
-			if (!ListView.IsInteractable())
-			{
-				return false;
-			}
-
-			return AllowDrag;
+			return base.CanDrag(eventData) && ListView.IsInteractable();
 		}
 
 		/// <inheritdoc/>

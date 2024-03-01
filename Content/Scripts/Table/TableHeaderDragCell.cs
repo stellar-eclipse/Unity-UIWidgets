@@ -1,10 +1,12 @@
 ﻿namespace UIWidgets
 {
+	using UnityEngine;
 	using UnityEngine.EventSystems;
 
 	/// <summary>
 	/// TableHeader cell drag support.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/collections/table-header.html")]
 	public class TableHeaderDragCell : DragSupport<TableHeaderDragCell>
 	{
 		/// <summary>
@@ -36,7 +38,7 @@
 		/// <param name="eventData">Current event data.</param>
 		public override bool CanDrag(PointerEventData eventData)
 		{
-			return TableHeader.AllowReorder && !TableHeader.CheckInActiveRegion(eventData);
+			return base.CanDrag(eventData) && TableHeader.AllowReorder && !TableHeader.CheckInActiveRegion(eventData);
 		}
 
 		/// <summary>

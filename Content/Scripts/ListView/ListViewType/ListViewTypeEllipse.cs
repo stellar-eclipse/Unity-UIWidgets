@@ -8,7 +8,7 @@
 	/// <content>
 	/// Base class for the custom ListViews.
 	/// </content>
-	public partial class ListViewCustom<TItemView, TItem> : ListViewCustomBase, IStylable
+	public partial class ListViewCustom<TItemView, TItem> : ListViewCustom<TItem>, IUpdatable, ILateUpdatable, IListViewCallbacks<TItemView>
 		where TItemView : ListViewItem
 	{
 		/// <summary>
@@ -31,7 +31,7 @@
 				{
 					if (ellipseScroll == null)
 					{
-						ellipseScroll = Utilities.GetOrAddComponent<EasyLayoutNS.EasyLayoutEllipseScroll>(Owner.Container);
+						ellipseScroll = Utilities.RequireComponent<EasyLayoutNS.EasyLayoutEllipseScroll>(Owner.Container);
 						DefaultInertia = ellipseScroll.Inertia;
 					}
 
@@ -93,17 +93,6 @@
 				{
 					return false;
 				}
-			}
-
-			/// <summary>
-			/// Gets the size of the item.
-			/// </summary>
-			/// <returns>The item size.</returns>
-			protected float GetItemSize()
-			{
-				return Owner.IsHorizontal()
-					? Owner.DefaultInstanceSize.x + Owner.LayoutBridge.GetSpacing()
-					: Owner.DefaultInstanceSize.y + Owner.LayoutBridge.GetSpacing();
 			}
 
 			/// <inheritdoc/>
@@ -229,17 +218,13 @@
 
 				if (Owner.Instances.Count == 1)
 				{
-					switch (type)
+					return type switch
 					{
-						case NearestType.Auto:
-							return 0;
-						case NearestType.Before:
-							return 0;
-						case NearestType.After:
-							return 1;
-						default:
-							throw new NotSupportedException(string.Format("Unknown position: {0}", EnumHelper<NearestType>.ToString(type)));
-					}
+						NearestType.Auto => 0,
+						NearestType.Before => 0,
+						NearestType.After => 1,
+						_ => throw new NotSupportedException(string.Format("Unknown position: {0}", EnumHelper<NearestType>.ToString(type))),
+					};
 				}
 
 				int index;
@@ -411,10 +396,7 @@
 			{
 				base.UpdateView();
 
-				if (pointerEventData == null)
-				{
-					pointerEventData = new PointerEventData(EventSystem.current);
-				}
+				pointerEventData ??= new PointerEventData(EventSystem.current);
 
 				scrollListener.ScrollEvent.Invoke(pointerEventData);
 			}
@@ -429,7 +411,7 @@
 					Owner.ScrollRect.horizontal = false;
 					Owner.ScrollRect.vertical = false;
 					Owner.ScrollRect.StopMovement();
-					scrollListener = Utilities.GetOrAddComponent<ScrollListener>(Owner.ScrollRect);
+					scrollListener = Utilities.RequireComponent<ScrollListener>(Owner.ScrollRect);
 				}
 
 				if (Owner.Layout != null)

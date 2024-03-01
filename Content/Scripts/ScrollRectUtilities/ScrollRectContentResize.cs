@@ -7,6 +7,7 @@ namespace UIWidgets
 	/// ScrollRect content resize.
 	/// </summary>
 	[RequireComponent(typeof(ScrollRect))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/scrollrect/scrollrect-content-resize.html")]
 	public class ScrollRectContentResize : MonoBehaviour
 	{
 		ResizeListener resizeListener;
@@ -36,7 +37,7 @@ namespace UIWidgets
 		{
 			if (resizeListener == null)
 			{
-				resizeListener = Utilities.GetOrAddComponent<ResizeListener>(this);
+				resizeListener = Utilities.RequireComponent<ResizeListener>(this);
 			}
 
 			resizeListener.OnResizeNextFrame.AddListener(Resize);

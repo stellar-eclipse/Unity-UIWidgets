@@ -1,11 +1,14 @@
 ﻿namespace UIWidgets
 {
+	using UIThemes;
+	using UIWidgets.Attributes;
 	using UIWidgets.Styles;
 	using UnityEngine;
 
 	/// <summary>
 	/// Prefabs templates.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/generator.html")]
 	public class PrefabsTemplates : ScriptableObject
 	{
 #if UNITY_EDITOR
@@ -31,6 +34,18 @@
 				instance = value;
 			}
 		}
+
+		#if UNITY_2019_3_OR_NEWER
+		/// <summary>
+		/// Reload support.
+		/// </summary>
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[UIWidgets.Attributes.DomainReload(nameof(instance))]
+		static void StaticInit()
+		{
+			instance = null;
+		}
+		#endif
 #endif
 
 		/// <summary>
@@ -122,5 +137,11 @@
 		/// </summary>
 		[SerializeField]
 		public Style StyleBlue;
+
+		/// <summary>
+		/// Theme.
+		/// </summary>
+		[SerializeField]
+		public Theme Theme;
 	}
 }

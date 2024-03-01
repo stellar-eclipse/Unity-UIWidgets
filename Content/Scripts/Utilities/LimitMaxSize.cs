@@ -4,9 +4,10 @@ namespace UIWidgets
 	using UnityEngine;
 
 	/// <summary>
-	/// Limit RectTransform width or height if size is relative to parent.
+	/// Limits RectTransform width or height if its size is relative to the parent.
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/layout/limit-maxsize.html")]
 	public class LimitMaxSize : UIBehaviourConditional
 	{
 		/// <summary>
@@ -16,7 +17,7 @@ namespace UIWidgets
 		public bool LimitWidth;
 
 		/// <summary>
-		/// Maximal width.
+		/// Maximum allowed width.
 		/// </summary>
 		[SerializeField]
 		[EditorConditionBool(nameof(LimitWidth))]
@@ -29,7 +30,7 @@ namespace UIWidgets
 		public bool LimitHeight;
 
 		/// <summary>
-		/// Max height.
+		/// Maximum allowed height.
 		/// </summary>
 		[SerializeField]
 		[EditorConditionBool(nameof(LimitHeight))]

@@ -42,7 +42,7 @@
 
 			base.Init();
 
-			if (EnableSort && DataSource.Comparison != null)
+			if (EnableSort && DataSource.Comparison == null)
 			{
 				DataSource.Comparison = ItemsComparison;
 			}

@@ -1,4 +1,4 @@
-﻿namespace UIWidgets.Styles
+namespace UIWidgets.Styles
 {
 	using System;
 	using UnityEngine;

@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using UIWidgets.Attributes;
+	using UIWidgets.Pool;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
 	using UnityEngine.Serialization;
@@ -18,6 +19,7 @@
 	[AddComponentMenu("UI/New UI Widgets/Interactions/Resizable")]
 	[DisallowMultipleComponent]
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/resizable.html")]
 	public class Resizable : UIBehaviourConditional,
 		IBeginDragHandler, IEndDragHandler, IDragHandler,
 		IPointerEnterHandler, IPointerExitHandler,
@@ -122,83 +124,45 @@
 			/// Gets a value indicating whether any direction is allowed.
 			/// </summary>
 			/// <value><c>true</c> if active; otherwise, <c>false</c>.</value>
-			public bool Active
-			{
-				get
-				{
-					return Top || Bottom || Left || Right || TopLeft || TopRight || BottomLeft || BottomRight;
-				}
-			}
+			public readonly bool Active => Top || Bottom || Left || Right || TopLeft || TopRight || BottomLeft || BottomRight;
 
 			/// <summary>
 			/// North-West or South-East.
 			/// </summary>
 			/// <value><c>true</c> if allowed direction is NWSE; otherwise, <c>false</c>.</value>
-			public bool NWSE
-			{
-				get
-				{
-					return TopLeft || BottomRight;
-				}
-			}
+			public readonly bool NWSE => TopLeft || BottomRight;
 
 			/// <summary>
 			/// North-East or South-West.
 			/// </summary>
 			/// <value><c>true</c> if allowed direction is NESW; otherwise, <c>false</c>.</value>
-			public bool NESW
-			{
-				get
-				{
-					return TopRight || BottomLeft;
-				}
-			}
+			public readonly bool NESW => TopRight || BottomLeft;
 
 			/// <summary>
 			/// North or South.
 			/// </summary>
 			/// <value><c>true</c> if allowed direction is NS; otherwise, <c>false</c>.</value>
-			public bool NS
-			{
-				get
-				{
-					return Top || Bottom;
-				}
-			}
+			public readonly bool NS => Top || Bottom;
 
 			/// <summary>
 			/// East or West.
 			/// </summary>
 			/// <value><c>true</c> if allowed direction is EW; otherwise, <c>false</c>.</value>
-			public bool EW
-			{
-				get
-				{
-					return Left || Right;
-				}
-			}
+			public readonly bool EW => Left || Right;
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
 			/// </summary>
 			/// <param name="obj">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is Directions)
-				{
-					return Equals((Directions)obj);
-				}
-
-				return false;
-			}
+			public readonly override bool Equals(object obj) => (obj is Directions directions) && Equals(directions);
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
 			/// </summary>
 			/// <param name="other">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public bool Equals(Directions other)
+			public readonly bool Equals(Directions other)
 			{
 				return Top == other.Top
 					&& Bottom == other.Bottom
@@ -214,7 +178,7 @@
 			/// Hash function.
 			/// </summary>
 			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
+			public readonly override int GetHashCode()
 			{
 				var code = 0;
 
@@ -267,10 +231,7 @@
 			/// <param name="directions1">First direction.</param>
 			/// <param name="directions2">Second direction.</param>
 			/// <returns>true if the directions are equal; otherwise, false.</returns>
-			public static bool operator ==(Directions directions1, Directions directions2)
-			{
-				return directions1.Equals(directions2);
-			}
+			public static bool operator ==(Directions directions1, Directions directions2) => directions1.Equals(directions2);
 
 			/// <summary>
 			/// Compare specified directions.
@@ -278,10 +239,7 @@
 			/// <param name="directions1">First direction.</param>
 			/// <param name="directions2">Second direction.</param>
 			/// <returns>true if the directions not equal; otherwise, false.</returns>
-			public static bool operator !=(Directions directions1, Directions directions2)
-			{
-				return !directions1.Equals(directions2);
-			}
+			public static bool operator !=(Directions directions1, Directions directions2) => !directions1.Equals(directions2);
 		}
 
 		/// <summary>
@@ -320,160 +278,82 @@
 			/// </summary>
 			/// <value><c>true</c> if cursor mode is NW; otherwise, <c>false</c>.</value>
 			[Obsolete("Renamed to the TopLeft.")]
-			public bool NW
-			{
-				get
-				{
-					return Top && Left;
-				}
-			}
+			public readonly bool NW => TopLeft;
 
 			/// <summary>
 			/// Top left corner.
 			/// </summary>
 			/// <value><c>true</c> if cursor in the top left corner; otherwise, <c>false</c>.</value>
-			public bool TopLeft
-			{
-				get
-				{
-					return Top && Left;
-				}
-			}
+			public readonly bool TopLeft => Top && Left;
 
 			/// <summary>
 			/// North-East.
 			/// </summary>
 			/// <value><c>true</c> if cursor mode is NESW; otherwise, <c>false</c>.</value>
 			[Obsolete("Renamed to the TopRight.")]
-			public bool NE
-			{
-				get
-				{
-					return Top && Right;
-				}
-			}
+			public readonly bool NE => TopRight;
 
 			/// <summary>
 			/// Top right corner.
 			/// </summary>
 			/// <value><c>true</c> if cursor in the top right corner; otherwise, <c>false</c>.</value>
-			public bool TopRight
-			{
-				get
-				{
-					return Top && Right;
-				}
-			}
+			public readonly bool TopRight => Top && Right;
 
 			/// <summary>
 			/// South-East.
 			/// </summary>
 			/// <value><c>true</c> if cursor mode is SE; otherwise, <c>false</c>.</value>
 			[Obsolete("Renamed to the BottomRight.")]
-			public bool SE
-			{
-				get
-				{
-					return Bottom && Right;
-				}
-			}
+			public readonly bool SE => BottomRight;
 
 			/// <summary>
 			/// Bottom right corner.
 			/// </summary>
 			/// <value><c>true</c> if cursor in the bottom right corner; otherwise, <c>false</c>.</value>
-			public bool BottomRight
-			{
-				get
-				{
-					return Bottom && Right;
-				}
-			}
+			public readonly bool BottomRight => Bottom && Right;
 
 			/// <summary>
 			/// South-West.
 			/// </summary>
 			/// <value><c>true</c> if cursor mode is NESW; otherwise, <c>false</c>.</value>
 			[Obsolete("Renamed to the BottomLeft.")]
-			public bool SW
-			{
-				get
-				{
-					return Bottom && Left;
-				}
-			}
+			public readonly bool SW => BottomLeft;
 
 			/// <summary>
 			/// Bottom left corner.
 			/// </summary>
 			/// <value><c>true</c> if cursor in the bottom left corner; otherwise, <c>false</c>.</value>
-			public bool BottomLeft
-			{
-				get
-				{
-					return Bottom && Left;
-				}
-			}
+			public readonly bool BottomLeft => Bottom && Left;
 
 			/// <summary>
 			/// North-West or South-East.
 			/// </summary>
 			/// <value><c>true</c> if cursor mode is NWSE; otherwise, <c>false</c>.</value>
-			public bool NWSE
-			{
-				get
-				{
-					return TopLeft || BottomRight;
-				}
-			}
+			public readonly bool NWSE => TopLeft || BottomRight;
 
 			/// <summary>
 			/// North-East or South-West.
 			/// </summary>
 			/// <value><c>true</c> if cursor mode is NESW; otherwise, <c>false</c>.</value>
-			public bool NESW
-			{
-				get
-				{
-					return TopRight || BottomLeft;
-				}
-			}
+			public readonly bool NESW => TopRight || BottomLeft;
 
 			/// <summary>
 			/// North or South.
 			/// </summary>
 			/// <value><c>true</c> if cursor mode is NS; otherwise, <c>false</c>.</value>
-			public bool NS
-			{
-				get
-				{
-					return (Top && !Right) || (Bottom && !Left);
-				}
-			}
+			public readonly bool NS => (Top && !Right) || (Bottom && !Left);
 
 			/// <summary>
 			/// East or West.
 			/// </summary>
 			/// <value><c>true</c> if cursor mode is EW; otherwise, <c>false</c>.</value>
-			public bool EW
-			{
-				get
-				{
-					return (!Top && Right) || (!Bottom && Left);
-				}
-			}
+			public readonly bool EW => (!Top && Right) || (!Bottom && Left);
 
 			/// <summary>
 			/// Is any region active.
 			/// </summary>
 			/// <value><c>true</c> if any region active; otherwise, <c>false</c>.</value>
-			public bool Active
-			{
-				get
-				{
-					return Top || Bottom || Left || Right;
-				}
-			}
+			public readonly bool Active => Top || Bottom || Left || Right;
 
 			/// <summary>
 			/// Reset this instance.
@@ -501,22 +381,14 @@
 			/// </summary>
 			/// <param name="obj">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is Regions)
-				{
-					return Equals((Regions)obj);
-				}
-
-				return false;
-			}
+			public readonly override bool Equals(object obj) => (obj is Regions r) && Equals(r);
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
 			/// </summary>
 			/// <param name="other">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public bool Equals(Regions other)
+			public readonly bool Equals(Regions other)
 			{
 				return Top == other.Top
 					&& Bottom == other.Bottom
@@ -528,7 +400,7 @@
 			/// Hash function.
 			/// </summary>
 			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
+			public readonly override int GetHashCode()
 			{
 				var code = 0;
 
@@ -561,10 +433,7 @@
 			/// <param name="regions1">First region.</param>
 			/// <param name="regions2">Second region.</param>
 			/// <returns>true if the regions are equal; otherwise, false.</returns>
-			public static bool operator ==(Regions regions1, Regions regions2)
-			{
-				return regions1.Equals(regions2);
-			}
+			public static bool operator ==(Regions regions1, Regions regions2) => regions1.Equals(regions2);
 
 			/// <summary>
 			/// Compare specified regions.
@@ -572,10 +441,7 @@
 			/// <param name="regions1">First region.</param>
 			/// <param name="regions2">Second region.</param>
 			/// <returns>true if the regions not equal; otherwise, false.</returns>
-			public static bool operator !=(Regions regions1, Regions regions2)
-			{
-				return !regions1.Equals(regions2);
-			}
+			public static bool operator !=(Regions regions1, Regions regions2) => !regions1.Equals(regions2);
 		}
 
 		/// <summary>
@@ -983,6 +849,12 @@
 		}
 
 		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
+
+		/// <summary>
 		/// Start resize event.
 		/// </summary>
 		public ResizableEvent OnStartResize = new ResizableEvent();
@@ -1067,7 +939,7 @@
 
 				if (!IsTargetSelf)
 				{
-					var le = Utilities.GetOrAddComponent<LayoutElement>(this);
+					var le = Utilities.RequireComponent<LayoutElement>(this);
 					le.ignoreLayout = true;
 
 					targetLayoutElement = null;
@@ -1093,7 +965,7 @@
 			{
 				if (targetLayoutElement == null)
 				{
-					targetLayoutElement = Utilities.GetOrAddComponent<LayoutElement>(Target);
+					targetLayoutElement = Utilities.RequireComponent<LayoutElement>(Target);
 				}
 
 				return targetLayoutElement;
@@ -1284,11 +1156,7 @@
 				return;
 			}
 
-			Vector2 point;
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, CompatibilityInput.MousePosition, CurrentCamera, out point))
-			{
-				return;
-			}
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, CompatibilityInput.MousePosition, CurrentCamera, out var point);
 
 			var r = Target.rect;
 			if (r.Contains(point))
@@ -1369,7 +1237,7 @@
 				return UICursor.Cursors.NorthWestSouthEastArrow;
 			}
 
-			return default(Cursors.Cursor);
+			return default;
 		}
 
 		/// <summary>
@@ -1388,7 +1256,7 @@
 				return UICursor.Cursors.NorthEastSouthWestArrow;
 			}
 
-			return default(Cursors.Cursor);
+			return default;
 		}
 
 		/// <summary>
@@ -1407,7 +1275,7 @@
 				return UICursor.Cursors.NorthSouthArrow;
 			}
 
-			return default(Cursors.Cursor);
+			return default;
 		}
 
 		/// <summary>
@@ -1426,7 +1294,7 @@
 				return UICursor.Cursors.EastWestArrow;
 			}
 
-			return default(Cursors.Cursor);
+			return default;
 		}
 
 		/// <summary>
@@ -1490,23 +1358,29 @@
 		}
 
 		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return IsActive() && (eventData.button == DragButton);
+		}
+
+		/// <summary>
 		/// Process the begin drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnBeginDrag(PointerEventData eventData)
 		{
-			if (!IsActive())
+			if (!CanDrag(eventData))
 			{
 				return;
 			}
 
-			Vector2 point;
 			ProcessDrag = false;
 
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.pressPosition, eventData.pressEventCamera, out point))
-			{
-				return;
-			}
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.pressPosition, eventData.pressEventCamera, out var point);
 
 			UpdateRegions(point);
 
@@ -1612,6 +1486,13 @@
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnEndDrag(PointerEventData eventData)
 		{
+			if (eventData.used)
+			{
+				return;
+			}
+
+			eventData.Use();
+
 			ResetCursor();
 
 			if (ProcessDrag)
@@ -1638,12 +1519,16 @@
 				return;
 			}
 
+			if (!CanDrag(eventData))
+			{
+				OnEndDrag(eventData);
+				return;
+			}
+
 			eventData.Use();
 
-			Vector2 current_point;
-			Vector2 original_point;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.position, eventData.pressEventCamera, out current_point);
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.pressPosition, eventData.pressEventCamera, out original_point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.position, eventData.pressEventCamera, out var current_point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.pressPosition, eventData.pressEventCamera, out var original_point);
 
 			var delta = current_point - original_point;
 			Resize(DragRegions, delta);
@@ -1738,11 +1623,6 @@
 		}
 
 		/// <summary>
-		/// Temporary points.
-		/// </summary>
-		protected List<SnapGridBase.Point> TempPoints = new List<SnapGridBase.Point>();
-
-		/// <summary>
 		/// Calculate distance to SnapGrid.
 		/// </summary>
 		/// <param name="regions">Regions.</param>
@@ -1751,15 +1631,17 @@
 		{
 			if (SnapGrids == null)
 			{
-				return default(SnapGridBase.Result);
+				return default;
 			}
 
 			if (SnapGrids.Count == 0)
 			{
-				return default(SnapGridBase.Result);
+				return default;
 			}
 
 			var distance = new SnapGridBase.Distance(float.MaxValue);
+
+			using var _ = ListPool<SnapGridBase.Point>.Get(out var points);
 
 			foreach (var snap_grid in SnapGrids)
 			{
@@ -1768,10 +1650,10 @@
 					continue;
 				}
 
-				GetSnapPoints(regions, TempPoints, snap_grid);
+				GetSnapPoints(regions, points, snap_grid);
 
-				snap_grid.Snap(TempPoints, ref distance);
-				TempPoints.Clear();
+				snap_grid.Snap(points, ref distance);
+				points.Clear();
 			}
 
 			return distance.Snap(snapDistance);
@@ -1825,12 +1707,12 @@
 			var size = CalculateSize(regions, OriginalScaledSize, delta);
 			var scale = new Vector2(size.x / OriginalSize.x, size.y / OriginalSize.y);
 
-			UpdateAnchoredPosition(regions, OriginalScaledSize, size);
+			UpdateAnchoredPosition(regions, OriginalScaledSize, size, Vector2.one);
 
 			Target.localScale = scale;
 		}
 
-		void UpdateAnchoredPosition(Regions regions, Vector2 oldSize, Vector2 newSize)
+		void UpdateAnchoredPosition(Regions regions, Vector2 oldSize, Vector2 newSize, Vector2 scale)
 		{
 			var original_pivot = Target.pivot;
 
@@ -1838,7 +1720,7 @@
 				regions.Right ? original_pivot.x : original_pivot.x - 1f,
 				regions.Bottom ? 1f - original_pivot.y : -original_pivot.y);
 			var base_delta = newSize - oldSize;
-			base_delta = new Vector2(base_delta.x * sign.x, base_delta.y * sign.y);
+			base_delta = new Vector2(base_delta.x * sign.x * scale.x, base_delta.y * sign.y * scale.y);
 
 			var angle_rad = Target.localRotation.eulerAngles.z * Mathf.Deg2Rad;
 			var delta = new Vector2(
@@ -1889,7 +1771,7 @@
 		{
 			var size = CalculateSize(regions, OriginalSize, delta);
 
-			UpdateAnchoredPosition(regions, OriginalSize, size);
+			UpdateAnchoredPosition(regions, OriginalSize, size, RectTransform.localScale);
 
 			Target.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
 			Target.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y);

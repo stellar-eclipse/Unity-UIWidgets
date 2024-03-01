@@ -12,6 +12,7 @@
 	/// Calendar base class.
 	/// </summary>
 	[DataBindSupport]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/calendar.html")]
 	public class CalendarBase : DateBase
 	{
 		[SerializeField]

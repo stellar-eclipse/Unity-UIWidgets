@@ -1,5 +1,6 @@
 ﻿namespace UIWidgets
 {
+	using EasyLayoutNS;
 	using System;
 	using UnityEngine;
 
@@ -26,10 +27,7 @@
 		/// <value>The per page.</value>
 		public int PerPage
 		{
-			get
-			{
-				return Mathf.Max(1, perPage);
-			}
+			get => Mathf.Max(1, perPage);
 
 			set
 			{
@@ -56,6 +54,12 @@
 
 			isListViewPaginatorInited = true;
 
+			if (ListView == null)
+			{
+				Debug.LogWarning("ListView is not specified.", this);
+				return;
+			}
+
 			animationEndedDelegate = AnimationEnded;
 			animationMovementDelegate = MovementInvoke;
 
@@ -79,14 +83,11 @@
 			var relative_position = scroll_position - prev_page_position; // because position not always started at 0
 			var ratio = relative_position / page_size;
 
-			OnMovement.Invoke(prev_page,  ratio);
+			OnMovement.Invoke(prev_page, ratio);
 		}
 
 		/// <inheritdoc/>
-		protected override float GetCalculatedPosition()
-		{
-			return ListView.GetScrollPosition();
-		}
+		protected override float GetCalculatedPosition() => ListView.GetScrollPosition();
 
 		/// <inheritdoc/>
 		protected override float GetLastPageMargin()
@@ -94,7 +95,7 @@
 			var items_per_block = ListView.GetItemsPerBlock();
 			var items_per_page = items_per_block * PerPage;
 			var items_at_last_page = ListView.GetItemsCount() % items_per_page;
-			var unexisted_items = items_per_page - items_at_last_page;
+			var unexisted_items = items_at_last_page == 0 ? 0 : items_per_page - items_at_last_page;
 			var unexisted_blocks = Mathf.FloorToInt(unexisted_items / items_per_block);
 
 			var size = ListView.GetDefaultItemSize();
@@ -141,15 +142,12 @@
 		/// <returns>Page.</returns>
 		protected int Index2Page(int index)
 		{
-			var page = Mathf.RoundToInt(((float)index) / (ListView.GetItemsPerBlock() * PerPage));
+			var page = Rounding(((float)index) / (ListView.GetItemsPerBlock() * PerPage));
 			return Mathf.Min(page, Pages - 1);
 		}
 
 		/// <inheritdoc/>
-		public override bool IsHorizontal()
-		{
-			return ListView.IsHorizontal();
-		}
+		public override bool IsHorizontal() => ListView.IsHorizontal();
 
 		/// <inheritdoc/>
 		protected override void RecalculatePages()
@@ -192,10 +190,7 @@
 		}
 
 		/// <inheritdoc/>
-		public override float GetPosition()
-		{
-			return ListView.GetScrollPosition();
-		}
+		public override float GetPosition() => ListView.GetScrollPosition();
 
 		/// <inheritdoc/>
 		protected override void SetPosition(float position, bool isHorizontal)
@@ -206,10 +201,7 @@
 		}
 
 		/// <inheritdoc/>
-		public override void SetPosition(float position)
-		{
-			SetPosition(position, IsHorizontal());
-		}
+		public override void SetPosition(float position) => SetPosition(position, IsHorizontal());
 
 		/// <inheritdoc/>
 		protected override void StartAnimation(float target)
@@ -224,33 +216,23 @@
 		}
 
 		/// <inheritdoc/>
-		protected override bool CanAnimate()
-		{
-			return base.CanAnimate() && ListView.gameObject.activeInHierarchy;
-		}
+		protected override bool CanAnimate() => base.CanAnimate() && ListView.gameObject.activeInHierarchy;
 
 		/// <summary>
 		/// Animation ended.
 		/// </summary>
-		protected virtual void AnimationEnded()
-		{
-			animationRunning = false;
-		}
+		protected virtual void AnimationEnded() => animationRunning = false;
 
 		/// <inheritdoc/>
 		protected override bool IsPrevAvailable(int page)
 		{
-			return (Pages == 0)
-				? false
-				: (page != 0) || ListView.LoopedListAvailable;
+			return Pages != 0 && ((page != 0) || ListView.LoopedListAvailable);
 		}
 
 		/// <inheritdoc/>
 		protected override bool IsNextAvailable(int page)
 		{
-			return (Pages == 0)
-				? false
-				: (page != (Pages - 1)) || ListView.LoopedListAvailable;
+			return Pages != 0 && ((page != (Pages - 1)) || ListView.LoopedListAvailable);
 		}
 
 		/// <inheritdoc/>
@@ -277,6 +259,17 @@
 			{
 				CurrentPage -= 1;
 			}
+		}
+
+		/// <inheritdoc/>
+		protected override void UpdateLastPageMargin()
+		{
+			if (Layout == null)
+			{
+				Layout = ListView.GetScrollRect().content.GetComponent<EasyLayout>();
+			}
+
+			base.UpdateLastPageMargin();
 		}
 	}
 }

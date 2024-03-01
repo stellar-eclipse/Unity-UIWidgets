@@ -229,181 +229,6 @@
 		[Obsolete("Use ScrollRect.MovementType = Clamped instead.")]
 		public bool LimitScrollValue = false;
 
-		#region Coloring fields
-
-		/// <summary>
-		/// Allow items coloring.
-		/// </summary>
-		[SerializeField]
-		protected bool allowColoring = true;
-
-		/// <summary>
-		/// Allow items coloring.
-		/// </summary>
-		public bool AllowColoring
-		{
-			get
-			{
-				return allowColoring;
-			}
-
-			set
-			{
-				if (allowColoring != value)
-				{
-					allowColoring = value;
-					ComponentsColoring(true);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Default background color.
-		/// </summary>
-		[SerializeField]
-		protected Color defaultBackgroundColor = Color.white;
-
-		/// <summary>
-		/// Default color.
-		/// </summary>
-		[SerializeField]
-		protected Color defaultColor = Color.black;
-
-		/// <summary>
-		/// Default background color.
-		/// </summary>
-		public Color DefaultBackgroundColor
-		{
-			get
-			{
-				return defaultBackgroundColor;
-			}
-
-			set
-			{
-				defaultBackgroundColor = value;
-				ComponentsColoring(true);
-			}
-		}
-
-		/// <summary>
-		/// Default text color.
-		/// </summary>
-		public Color DefaultColor
-		{
-			get
-			{
-				return defaultColor;
-			}
-
-			set
-			{
-				defaultColor = value;
-				ComponentsColoring(true);
-			}
-		}
-
-		/// <summary>
-		/// Highlighted background color.
-		/// </summary>
-		[SerializeField]
-		[FormerlySerializedAs("HighlightedBackgroundColor")]
-		protected Color highlightedBackgroundColor = new Color(203, 230, 244, 255);
-
-		/// <summary>
-		/// Color of background on pointer over.
-		/// </summary>
-		public Color HighlightedBackgroundColor
-		{
-			get
-			{
-				return highlightedBackgroundColor;
-			}
-
-			set
-			{
-				highlightedBackgroundColor = value;
-				ComponentsHighlightedColoring();
-			}
-		}
-
-		/// <summary>
-		/// Color of text on pointer text.
-		/// </summary>
-		[SerializeField]
-		[FormerlySerializedAs("HighlightedColor")]
-		protected Color highlightedColor = Color.black;
-
-		/// <summary>
-		/// Color of background on pointer over.
-		/// </summary>
-		public Color HighlightedColor
-		{
-			get
-			{
-				return highlightedColor;
-			}
-
-			set
-			{
-				highlightedColor = value;
-				ComponentsHighlightedColoring();
-			}
-		}
-
-		/// <summary>
-		/// Selected background color.
-		/// </summary>
-		[SerializeField]
-		protected Color selectedBackgroundColor = new Color(53, 83, 227, 255);
-
-		/// <summary>
-		/// Selected color.
-		/// </summary>
-		[SerializeField]
-		protected Color selectedColor = Color.black;
-
-		/// <summary>
-		/// Background color of selected item.
-		/// </summary>
-		public Color SelectedBackgroundColor
-		{
-			get
-			{
-				return selectedBackgroundColor;
-			}
-
-			set
-			{
-				selectedBackgroundColor = value;
-				ComponentsColoring(true);
-			}
-		}
-
-		/// <summary>
-		/// Text color of selected item.
-		/// </summary>
-		public Color SelectedColor
-		{
-			get
-			{
-				return selectedColor;
-			}
-
-			set
-			{
-				selectedColor = value;
-				ComponentsColoring(true);
-			}
-		}
-
-		/// <summary>
-		/// How long a color transition should take.
-		/// </summary>
-		[SerializeField]
-		public float FadeDuration = 0f;
-		#endregion
-
 		/// <summary>
 		/// The ScrollRect.
 		/// </summary>
@@ -436,10 +261,7 @@
 		{
 			get
 			{
-				if (viewport == null)
-				{
-					viewport = new ScrollRectData(this, ScrollRect);
-				}
+				viewport ??= new ScrollRectData(this, ScrollRect);
 
 				return viewport;
 			}
@@ -448,7 +270,7 @@
 		/// <summary>
 		/// The size of the ScrollRect.
 		/// </summary>
-		[Obsolete("Replaced with ScrollRectData.Size.")]
+		[Obsolete("Replaced with Viewport.Size.")]
 		protected Vector2 ScrollRectSize
 		{
 			get
@@ -935,12 +757,7 @@
 		{
 			var target = ScrollRect.transform as RectTransform;
 
-			Vector2 point;
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(target, eventData.position, eventData.pressEventCamera, out point))
-			{
-				AutoScrollStop();
-				return false;
-			}
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(target, eventData.position, eventData.pressEventCamera, out var point);
 
 			var rect_start = target.rect;
 			var rect_end = target.rect;

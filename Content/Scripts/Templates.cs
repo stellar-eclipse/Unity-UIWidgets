@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 
 	/// <summary>
@@ -13,11 +14,14 @@
 	{
 		readonly Dictionary<string, T> templates = new Dictionary<string, T>();
 
-		readonly Dictionary<string, Stack<T>> cache = new Dictionary<string, Stack<T>>();
+		readonly Dictionary<string, List<T>> cache = new Dictionary<string, List<T>>();
 
 		readonly Action<T> onCreateCallback;
 
 		bool findTemplatesCalled;
+
+		[DomainReloadExclude]
+		static readonly Predicate<T> RemoveNull = x => x == null;
 
 		/// <summary>
 		/// Get cached instances.
@@ -27,8 +31,7 @@
 		public List<T> CachedInstances(string name)
 		{
 			var result = new List<T>();
-			Stack<T> cached;
-			if (cache.TryGetValue(name, out cached))
+			if (cache.TryGetValue(name, out var cached))
 			{
 				result.AddRange(cached);
 			}
@@ -194,9 +197,20 @@
 			}
 
 			T template;
-			if (cache.ContainsKey(name) && (cache[name].Count > 0))
+
+			if (!cache.TryGetValue(name, out var cached))
 			{
-				template = cache[name].Pop();
+				cached = new List<T>();
+				cache[name] = cached;
+			}
+
+			cached.RemoveAll(RemoveNull);
+
+			if (cached.Count > 0)
+			{
+				var n = cached.Count - 1;
+				template = cached[n];
+				cached.RemoveAt(n);
 			}
 			else
 			{
@@ -229,12 +243,13 @@
 				return;
 			}
 
-			if (!cache.ContainsKey(instance.TemplateName))
+			if (!cache.TryGetValue(instance.TemplateName, out var cached))
 			{
-				cache[instance.TemplateName] = new Stack<T>();
+				cached = new List<T>();
+				cache[instance.TemplateName] = cached;
 			}
 
-			cache[instance.TemplateName].Push(instance);
+			cached.Add(instance);
 		}
 
 		/// <summary>

@@ -3,7 +3,9 @@ namespace UIWidgets
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Linq;
 	using System.Reflection;
+	using UIWidgets.Attributes;
 	using UnityEditor;
 	using UnityEngine;
 	using UnityEngine.Events;
@@ -18,6 +20,11 @@ namespace UIWidgets
 		/// Is it ListViewCustom?
 		/// </summary>
 		protected bool IsListViewCustom = false;
+
+		/// <summary>
+		/// Data type.
+		/// </summary>
+		protected Type DataType;
 
 		/// <summary>
 		/// Is it TreeViewCustom?
@@ -68,6 +75,11 @@ namespace UIWidgets
 			"selectedColor",
 			"selectedBackgroundColor",
 			"disabledColor",
+
+			"coloringStriped",
+			"defaultBackgroundColorEven",
+			"defaultBackgroundColorOdd",
+
 			"FadeDuration",
 			"KeepHighlight",
 			"OnlyOneHighlighted",
@@ -91,7 +103,8 @@ namespace UIWidgets
 		/// <summary>
 		/// Properties indents.
 		/// </summary>
-		protected Dictionary<string, int> Indents = new Dictionary<string, int>()
+		[DomainReloadExclude]
+		protected static IReadOnlyDictionary<string, int> Indents = new Dictionary<string, int>()
 		{
 			{ "ChangeLayoutType", 1 },
 			{ "ContainerMaxSize", 1 },
@@ -100,6 +113,8 @@ namespace UIWidgets
 			{ "disableScrollRect", 1 },
 			{ "PrecalculateItemSizes", 1 },
 			{ "setContentSizeFitter", 1 },
+
+			/*
 			{ "defaultColor", 1 },
 			{ "defaultBackgroundColor", 1 },
 			{ "highlightedColor", 1 },
@@ -110,12 +125,14 @@ namespace UIWidgets
 			{ "FadeDuration", 1 },
 			{ "KeepHighlight", 1 },
 			{ "OnlyOneHighlighted", 1 },
+			*/
 		};
 
 		/// <summary>
 		/// Scroll properties.
 		/// </summary>
-		protected List<string> ScrollFields = new List<string>()
+		[DomainReloadExclude]
+		protected static IReadOnlyList<string> ScrollFields = new List<string>()
 		{
 			"centerTheItems",
 			"loopedList",
@@ -129,20 +146,46 @@ namespace UIWidgets
 		};
 
 		/// <summary>
+		/// Always allow to edit field.
+		/// </summary>
+		static Func<ListViewCustomBaseEditor, bool> AllowAlways => editor => true;
+
+		/// <summary>
+		/// Field condition.
+		/// </summary>
+		protected class FieldCondition : Tuple<string, Func<ListViewCustomBaseEditor, bool>>
+		{
+			/// <summary>
+			/// Initializes a new instance of the <see cref="FieldCondition"/> class.
+			/// </summary>
+			/// <param name="field">Field.</param>
+			/// <param name="condition">Condition.</param>
+			public FieldCondition(string field, Func<ListViewCustomBaseEditor, bool> condition)
+				: base(field, condition)
+			{
+			}
+		}
+
+		/// <summary>
 		/// Coloring fields.
 		/// </summary>
-		protected List<string> ColoringFields = new List<string>()
+		[DomainReloadExclude]
+		protected static IReadOnlyList<FieldCondition> ColoringFields = new List<FieldCondition>()
 		{
-			"defaultColor",
-			"defaultBackgroundColor",
-			"highlightedColor",
-			"highlightedBackgroundColor",
-			"selectedColor",
-			"selectedBackgroundColor",
-			"disabledColor",
-			"FadeDuration",
-			"KeepHighlight",
-			"OnlyOneHighlighted",
+			new FieldCondition("coloringStriped", AllowAlways),
+			new FieldCondition("defaultColor", AllowAlways),
+			new FieldCondition("defaultBackgroundColor", editor => !editor.SerializedProperties["coloringStriped"].boolValue),
+			new FieldCondition("defaultEvenBackgroundColor", editor => editor.SerializedProperties["coloringStriped"].boolValue),
+			new FieldCondition("defaultOddBackgroundColor", editor => editor.SerializedProperties["coloringStriped"].boolValue),
+			new FieldCondition("highlightedColor", AllowAlways),
+			new FieldCondition("highlightedBackgroundColor", AllowAlways),
+			new FieldCondition("selectedColor", AllowAlways),
+			new FieldCondition("selectedBackgroundColor", AllowAlways),
+			new FieldCondition("disabledColor", AllowAlways),
+
+			new FieldCondition("FadeDuration", AllowAlways),
+			new FieldCondition("KeepHighlight", AllowAlways),
+			new FieldCondition("OnlyOneHighlighted", AllowAlways),
 		};
 
 		/// <summary>
@@ -161,7 +204,8 @@ namespace UIWidgets
 		/// <summary>
 		/// Exclude properties and events.
 		/// </summary>
-		protected List<string> Exclude = new List<string>()
+		[DomainReloadExclude]
+		protected static IReadOnlyList<string> Exclude = new List<string>()
 		{
 			"selectedIndices",
 			"sort",
@@ -175,7 +219,8 @@ namespace UIWidgets
 		/// <summary>
 		/// Hidden properties and events.
 		/// </summary>
-		protected List<string> Hidden = new List<string>()
+		[DomainReloadExclude]
+		protected static IReadOnlyList<string> Hidden = new List<string>()
 		{
 			// ListViewBase
 			"instances",
@@ -191,12 +236,11 @@ namespace UIWidgets
 			"listRenderer",
 		};
 
-		static bool DetectGenericType(object instance, string name)
+		static bool DetectGenericType(Type type, Type genericType)
 		{
-			Type type = instance.GetType();
 			while (type != null)
 			{
-				if (type.FullName.StartsWith(name, StringComparison.Ordinal))
+				if (type.IsConstructedGenericType && (type.GetGenericTypeDefinition() == genericType))
 				{
 					return true;
 				}
@@ -205,6 +249,33 @@ namespace UIWidgets
 			}
 
 			return false;
+		}
+
+		[DomainReloadExclude]
+		static readonly Dictionary<Type, Type> ListView2DataType = new Dictionary<Type, Type>();
+
+		static Type GetDataType(Type baseType)
+		{
+			var type = baseType;
+			if (ListView2DataType.TryGetValue(type, out var data_type))
+			{
+				return data_type;
+			}
+
+			while (type != null)
+			{
+				if (type.IsConstructedGenericType && (type.GetGenericTypeDefinition() == typeof(ListViewCustom<,>)))
+				{
+					data_type = type.GetGenericArguments()[1];
+					ListView2DataType[baseType] = data_type;
+					return data_type;
+				}
+
+				type = type.BaseType;
+			}
+
+			ListView2DataType[baseType] = null;
+			return null;
 		}
 
 		/// <summary>
@@ -263,7 +334,7 @@ namespace UIWidgets
 			return typeof(UnityEventBase).IsAssignableFrom(property_type.FieldType);
 		}
 
-		GUILayoutOption[] toggleOptions = new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(20) };
+		readonly GUILayoutOption[] toggleOptions = new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(20) };
 
 		/// <summary>
 		/// Target.
@@ -277,14 +348,19 @@ namespace UIWidgets
 		{
 			FillProperties();
 
+			var type = serializedObject.targetObject.GetType();
 			if (!IsListViewCustom)
 			{
-				IsListViewCustom = DetectGenericType(serializedObject.targetObject, "UIWidgets.ListViewCustom`2");
+				IsListViewCustom = DetectGenericType(type, typeof(ListViewCustom<,>));
+				if (IsListViewCustom)
+				{
+					DataType = GetDataType(type);
+				}
 			}
 
 			if (!IsTreeViewCustom)
 			{
-				IsTreeViewCustom = DetectGenericType(serializedObject.targetObject, "UIWidgets.TreeViewCustom`2");
+				IsTreeViewCustom = DetectGenericType(type, typeof(TreeViewCustom<,>));
 			}
 
 			if (IsTreeViewCustom)
@@ -299,7 +375,7 @@ namespace UIWidgets
 				foreach (var p in Properties)
 				{
 					var property = serializedObject.FindProperty(p);
-					if (property != null)
+					if ((property != null) || (p == "customItems"))
 					{
 						SerializedProperties[p] = property;
 					}
@@ -370,14 +446,17 @@ namespace UIWidgets
 				return SerializedProperties["multipleSelect"].boolValue;
 			}
 
-			if (ColoringFields.Contains(propertyName))
-			{
-				return SerializedProperties["allowColoring"].boolValue;
-			}
-
 			if (ScrollFields.Contains(propertyName))
 			{
 				return false;
+			}
+
+			foreach (var (field, _) in ColoringFields)
+			{
+				if (propertyName == field)
+				{
+					return false;
+				}
 			}
 
 			return true;
@@ -450,7 +529,45 @@ namespace UIWidgets
 
 					if (property_name == "customItems")
 					{
-						EditorGUILayout.PropertyField(property, new GUIContent("Data Source"), true);
+						if (property != null)
+						{
+							EditorGUILayout.PropertyField(property, new GUIContent("Data Source"), true);
+						}
+						else if (DataType != null)
+						{
+							if (DataType.IsInterface)
+							{
+								EditorGUILayout.HelpBox("DataSource cannot be displayed because the item type is an interface.", MessageType.Info);
+							}
+							else
+							{
+								EditorGUILayout.HelpBox("DataSource cannot be displayed because the item type is not serializable.\nAdd [Serializable] attribute if the type is not interface.", MessageType.Info);
+							}
+						}
+					}
+					else if (property_name == "allowColoring")
+					{
+						EditorGUILayout.PropertyField(property, true);
+
+						if (property.boolValue)
+						{
+							EditorGUI.indentLevel += 1;
+
+							foreach (var (field, condition) in ColoringFields)
+							{
+								if (condition(this))
+								{
+									if (!SerializedProperties.ContainsKey(field))
+									{
+										continue;
+									}
+
+									EditorGUILayout.PropertyField(SerializedProperties[field], true);
+								}
+							}
+
+							EditorGUI.indentLevel -= 1;
+						}
 					}
 					else
 					{
@@ -493,7 +610,10 @@ namespace UIWidgets
 				EditorGUILayout.PropertyField(SerializedProperties["InstancesEvents"], new GUIContent("Instances Events"), true);
 				EditorGUI.indentLevel -= 1;
 
-				UtilitiesEditor.ApplyModifiedProperties(serializedObject);
+				if (serializedObject.hasModifiedProperties)
+				{
+					UtilitiesEditor.ApplyModifiedProperties(serializedObject);
+				}
 
 				ShowWarnings();
 			}

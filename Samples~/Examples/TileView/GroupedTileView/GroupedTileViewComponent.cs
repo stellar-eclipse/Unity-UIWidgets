@@ -111,7 +111,7 @@
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Date, ref DateAdapter);
+			Utilities.RequireComponent(Date, ref DateAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

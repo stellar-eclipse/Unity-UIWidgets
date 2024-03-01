@@ -195,12 +195,6 @@ namespace UIWidgets
 		[SerializeField]
 		public bool AllowEmptyItems;
 
-		[SerializeField]
-		Color backgroundColor = Color.white;
-
-		[SerializeField]
-		Color textColor = Color.black;
-
 		/// <summary>
 		/// Default background color.
 		/// </summary>
@@ -208,13 +202,12 @@ namespace UIWidgets
 		{
 			get
 			{
-				return backgroundColor;
+				return DefaultBackgroundColor;
 			}
 
 			set
 			{
-				backgroundColor = value;
-				ComponentsColoring(true);
+				DefaultBackgroundColor = value;
 			}
 		}
 
@@ -225,48 +218,28 @@ namespace UIWidgets
 		{
 			get
 			{
-				return textColor;
+				return DefaultColor;
 			}
 
 			set
 			{
-				textColor = value;
-				ComponentsColoring(true);
+				DefaultColor = value;
 			}
 		}
 
 		/// <summary>
-		/// Color of background on pointer over.
-		/// </summary>
-		[SerializeField]
-		public Color HighlightedBackgroundColor = new Color(203, 230, 244, 255);
-
-		/// <summary>
 		/// Color of text on pointer text.
 		/// </summary>
-		[SerializeField]
-		public Color HighlightedTextColor = Color.black;
-
-		[SerializeField]
-		Color selectedBackgroundColor = new Color(53, 83, 227, 255);
-
-		[SerializeField]
-		Color selectedTextColor = Color.black;
-
-		/// <summary>
-		/// Background color of selected item.
-		/// </summary>
-		public Color SelectedBackgroundColor
+		public Color HighlightedTextColor
 		{
 			get
 			{
-				return selectedBackgroundColor;
+				return HighlightedColor;
 			}
 
 			set
 			{
-				selectedBackgroundColor = value;
-				ComponentsColoring(true);
+				HighlightedColor = value;
 			}
 		}
 
@@ -277,21 +250,14 @@ namespace UIWidgets
 		{
 			get
 			{
-				return selectedTextColor;
+				return SelectedColor;
 			}
 
 			set
 			{
-				selectedTextColor = value;
-				ComponentsColoring(true);
+				SelectedColor = value;
 			}
 		}
-
-		/// <summary>
-		/// How long a color transition should take.
-		/// </summary>
-		[SerializeField]
-		public float FadeDuration = 0f;
 
 #pragma warning disable 0649
 		[SerializeField]
@@ -314,7 +280,7 @@ namespace UIWidgets
 
 			set
 			{
-				var template = Utilities.GetOrAddComponent<ListViewStringComponent>(value);
+				var template = Utilities.RequireComponent<ListViewStringComponent>(value);
 				template.Upgrade();
 
 				SetDefaultItem(template);
@@ -334,7 +300,7 @@ namespace UIWidgets
 				if (defaultItem == null)
 				{
 #pragma warning disable 0612,0618
-					defaultItem = Utilities.GetOrAddComponent<ListViewStringComponent>(oldDefaultItem);
+					defaultItem = Utilities.RequireComponent<ListViewStringComponent>(oldDefaultItem);
 #pragma warning restore 0612,0618
 					defaultItem.Upgrade();
 				}
@@ -581,7 +547,7 @@ namespace UIWidgets
 
 				if (scrollRect != null)
 				{
-					var resizeListener = Utilities.GetOrAddComponent<ResizeListener>(scrollRect);
+					var resizeListener = Utilities.RequireComponent<ResizeListener>(scrollRect);
 					resizeListener.OnResizeNextFrame.AddListener(SetNeedResize);
 
 					scrollRect.onValueChanged.AddListener(OnScrollUpdate);
@@ -1434,14 +1400,10 @@ namespace UIWidgets
 			}
 		}
 
-		/// <summary>
-		/// Gets the item bottom position by index.
-		/// </summary>
-		/// <returns>The item bottom position.</returns>
-		/// <param name="index">Index.</param>
-		public override float GetItemPositionBottom(int index)
+		/// <inheritdoc/>
+		public override float GetItemPositionBottom(int index, bool clampPosition = true)
 		{
-			return GetItemPosition(index) + GetItemSize() + LayoutBridge.GetFullMargin() - GetScrollSize();
+			return GetItemPosition(index) + GetItemSize() + LayoutBridge.GetMargin() - GetScrollSize();
 		}
 
 		/// <summary>
@@ -1549,11 +1511,7 @@ namespace UIWidgets
 		/// <param name="type">Preferable nearest index.</param>
 		public override int GetNearestIndex(PointerEventData eventData, NearestType type)
 		{
-			Vector2 point;
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(Container, eventData.position, eventData.pressEventCamera, out point))
-			{
-				return -1;
-			}
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(Container, eventData.position, eventData.pressEventCamera, out var point);
 
 			var rect = Container.rect;
 			if (!rect.Contains(point))
@@ -1578,23 +1536,13 @@ namespace UIWidgets
 			}
 
 			var pos = IsHorizontal() ? point.x : -point.y;
-
-			int index;
-			switch (type)
+			var index = type switch
 			{
-				case NearestType.Auto:
-					index = Mathf.RoundToInt(pos / GetItemSize());
-					break;
-				case NearestType.Before:
-					index = Mathf.FloorToInt(pos / GetItemSize());
-					break;
-				case NearestType.After:
-					index = Mathf.CeilToInt(pos / GetItemSize());
-					break;
-				default:
-					throw new NotSupportedException(string.Format("Unsupported NearestType: {0}", EnumHelper<NearestType>.ToString(type)));
-			}
-
+				NearestType.Auto => Mathf.RoundToInt(pos / GetItemSize()),
+				NearestType.Before => Mathf.FloorToInt(pos / GetItemSize()),
+				NearestType.After => Mathf.CeilToInt(pos / GetItemSize()),
+				_ => throw new NotSupportedException(string.Format("Unsupported NearestType: {0}", EnumHelper<NearestType>.ToString(type))),
+			};
 			return Mathf.Min(index, DataSource.Count);
 		}
 
@@ -1992,7 +1940,7 @@ namespace UIWidgets
 				return;
 			}
 
-			component.GraphicsColoring(selectedTextColor, selectedBackgroundColor, FadeDuration);
+			component.GraphicsColoring(SelectedColor, SelectedBackgroundColor, FadeDuration);
 		}
 
 		/// <summary>
@@ -2020,7 +1968,7 @@ namespace UIWidgets
 				return;
 			}
 
-			component.GraphicsColoring(textColor, backgroundColor, FadeDuration);
+			component.GraphicsColoring(DefaultColor, DefaultBackgroundColor, FadeDuration);
 		}
 
 		/// <summary>
@@ -2191,11 +2139,16 @@ namespace UIWidgets
 #pragma warning disable 0612,0618
 				if (oldDefaultItem != null)
 				{
-					defaultItem = Utilities.GetOrAddComponent<ListViewStringComponent>(oldDefaultItem);
+					defaultItem = Utilities.RequireComponent<ListViewStringComponent>(oldDefaultItem);
 					defaultItem.Upgrade();
 				}
 #pragma warning restore 0612,0618
 			}
+		}
+
+		/// <inheritdoc/>
+		public override void SetTargetOwner()
+		{
 		}
 
 #if UNITY_EDITOR
@@ -2239,22 +2192,14 @@ namespace UIWidgets
 			return 1;
 		}
 
-		/// <summary>
-		/// Gets the item position by index.
-		/// </summary>
-		/// <returns>The item position.</returns>
-		/// <param name="index">Index.</param>
-		public override float GetItemPosition(int index)
+		/// <inheritdoc/>
+		public override float GetItemPosition(int index, bool clampPosition = true)
 		{
 			return (index * GetItemSize()) - GetItemSpacing();
 		}
 
-		/// <summary>
-		/// Gets the item position by index.
-		/// </summary>
-		/// <returns>The item position.</returns>
-		/// <param name="index">Index.</param>
-		public override float GetItemPositionBorderEnd(int index)
+		/// <inheritdoc/>
+		public override float GetItemPositionBorderEnd(int index, bool clampPosition = true)
 		{
 			return GetItemPosition(index + 1) + GetItemSize();
 		}
@@ -2294,12 +2239,12 @@ namespace UIWidgets
 		/// <param name="style">Style.</param>
 		protected virtual void SetStyleColors(Style style)
 		{
-			backgroundColor = style.Collections.DefaultBackgroundColor;
-			textColor = style.Collections.DefaultColor;
+			DefaultBackgroundColor = style.Collections.DefaultBackgroundColor;
+			DefaultColor = style.Collections.DefaultColor;
 			HighlightedBackgroundColor = style.Collections.HighlightedBackgroundColor;
 			HighlightedTextColor = style.Collections.HighlightedColor;
-			selectedBackgroundColor = style.Collections.SelectedBackgroundColor;
-			selectedTextColor = style.Collections.SelectedColor;
+			SelectedBackgroundColor = style.Collections.SelectedBackgroundColor;
+			SelectedTextColor = style.Collections.SelectedColor;
 
 			if (isListViewInited)
 			{
@@ -2356,12 +2301,12 @@ namespace UIWidgets
 		/// <param name="style">Style.</param>
 		protected virtual void GetStyleColors(Style style)
 		{
-			style.Collections.DefaultBackgroundColor = backgroundColor;
-			style.Collections.DefaultColor = textColor;
+			style.Collections.DefaultBackgroundColor = DefaultBackgroundColor;
+			style.Collections.DefaultColor = DefaultColor;
 			style.Collections.HighlightedBackgroundColor = HighlightedBackgroundColor;
 			style.Collections.HighlightedColor = HighlightedTextColor;
-			style.Collections.SelectedBackgroundColor = selectedBackgroundColor;
-			style.Collections.SelectedColor = selectedTextColor;
+			style.Collections.SelectedBackgroundColor = SelectedBackgroundColor;
+			style.Collections.SelectedColor = SelectedTextColor;
 		}
 
 		/// <summary>

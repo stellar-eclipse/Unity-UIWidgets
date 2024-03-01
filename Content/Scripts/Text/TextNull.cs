@@ -92,6 +92,21 @@
 		}
 
 		/// <summary>
+		/// Text alignment.
+		/// </summary>
+		public TextAnchor alignment
+		{
+			get
+			{
+				return TextAnchor.UpperLeft;
+			}
+
+			set
+			{
+			}
+		}
+
+		/// <summary>
 		/// Bold.
 		/// </summary>
 		public bool Bold

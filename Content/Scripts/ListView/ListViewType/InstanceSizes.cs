@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets.Internal
 {
 	using System.Collections.Generic;
+	using UIWidgets.Pool;
 	using UnityEngine;
 
 	/// <summary>
@@ -9,15 +10,11 @@
 	/// <typeparam name="TItem">Item type.</typeparam>
 	public class InstanceSizes<TItem> : IInstanceSizes<TItem>
 	{
-		Dictionary<TItem, Vector2> sizes = new Dictionary<TItem, Vector2>();
+		readonly Dictionary<TItem, Vector2> sizes = new Dictionary<TItem, Vector2>();
 
-		Dictionary<TItem, Vector2> overriddenSizes = new Dictionary<TItem, Vector2>();
+		readonly Dictionary<TItem, Vector2> overriddenSizes = new Dictionary<TItem, Vector2>();
 
-		List<float> sortedSizes = new List<float>();
-
-		Dictionary<TItem, bool> keep = new Dictionary<TItem, bool>();
-
-		List<TItem> remove = new List<TItem>();
+		readonly Dictionary<TItem, bool> keep = new Dictionary<TItem, bool>();
 
 		/// <summary>
 		/// Count.
@@ -83,14 +80,16 @@
 		/// Remove sizes of items that are not in the specified list.
 		/// </summary>
 		/// <param name="items">Items.</param>
-		public void RemoveUnexisting(ObservableList<TItem> items)
+		public void RemoveNotExisting(ObservableList<TItem> items)
 		{
-			RemoveUnexisting(sizes, items);
-			RemoveUnexisting(overriddenSizes, items);
+			RemoveNotExisting(sizes, items);
+			RemoveNotExisting(overriddenSizes, items);
 		}
 
-		void RemoveUnexisting(Dictionary<TItem, Vector2> currentSizes, ObservableList<TItem> items)
+		void RemoveNotExisting(Dictionary<TItem, Vector2> currentSizes, ObservableList<TItem> items)
 		{
+			using var _ = ListPool<TItem>.Get(out var remove);
+
 			foreach (var item in items)
 			{
 				if (currentSizes.ContainsKey(item))
@@ -113,7 +112,6 @@
 			}
 
 			keep.Clear();
-			remove.Clear();
 		}
 
 		/// <summary>
@@ -125,6 +123,8 @@
 		/// <returns>Maximum items count.</returns>
 		public int Visible(bool horizontal, float visibleArea, float spacing)
 		{
+			using var _ = ListPool<float>.Get(out var sorted_sizes);
+
 			foreach (var info in sizes)
 			{
 				if (!overriddenSizes.TryGetValue(info.Key, out Vector2 size))
@@ -132,12 +132,12 @@
 					size = info.Value;
 				}
 
-				sortedSizes.Add(horizontal ? size.x : size.y);
+				sorted_sizes.Add(horizontal ? size.x : size.y);
 			}
 
-			sortedSizes.Sort();
+			sorted_sizes.Sort();
 			var max = 0;
-			foreach (var s in sortedSizes)
+			foreach (var s in sorted_sizes)
 			{
 				visibleArea -= s;
 
@@ -149,8 +149,6 @@
 				max += 1;
 				visibleArea -= spacing;
 			}
-
-			sortedSizes.Clear();
 
 			return Mathf.Max(1, max);
 		}
@@ -218,7 +216,7 @@
 		}
 
 		/// <summary>
-		/// Maximum size for each dimenstion.
+		/// Maximum size for each dimension.
 		/// </summary>
 		/// <param name="defaultSize">Default size.</param>
 		/// <returns>Size.</returns>

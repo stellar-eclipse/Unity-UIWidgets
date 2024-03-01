@@ -1,12 +1,12 @@
 ﻿namespace UIWidgets.WidgetGeneration
 {
-	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.UI;
 
 	/// <summary>
 	/// Picker generator helper.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/generator.html")]
 	public class PickerGeneratorHelper : MonoBehaviour
 	{
 		/// <summary>
@@ -32,11 +32,21 @@
 		/// <summary>
 		/// OK button.
 		/// </summary>
-		public StyleSupportButton ButtonOK;
+		public Button ButtonOK;
+
+		/// <summary>
+		/// OK button label.
+		/// </summary>
+		public RectTransform ButtonOKLabel;
 
 		/// <summary>
 		/// Cancel button.
 		/// </summary>
-		public StyleSupportButton ButtonCancel;
+		public Button ButtonCancel;
+
+		/// <summary>
+		/// Cancel button label.
+		/// </summary>
+		public RectTransform ButtonCancelLabel;
 	}
 }

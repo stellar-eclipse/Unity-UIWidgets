@@ -7,6 +7,7 @@ namespace UIWidgets
 	/// Cursors.
 	/// </summary>
 	[Serializable]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/integration/cursor.html")]
 	public class Cursors : ScriptableObject
 	{
 		/// <summary>
@@ -21,13 +22,7 @@ namespace UIWidgets
 			/// <summary>
 			/// Texture.
 			/// </summary>
-			public Texture2D Texture
-			{
-				get
-				{
-					return texture;
-				}
-			}
+			public readonly Texture2D Texture => texture;
 
 			[SerializeField]
 			Vector2 hotspot;
@@ -35,13 +30,7 @@ namespace UIWidgets
 			/// <summary>
 			/// Hot spot.
 			/// </summary>
-			public Vector2 Hotspot
-			{
-				get
-				{
-					return hotspot;
-				}
-			}
+			public readonly Vector2 Hotspot => hotspot;
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Cursor"/> struct.
@@ -59,31 +48,20 @@ namespace UIWidgets
 			/// </summary>
 			/// <param name="obj">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is Cursor)
-				{
-					return Equals((Cursor)obj);
-				}
-
-				return false;
-			}
+			public readonly override bool Equals(object obj) => (obj is Cursor cursor) && Equals(cursor);
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
 			/// </summary>
 			/// <param name="other">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public bool Equals(Cursor other)
-			{
-				return Texture == other.Texture && Hotspot == other.Hotspot;
-			}
+			public readonly bool Equals(Cursor other) => Texture == other.Texture && Hotspot == other.Hotspot;
 
 			/// <summary>
 			/// Hash function.
 			/// </summary>
 			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
+			public readonly override int GetHashCode()
 			{
 				var a = Texture != null ? Texture.GetHashCode() : 0;
 				var b = Hotspot.GetHashCode();
@@ -96,10 +74,7 @@ namespace UIWidgets
 			/// <param name="a">First cursor.</param>
 			/// <param name="b">Second cursor.</param>
 			/// <returns>true if the cursors are equal; otherwise, false.</returns>
-			public static bool operator ==(Cursor a, Cursor b)
-			{
-				return a.Equals(b);
-			}
+			public static bool operator ==(Cursor a, Cursor b) => a.Equals(b);
 
 			/// <summary>
 			/// Compare specified cursors.
@@ -107,10 +82,7 @@ namespace UIWidgets
 			/// <param name="a">First cursor.</param>
 			/// <param name="b">Second cursor.</param>
 			/// <returns>true if the cursors not equal; otherwise, false.</returns>
-			public static bool operator !=(Cursor a, Cursor b)
-			{
-				return !a.Equals(b);
-			}
+			public static bool operator !=(Cursor a, Cursor b) => !a.Equals(b);
 		}
 
 		/// <summary>

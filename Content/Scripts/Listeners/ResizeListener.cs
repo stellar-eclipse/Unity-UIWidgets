@@ -7,6 +7,7 @@
 	/// <summary>
 	/// Resize listener.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/listeners/resize.html")]
 	public class ResizeListener : UIBehaviour, IUpdatable
 	{
 		RectTransform rectTransform;

@@ -9,6 +9,7 @@
 	/// Set Autocomplete.DataSource with strings from file.
 	/// </summary>
 	[AddComponentMenu("UI/New UI Widgets/Collections/Autocomplete DataSource")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/collections/autocomplete-datasource.html")]
 	public class AutocompleteDataSource : MonoBehaviour
 	{
 		[SerializeField]
@@ -20,14 +21,12 @@
 		/// <value>The file.</value>
 		public TextAsset File
 		{
-			get
-			{
-				return file;
-			}
+			get => file;
 
 			set
 			{
 				file = value;
+
 				if (file != null)
 				{
 					SetDataSource(file);

@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.ComponentModel;
+	using EasyLayoutNS.Extensions;
 	using UIWidgets;
 	using UnityEngine;
 	using UnityEngine.Serialization;
@@ -203,21 +204,10 @@
 		/// <param name="sb">String builder.</param>
 		public virtual void GetDebugInfo(System.Text.StringBuilder sb)
 		{
-			sb.Append("\tWrap: ");
-			sb.Append(Wrap);
-			sb.AppendLine();
-
-			sb.Append("\tJustify Content: ");
-			sb.Append(EnumHelper<Content>.ToString(JustifyContent));
-			sb.AppendLine();
-
-			sb.Append("\tAlign Content: ");
-			sb.Append(EnumHelper<Content>.ToString(AlignContent));
-			sb.AppendLine();
-
-			sb.Append("\tAlign Items: ");
-			sb.Append(EnumHelper<Items>.ToString(AlignItems));
-			sb.AppendLine();
+			sb.AppendValue("\tWrap: ", Wrap);
+			sb.AppendValueEnum("\tJustify Content: ", JustifyContent);
+			sb.AppendValueEnum("\tAlign Content: ", AlignContent);
+			sb.AppendValueEnum("\tAlign Items: ", AlignItems);
 		}
 	}
 }

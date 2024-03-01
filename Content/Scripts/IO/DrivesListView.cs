@@ -6,6 +6,7 @@
 	/// <summary>
 	/// DrivesListView.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/filelistview.html")]
 	public class DrivesListView : ListViewCustom<DrivesListViewComponentBase, FileSystemEntry>
 	{
 		/// <summary>
@@ -122,6 +123,16 @@
 				DataSource.Add(item);
 			}
 #endif
+		}
+
+		/// <summary>
+		/// Process the destroy event.
+		/// </summary>
+		protected override void OnDestroy()
+		{
+			DrivesPosition.ParentDestroyed();
+
+			base.OnDestroy();
 		}
 
 		#if UNITY_EDITOR

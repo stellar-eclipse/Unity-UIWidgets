@@ -7,6 +7,7 @@
 	/// <summary>
 	/// Colors list.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/colors-list.html")]
 	public class ColorsList : MonoBehaviour, IStylable
 	{
 		/// <summary>
@@ -20,15 +21,9 @@
 		/// </summary>
 		public ColorPicker ColorPicker
 		{
-			get
-			{
-				return colorPicker;
-			}
+			get => colorPicker;
 
-			set
-			{
-				colorPicker = value;
-			}
+			set => colorPicker = value;
 		}
 
 		/// <summary>
@@ -42,15 +37,9 @@
 		/// </summary>
 		public ColorPickerRange ColorPickerRange
 		{
-			get
-			{
-				return colorPickerRange;
-			}
+			get => colorPickerRange;
 
-			set
-			{
-				colorPickerRange = value;
-			}
+			set => colorPickerRange = value;
 		}
 
 		/// <summary>
@@ -64,10 +53,7 @@
 		/// </summary>
 		public ListViewColors ListView
 		{
-			get
-			{
-				return listView;
-			}
+			get => listView;
 
 			set
 			{
@@ -96,10 +82,7 @@
 		/// </summary>
 		public Button AddButton
 		{
-			get
-			{
-				return addButton;
-			}
+			get => addButton;
 
 			set
 			{
@@ -120,10 +103,7 @@
 		/// <summary>
 		/// Process the start event.
 		/// </summary>
-		protected virtual void Start()
-		{
-			Init();
-		}
+		protected virtual void Start() => Init();
 
 		/// <summary>
 		/// Init this instance.

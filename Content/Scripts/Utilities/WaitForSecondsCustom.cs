@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets
 {
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UIWidgets.Extensions;
 	using UnityEngine;
 
@@ -9,7 +10,7 @@
 	/// </summary>
 	public class WaitForSecondsCustom : CustomYieldInstruction
 	{
-		static List<WaitForSecondsCustom> Cache = new List<WaitForSecondsCustom>();
+		static readonly List<WaitForSecondsCustom> Cache = new List<WaitForSecondsCustom>();
 
 		/// <summary>
 		/// The given amount of seconds that the yield instruction will wait for.
@@ -51,6 +52,15 @@
 				return waiting;
 			}
 		}
+
+		#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(Cache))]
+		static void StaticInit()
+		{
+			Cache.Clear();
+		}
+		#endif
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="WaitForSecondsCustom"/> class.

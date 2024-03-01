@@ -15,6 +15,7 @@ namespace UIWidgets
 	/// </summary>
 	/// <typeparam name="T">Type of sliver value.</typeparam>
 	[DataBindSupport]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/centered-slider.html")]
 	public abstract class CenteredSliderBase<T> : UIBehaviourConditional, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler, IStylable, IValidateable
 		where T : struct
 	{
@@ -607,8 +608,7 @@ namespace UIWidgets
 				return;
 			}
 
-			Vector2 position;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(UsableRangeRect, eventData.position, eventData.pressEventCamera, out position);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(UsableRangeRect, eventData.position, eventData.pressEventCamera, out var position);
 
 			UpdateValue(IsHorizontal() ? position.x : position.y);
 		}

@@ -2,6 +2,7 @@
 {
 	using UIWidgets;
 	using UnityEngine;
+	using UnityEngine.Serialization;
 	using UnityEngine.UI;
 
 	/// <summary>
@@ -16,20 +17,54 @@
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = Compatibility.EmptyArray<Graphic>();
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
+
+		[SerializeField]
+		[FormerlySerializedAs("ColorEven")]
+		Color colorEven = Color.black;
 
 		/// <summary>
 		/// Color for the Text if Index is even.
 		/// </summary>
-		public Color ColorEven = Color.black;
+		public Color ColorEven
+		{
+			get
+			{
+				return colorEven;
+			}
+
+			set
+			{
+				colorEven = value;
+			}
+		}
+
+		[SerializeField]
+		[FormerlySerializedAs("ColorOdd")]
+		Color colorOdd = Color.white;
 
 		/// <summary>
 		/// Color for the Text if Index is odd.
 		/// </summary>
-		public Color ColorOdd = Color.white;
+		public Color ColorOdd
+		{
+			get
+			{
+				return colorOdd;
+			}
+
+			set
+			{
+				colorOdd = value;
+			}
+		}
 
 		/// <summary>
 		/// Set data.

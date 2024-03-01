@@ -3,7 +3,6 @@
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
-	using System.Collections.ObjectModel;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
@@ -76,7 +75,7 @@
 			/// <summary>
 			/// Menu items.
 			/// </summary>
-			protected ReadOnlyCollection<MenuItem> Items;
+			protected IReadOnlyList<MenuItem> Items;
 
 			/// <summary>
 			/// Owner.
@@ -160,7 +159,7 @@
 			/// <param name="template">Template.</param>
 			/// <param name="items">Items.</param>
 			/// <param name="parentCanvas">Parent canvas.</param>
-			public MenuInstance(ContextMenu owner, ContextMenuView template, ReadOnlyCollection<MenuItem> items, RectTransform parentCanvas)
+			public MenuInstance(ContextMenu owner, ContextMenuView template, IReadOnlyList<MenuItem> items, RectTransform parentCanvas)
 			{
 				Owner = owner;
 				Template = template;
@@ -188,7 +187,7 @@
 			/// Update menu items.
 			/// </summary>
 			/// <param name="items">Menu items.</param>
-			public void UpdateItems(ReadOnlyCollection<MenuItem> items)
+			public void UpdateItems(IReadOnlyList<MenuItem> items)
 			{
 				ResetItems();
 
@@ -369,6 +368,7 @@
 
 				if (View != null)
 				{
+					View.OnEnter.RemoveListener(HighlightParentItem);
 					Template.Return(View);
 					View = null;
 				}
@@ -418,6 +418,11 @@
 			/// <param name="pointerEvent">Pointer event.</param>
 			protected virtual void ItemEnter(int index, bool pointerEvent)
 			{
+				if ((submenuItemIndex != index) && (submenuItemIndex > -1) && (ItemViews[submenuItemIndex] != null))
+				{
+					ItemViews[submenuItemIndex].SelectableDefault();
+				}
+
 				var item = Items[index];
 				Owner.OnItemSelect.Invoke(item);
 
@@ -507,7 +512,54 @@
 				{
 					View = Template.Instance();
 					View.name = string.Format("{0} {1}", Owner.name, depth.ToString());
+					View.OnEnter.AddListener(HighlightParentItem);
 				}
+			}
+
+			/// <summary>
+			/// Highlight parent item.
+			/// </summary>
+			protected virtual void HighlightParentItem()
+			{
+				if (parent == null)
+				{
+					return;
+				}
+
+				parent.HighlightSubmenuItem();
+			}
+
+			/// <summary>
+			/// Highlight submenu item.
+			/// </summary>
+			protected virtual void HighlightSubmenuItem()
+			{
+				ItemViews[submenuItemIndex].SelectableHighlight();
+
+				HighlightParentItem();
+			}
+
+			/// <summary>
+			/// Default parent item.
+			/// </summary>
+			protected virtual void DefaultParentItem()
+			{
+				if (parent == null)
+				{
+					return;
+				}
+
+				parent.DefaultSubmenuItem();
+			}
+
+			/// <summary>
+			/// Default submenu item.
+			/// </summary>
+			protected virtual void DefaultSubmenuItem()
+			{
+				ItemViews[submenuItemIndex].SelectableDefault();
+
+				DefaultParentItem();
 			}
 
 			/// <summary>
@@ -523,18 +575,21 @@
 					closeCoroutine = null;
 				}
 
-				submenuItemIndex = index;
-
-				if (submenu == null)
+				var item_view = Index2View(index);
+				if (item_view == null)
 				{
-					submenu = new MenuInstance(Owner, Template, Items[index].Items.AsReadOnly(), ParentCanvas);
-					submenu.parent = this;
-					submenu.depth = depth + 1;
+					return;
 				}
 
-				submenu.UpdateItems(Items[index].Items.AsReadOnly());
+				submenuItemIndex = index;
 
-				var item_view = Index2View(index);
+				submenu ??= new MenuInstance(Owner, Template, Items[index].Items.AsReadOnly(), ParentCanvas)
+				{
+					parent = this,
+					depth = depth + 1,
+				};
+
+				submenu.UpdateItems(Items[index].Items.AsReadOnly());
 
 				var distance = DistanceTopLeft(item_view.RectTransform);
 				distance.x += item_view.RectTransform.rect.width;
@@ -545,6 +600,7 @@
 				if (selectItem)
 				{
 					submenu.SelectFirst();
+					HighlightSubmenuItem();
 				}
 			}
 
@@ -686,11 +742,14 @@
 					return;
 				}
 
+				HighlightParentItem();
+
 				switch (eventData.moveDir)
 				{
 					case MoveDirection.Left:
 						if (parent != null)
 						{
+							DefaultParentItem();
 							parent.CloseSubmenu(true);
 						}
 

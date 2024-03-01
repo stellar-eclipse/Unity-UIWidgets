@@ -10,6 +10,7 @@ namespace UIWidgets.TMProSupport
 	/// <summary>
 	/// Time widget with 12 hour format.
 	/// </summary>
+	[Obsolete("Use Time12 with TextAdapter.")]
 	public class Time12TMPro : Time24TMPro
 	{
 		/// <summary>
@@ -128,7 +129,7 @@ namespace UIWidgets.TMProSupport
 			base.Upgrade();
 
 #pragma warning disable 0618
-			Utilities.GetOrAddComponent(AMPMText, ref ampmTextAdapter);
+			Utilities.RequireComponent(AMPMText, ref ampmTextAdapter);
 #pragma warning restore 0618
 		}
 

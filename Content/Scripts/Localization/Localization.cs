@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Globalization;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 
 	/// <summary>
@@ -75,6 +76,18 @@
 				{
 					return new CultureInfo(new_code);
 				}
+
+				return culture;
+			}
+			catch (CultureNotFoundException)
+			{
+				try
+				{
+					return new CultureInfo(new_code);
+				}
+				catch (CultureNotFoundException)
+				{
+				}
 			}
 			catch (NotSupportedException)
 			{
@@ -90,7 +103,7 @@
 			return CultureInfo.InvariantCulture;
 		}
 
-#if I2_LOCALIZATION_SUPPORT
+#if UIWIDGETS_I2LOCALIZATION_SUPPORT
 		/// <summary>
 		/// Translate the input string using I2 Localization.
 		/// </summary>
@@ -108,7 +121,13 @@
 		/// <returns>Country code.</returns>
 		public static string I2CountryCode()
 		{
-			return I2.Loc.LocalizationManager.CurrentLanguageCode;
+			var code = I2.Loc.LocalizationManager.CurrentLanguageCode;
+			if (code == "ja")
+			{
+				return "ja-JP";
+			}
+
+			return code;
 		}
 #endif
 
@@ -119,14 +138,15 @@
 
 		#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(OnLocaleChanged), nameof(сulture), nameof(GetCulture), nameof(GetTranslation), nameof(GetCountryCode))]
 		#endif
 		static void StaticInit()
 		{
-			OnLocaleChanged = null;
+			OnLocaleChanged = DoNothing;
 			сulture = null;
 			GetCulture = DefaultGetCulture;
 
-#if I2_LOCALIZATION_SUPPORT
+#if UIWIDGETS_I2LOCALIZATION_SUPPORT
 			GetTranslation = I2Translation;
 			GetCountryCode = I2CountryCode;
 			I2.Loc.LocalizationManager.OnLocalizeEvent += LocaleChanged;
@@ -142,7 +162,7 @@
 		public static void LocaleChanged()
 		{
 			сulture = null;
-			OnLocaleChanged.Invoke();
+			OnLocaleChanged?.Invoke();
 		}
 
 		/// <summary>

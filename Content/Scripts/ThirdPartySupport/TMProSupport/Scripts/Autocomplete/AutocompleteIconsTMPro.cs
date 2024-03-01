@@ -4,6 +4,7 @@ namespace UIWidgets.TMProSupport
 	/// <summary>
 	/// Autocomplete for ListViewIcons.
 	/// </summary>
+	[System.Obsolete("Use AutocompleteIcons with TextAdapter.")]
 	public class AutocompleteIconsTMPro : AutocompleteCustomTMPro<ListViewIconsItemDescription, ListViewIconsItemComponent, ListViewIcons>
 	{
 		/// <summary>

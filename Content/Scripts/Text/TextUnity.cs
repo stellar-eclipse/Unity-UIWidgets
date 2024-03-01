@@ -100,6 +100,22 @@
 		}
 
 		/// <summary>
+		/// Text alignment.
+		/// </summary>
+		public TextAnchor alignment
+		{
+			get
+			{
+				return Component.alignment;
+			}
+
+			set
+			{
+				Component.alignment = value;
+			}
+		}
+
+		/// <summary>
 		/// Bold.
 		/// </summary>
 		public bool Bold

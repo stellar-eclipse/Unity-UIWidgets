@@ -74,7 +74,7 @@
 		/// </summary>
 		public void Start()
 		{{
-			var list = GenerateList(4);
+			var list = GenerateList(8);
 
 			LeftListView.DataSource = list;
 			TileView.DataSource = list;
@@ -111,7 +111,7 @@
 			var item = await picker.ShowAsync(null);
 			if (item.Success)
 			{{
-				LeftListView.DataSource.Add(item);
+				LeftListView.DataSource.Insert(0, item.Value);
 			}}
 		}}
 
@@ -125,7 +125,7 @@
 			var item = await picker.ShowAsync(null);
 			if (item.Success)
 			{{
-				TreeView.Nodes.Add(item);
+				TreeView.Nodes.Insert(0, item.Value);
 			}}
 		}}
 	}}

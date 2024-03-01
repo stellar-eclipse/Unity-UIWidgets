@@ -6,6 +6,7 @@
 	/// <summary>
 	/// InputField listener.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/listeners/inputfield.html")]
 	public class InputFieldListener : SelectListener, IUpdateSelectedHandler
 	{
 		/// <summary>

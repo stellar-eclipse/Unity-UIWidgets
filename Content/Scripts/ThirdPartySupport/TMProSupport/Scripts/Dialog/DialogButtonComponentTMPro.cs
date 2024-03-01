@@ -9,6 +9,7 @@ namespace UIWidgets.TMProSupport
 	/// DialogButtonComponent.
 	/// Control how button name will be displayed.
 	/// </summary>
+	[System.Obsolete("Use DialogButtonComponent with TextAdapter.")]
 	public class DialogButtonComponentTMPro : DialogButtonComponentBase
 	{
 		/// <summary>
@@ -25,7 +26,7 @@ namespace UIWidgets.TMProSupport
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Name, ref NameAdapter);
+			Utilities.RequireComponent(Name, ref NameAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

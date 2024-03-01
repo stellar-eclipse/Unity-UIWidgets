@@ -2,7 +2,6 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Collections.ObjectModel;
 	using UnityEngine;
 	using UnityEngine.Events;
 	using UnityEngine.EventSystems;
@@ -16,6 +15,7 @@
 	[RequireComponent(typeof(Graphic))]
 	[AddComponentMenu("UI/New UI Widgets/Interactions/Groupable")]
 	[DisallowMultipleComponent]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/groupable.html")]
 	public class Groupable : UIBehaviourConditional
 	{
 		/// <summary>
@@ -161,13 +161,7 @@
 		/// <summary>
 		/// Selected elements.
 		/// </summary>
-		public ReadOnlyCollection<RectTransform> Selected
-		{
-			get
-			{
-				return selected.AsReadOnly();
-			}
-		}
+		public IReadOnlyList<RectTransform> Selected => selected;
 
 		/// <summary>
 		/// RectTransform.
@@ -283,6 +277,12 @@
 		}
 
 		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
+
+		/// <summary>
 		/// Selection mode.
 		/// </summary>
 		[SerializeField]
@@ -339,12 +339,12 @@
 			RectTransform = transform as RectTransform;
 
 			ParentRectTransform = transform.parent as RectTransform;
-			ParentDragListener = Utilities.GetOrAddComponent<DragListener>(ParentRectTransform);
-			ParentDragListener.OnDragStartEvent.AddListener(StartDrag);
-			ParentDragListener.OnDragEvent.AddListener(Drag);
-			ParentDragListener.OnDragEndEvent.AddListener(EndDrag);
+			ParentDragListener = Utilities.RequireComponent<DragListener>(ParentRectTransform);
+			ParentDragListener.OnBeginDragEvent.AddListener(OnBeginDrag);
+			ParentDragListener.OnDragEvent.AddListener(OnDrag);
+			ParentDragListener.OnEndDragEvent.AddListener(OnEndDrag);
 
-			ParentClickListener = Utilities.GetOrAddComponent<ClickListener>(ParentRectTransform);
+			ParentClickListener = Utilities.RequireComponent<ClickListener>(ParentRectTransform);
 			ParentClickListener.ClickEvent.AddListener(OnClick);
 
 			Resizable = GetComponent<Resizable>();
@@ -393,9 +393,9 @@
 
 			if (ParentDragListener != null)
 			{
-				ParentDragListener.OnDragStartEvent.RemoveListener(StartDrag);
-				ParentDragListener.OnDragEvent.RemoveListener(Drag);
-				ParentDragListener.OnDragEndEvent.RemoveListener(EndDrag);
+				ParentDragListener.OnBeginDragEvent.RemoveListener(OnBeginDrag);
+				ParentDragListener.OnDragEvent.RemoveListener(OnDrag);
+				ParentDragListener.OnEndDragEvent.RemoveListener(OnEndDrag);
 			}
 
 			if (ParentClickListener != null)
@@ -547,18 +547,27 @@
 		protected bool KeepAspectRatio;
 
 		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return IsInteractable() && (eventData.button == DragButton);
+		}
+
+		/// <summary>
 		/// Process begin drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
-		protected virtual void StartDrag(PointerEventData eventData)
+		protected virtual void OnBeginDrag(PointerEventData eventData)
 		{
-			if (!IsInteractable())
+			if (!CanDrag(eventData))
 			{
 				return;
 			}
 
-			Vector2 point;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(ParentRectTransform, eventData.position, eventData.pressEventCamera, out point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(ParentRectTransform, eventData.position, eventData.pressEventCamera, out var point);
 
 			var size = ParentRectTransform.rect.size;
 			var pivot = ParentRectTransform.pivot;
@@ -591,17 +600,21 @@
 		/// Process drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
-		protected virtual void Drag(PointerEventData eventData)
+		protected virtual void OnDrag(PointerEventData eventData)
 		{
 			if (!IsDrag)
 			{
 				return;
 			}
 
-			Vector2 current_point;
-			Vector2 original_point;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(ParentRectTransform, eventData.position, eventData.pressEventCamera, out current_point);
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(ParentRectTransform, eventData.pressPosition, eventData.pressEventCamera, out original_point);
+			if (!CanDrag(eventData))
+			{
+				OnEndDrag(eventData);
+				return;
+			}
+
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(ParentRectTransform, eventData.position, eventData.pressEventCamera, out var current_point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(ParentRectTransform, eventData.pressPosition, eventData.pressEventCamera, out var original_point);
 
 			var delta = current_point - original_point;
 			var regions = new Resizable.Regions()
@@ -623,7 +636,7 @@
 		/// Process end drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
-		protected virtual void EndDrag(PointerEventData eventData)
+		protected virtual void OnEndDrag(PointerEventData eventData)
 		{
 			if (!IsDrag)
 			{

@@ -1,8 +1,6 @@
 ﻿namespace UIWidgets
 {
-	using System;
-	using System.Collections;
-	using System.Collections.Generic;
+	using UIWidgets.Pool;
 	using UnityEngine;
 	using UnityEngine.UI;
 
@@ -11,8 +9,6 @@
 	/// </summary>
 	public static class UtilitiesUI
 	{
-		static List<Canvas> ParentCanvases = new List<Canvas>();
-
 		/// <summary>
 		/// Finds the canvas.
 		/// </summary>
@@ -36,16 +32,11 @@
 		/// <param name="currentObject">Current object.</param>
 		public static RectTransform FindTopmostCanvas(Transform currentObject)
 		{
-			currentObject.GetComponentsInParent<Canvas>(true, ParentCanvases);
-			if (ParentCanvases.Count == 0)
-			{
-				return null;
-			}
+			using var _ = ListPool<Canvas>.Get(out var temp);
 
-			var result = ParentCanvases[ParentCanvases.Count - 1].transform as RectTransform;
-			ParentCanvases.Clear();
+			currentObject.GetComponentsInParent(true, temp);
 
-			return result;
+			return temp.Count > 0 ? temp[temp.Count - 1].transform as RectTransform : null;
 		}
 
 		/// <summary>
@@ -73,8 +64,7 @@
 				var ray = canvas.worldCamera.ScreenPointToRay(screenPosition);
 				var plane = new Plane(canvasRect.forward, canvasRect.position);
 
-				float distance;
-				plane.Raycast(ray, out distance);
+				plane.Raycast(ray, out var distance);
 
 				result = canvasRect.InverseTransformPoint(ray.origin + (ray.direction * distance));
 

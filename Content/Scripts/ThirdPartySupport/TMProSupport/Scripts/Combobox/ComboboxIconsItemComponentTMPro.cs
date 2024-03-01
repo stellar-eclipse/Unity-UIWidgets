@@ -7,6 +7,7 @@ namespace UIWidgets.TMProSupport
 	/// ComboboxIcons item component.
 	/// Demonstrate how to remove selected item - add Remove() call on Button.OnClick().
 	/// </summary>
+	[System.Obsolete("Use ComboboxIconsItemComponent with TextAdapter.")]
 	public class ComboboxIconsItemComponentTMPro : ListViewIconsItemComponentTMPro
 	{
 		/// <summary>

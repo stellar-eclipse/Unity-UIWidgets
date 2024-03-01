@@ -7,7 +7,8 @@ namespace UIWidgets
 	/// <summary>
 	/// Color picker RGB block.
 	/// </summary>
-	public class ColorPickerRGBBlock : MonoBehaviour
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/colorpicker.html")]
+	public class ColorPickerRGBBlock : MonoBehaviour, UIThemes.ITargetOwner
 	{
 		[SerializeField]
 		Slider rSlider;
@@ -18,15 +19,9 @@ namespace UIWidgets
 		/// <value>The Red slider.</value>
 		public Slider RSlider
 		{
-			get
-			{
-				return rSlider;
-			}
+			get => rSlider;
 
-			set
-			{
-				SetRSlider(value);
-			}
+			set => SetRSlider(value);
 		}
 
 		[SerializeField]
@@ -38,15 +33,9 @@ namespace UIWidgets
 		/// <value>The Red input.</value>
 		public Spinner RInput
 		{
-			get
-			{
-				return rInput;
-			}
+			get => rInput;
 
-			set
-			{
-				SetRInput(value);
-			}
+			set => SetRInput(value);
 		}
 
 		[SerializeField]
@@ -58,10 +47,7 @@ namespace UIWidgets
 		/// <value>The Red slider background.</value>
 		public Image RSliderBackground
 		{
-			get
-			{
-				return rSliderBackground;
-			}
+			get => rSliderBackground;
 
 			set
 			{
@@ -79,15 +65,9 @@ namespace UIWidgets
 		/// <value>The Green slider.</value>
 		public Slider GSlider
 		{
-			get
-			{
-				return gSlider;
-			}
+			get => gSlider;
 
-			set
-			{
-				SetGSlider(value);
-			}
+			set => SetGSlider(value);
 		}
 
 		[SerializeField]
@@ -99,15 +79,9 @@ namespace UIWidgets
 		/// <value>The Green input.</value>
 		public Spinner GInput
 		{
-			get
-			{
-				return gInput;
-			}
+			get => gInput;
 
-			set
-			{
-				SetGInput(value);
-			}
+			set => SetGInput(value);
 		}
 
 		[SerializeField]
@@ -119,10 +93,7 @@ namespace UIWidgets
 		/// <value>The Green slider background.</value>
 		public Image GSliderBackground
 		{
-			get
-			{
-				return gSliderBackground;
-			}
+			get => gSliderBackground;
 
 			set
 			{
@@ -140,15 +111,9 @@ namespace UIWidgets
 		/// <value>The Blue slider.</value>
 		public Slider BSlider
 		{
-			get
-			{
-				return bSlider;
-			}
+			get => bSlider;
 
-			set
-			{
-				SetBSlider(value);
-			}
+			set => SetBSlider(value);
 		}
 
 		[SerializeField]
@@ -160,15 +125,9 @@ namespace UIWidgets
 		/// <value>The Blue input.</value>
 		public Spinner BInput
 		{
-			get
-			{
-				return bInput;
-			}
+			get => bInput;
 
-			set
-			{
-				SetBInput(value);
-			}
+			set => SetBInput(value);
 		}
 
 		[SerializeField]
@@ -180,10 +139,7 @@ namespace UIWidgets
 		/// <value>The Blue slider background.</value>
 		public Image BSliderBackground
 		{
-			get
-			{
-				return bSliderBackground;
-			}
+			get => bSliderBackground;
 
 			set
 			{
@@ -201,10 +157,7 @@ namespace UIWidgets
 		/// <value>The default shader.</value>
 		public Shader DefaultShader
 		{
-			get
-			{
-				return defaultShader;
-			}
+			get => defaultShader;
 
 			set
 			{
@@ -221,10 +174,7 @@ namespace UIWidgets
 		/// <value>The input mode.</value>
 		public ColorPickerInputMode InputMode
 		{
-			get
-			{
-				return inputMode;
-			}
+			get => inputMode;
 
 			set
 			{
@@ -243,15 +193,9 @@ namespace UIWidgets
 		/// <value>The palette mode.</value>
 		public ColorPickerPaletteMode PaletteMode
 		{
-			get
-			{
-				return paletteMode;
-			}
+			get => paletteMode;
 
-			set
-			{
-				paletteMode = value;
-			}
+			set => paletteMode = value;
 		}
 
 		/// <summary>
@@ -274,10 +218,7 @@ namespace UIWidgets
 		/// <summary>
 		/// Start this instance.
 		/// </summary>
-		public virtual void Start()
-		{
-			Init();
-		}
+		public virtual void Start() => Init();
 
 		/// <summary>
 		/// Init this instance.
@@ -639,6 +580,16 @@ namespace UIWidgets
 			}
 
 			UpdateViewReal();
+		}
+
+		/// <summary>
+		/// Set target owner.
+		/// </summary>
+		public void SetTargetOwner()
+		{
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), rSliderBackground, nameof(Graphic.color), this);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), gSliderBackground, nameof(Graphic.color), this);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), bSliderBackground, nameof(Graphic.color), this);
 		}
 
 		/// <summary>

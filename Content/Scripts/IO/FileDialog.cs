@@ -10,6 +10,7 @@
 	/// <summary>
 	/// FileDialog.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/dialogs/filedialog.html")]
 	public class FileDialog : Picker<string, FileDialog>, IUpgradeable
 	{
 		/// <summary>
@@ -183,7 +184,7 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(FilenameInput, ref FilenameInputAdapter);
+			Utilities.RequireComponent(FilenameInput, ref FilenameInputAdapter);
 #pragma warning restore 0612, 0618
 		}
 

@@ -7,6 +7,7 @@
 	/// <summary>
 	/// Restrict drag in ScrollRect.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/scrollrect/scrollrect-restricted-drag.html")]
 	public class ScrollRectRestrictedDrag : ScrollRect
 	{
 		/// <summary>
@@ -57,11 +58,7 @@
 				return;
 			}
 
-			Vector2 localCursor;
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(viewRect, eventData.position, eventData.pressEventCamera, out localCursor))
-			{
-				return;
-			}
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(viewRect, eventData.position, eventData.pressEventCamera, out var localCursor);
 
 			if (MaxDrag != Vector2.zero)
 			{
@@ -78,8 +75,7 @@
 					delta.y = pointerDelta.y > 0 ? MaxDrag.y - pointerDelta.y : -(MaxDrag.y + pointerDelta.y);
 				}
 
-				Vector3 source_point;
-				RectTransformUtility.ScreenPointToWorldPointInRectangle(viewRect, eventData.position, eventData.pressEventCamera, out source_point);
+				RectTransformUtility.ScreenPointToWorldPointInRectangle(viewRect, eventData.position, eventData.pressEventCamera, out var source_point);
 
 				var result_point = new Vector3(source_point.x + delta.x, source_point.y + delta.y);
 				eventData.position = RectTransformUtility.WorldToScreenPoint(eventData.pressEventCamera, result_point);

@@ -11,6 +11,7 @@
 	/// <typeparam name="TListView">ListView type.</typeparam>
 	/// <typeparam name="TItemView">Component type.</typeparam>
 	/// <typeparam name="TItem">Item type.</typeparam>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/drag-and-drop.html")]	
 	public class ListViewCustomDropSupport<TListView, TItemView, TItem> : MonoBehaviour, IDropSupport<TItem>, IStylable, IDropSupport<TreeNode<TItem>>
 		where TListView : ListViewCustom<TItemView, TItem>
 		where TItemView : ListViewItem

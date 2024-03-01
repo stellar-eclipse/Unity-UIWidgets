@@ -6,6 +6,7 @@ namespace UIWidgets
 	/// <summary>
 	/// Snap lines.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/snapgrid/snaplines.html")]
 	public class SnapLines : SnapGridBase
 	{
 		[SerializeField]
@@ -62,6 +63,7 @@ namespace UIWidgets
 				if (yAxisLines == null)
 				{
 					yAxisLines = new ObservableList<LineY>(linesY);
+					yAxisLines.OnChangeMono.AddListener(UpdateLines);
 				}
 
 				return yAxisLines;

@@ -6,6 +6,7 @@
 	/// <summary>
 	/// Base class for the generic tooltip.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/misc/tooltip.html")]
 	public abstract class TooltipBase : MonoBehaviour
 	{
 		RectTransform rectTransform;

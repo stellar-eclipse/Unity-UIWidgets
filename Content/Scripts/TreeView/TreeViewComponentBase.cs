@@ -1,4 +1,4 @@
-namespace UIWidgets
+﻿namespace UIWidgets
 {
 	using System;
 	using System.Collections;
@@ -26,8 +26,8 @@ namespace UIWidgets
 	/// <summary>
 	/// Tree view component base.
 	/// </summary>
-	/// <typeparam name="T">Type of node item.</typeparam>
-	public class TreeViewComponentBase<T> : ListViewItem, IViewData<ListNode<T>>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/treeview.html")]
+	public abstract class TreeViewComponentBase : ListViewItem
 	{
 		/// <summary>
 		/// Init graphics foreground.
@@ -36,9 +36,13 @@ namespace UIWidgets
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[] { UtilitiesUI.GetGraphic(TextAdapter), };
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -136,17 +140,49 @@ namespace UIWidgets
 		[SerializeField]
 		public float ArrowAnimationLength = 0.2f;
 
+		[SerializeField]
+		[FormerlySerializedAs("NodeOpened")]
+		Sprite nodeOpened;
+
 		/// <summary>
 		/// Sprite when node opened.
 		/// </summary>
+		public Sprite NodeOpened
+		{
+			get
+			{
+				return nodeOpened;
+			}
+
+			set
+			{
+				nodeOpened = value;
+
+				SetToggleSprite(IsExpanded);
+			}
+		}
+
 		[SerializeField]
-		public Sprite NodeOpened;
+		[FormerlySerializedAs("NodeClosed")]
+		Sprite nodeClosed;
 
 		/// <summary>
 		/// Sprite when node closed.
 		/// </summary>
-		[SerializeField]
-		public Sprite NodeClosed;
+		public Sprite NodeClosed
+		{
+			get
+			{
+				return nodeClosed;
+			}
+
+			set
+			{
+				nodeClosed = value;
+
+				SetToggleSprite(IsExpanded);
+			}
+		}
 
 		/// <summary>
 		/// The padding per level.
@@ -168,21 +204,20 @@ namespace UIWidgets
 		public bool IgnoreRotation = false;
 
 		/// <summary>
-		/// The node.
-		/// </summary>
-		public TreeNode<T> Node
-		{
-			get;
-			protected set;
-		}
-
-		/// <summary>
 		/// Node depth.
 		/// </summary>
 		protected float NodeDepth
 		{
 			get;
-			private set;
+			set;
+		}
+
+		/// <summary>
+		/// Is node expanded?
+		/// </summary>
+		protected abstract bool IsExpanded
+		{
+			get;
 		}
 
 		/// <summary>
@@ -211,51 +246,44 @@ namespace UIWidgets
 			base.OnDestroy();
 		}
 
-		/// <inheritdoc/>
-		public override void RemoveItem()
-		{
-			if (Owner != null)
-			{
-				Node.Parent = null;
-			}
-		}
-
 		/// <summary>
 		/// Toggles the node.
 		/// </summary>
 		protected virtual void ToggleNode()
 		{
-			ToggleEvent.Invoke(Index);
+			var owner = Owner;
+			var index = Index;
 
-			SetToggle(Node.IsExpanded);
+			ToggleEvent.Invoke(index);
 
-			if (Owner != null)
+			SetToggle(IsExpanded);
+
+			if (owner != null)
 			{
-				Owner.InstancesEventsInternal.NodeToggleClick.Invoke(Index, this);
-			}
+				owner.InstancesEventsInternal.NodeToggleClick.Invoke(index, this);
+				owner.InstancesEvents.NodeToggleClick.Invoke(index, this);
 
-			if (Owner != null)
-			{
-				Owner.InstancesEvents.NodeToggleClick.Invoke(Index, this);
-			}
-
-			if (AnimationCoroutine != null)
-			{
-				Owner.StopCoroutine(AnimationCoroutine);
-				AnimationCoroutine = null;
+				if (AnimationCoroutine != null)
+				{
+					owner.StopCoroutine(AnimationCoroutine);
+					AnimationCoroutine = null;
+				}
 			}
 
 			if (OnNodeExpand == NodeToggle.Rotate)
 			{
 				if (!IgnoreRotation && AnimateArrow)
 				{
-					AnimationCoroutine = Node.IsExpanded ? CloseCoroutine() : OpenCoroutine();
-					Owner.StartCoroutine(AnimationCoroutine);
+					AnimationCoroutine = IsExpanded ? CloseCoroutine() : OpenCoroutine();
+					if (owner != null)
+					{
+						owner.StartCoroutine(AnimationCoroutine);
+					}
 				}
 			}
 			else
 			{
-				SetToggle(Node.IsExpanded);
+				SetToggle(IsExpanded);
 			}
 		}
 
@@ -265,7 +293,10 @@ namespace UIWidgets
 		/// <param name="isExpanded">If set to <c>true</c> is expanded.</param>
 		protected virtual void SetToggleSprite(bool isExpanded)
 		{
-			ToggleImage.sprite = isExpanded ? NodeOpened : NodeClosed;
+			if (OnNodeExpand == NodeToggle.ChangeSprite)
+			{
+				ToggleImage.sprite = isExpanded ? NodeOpened : NodeClosed;
+			}
 		}
 
 		/// <summary>
@@ -324,53 +355,12 @@ namespace UIWidgets
 		}
 
 		/// <summary>
-		/// Set data.
-		/// </summary>
-		/// <param name="item">Item.</param>
-		public void SetData(ListNode<T> item)
-		{
-			SetData(item.Node, item.Depth);
-		}
-
-		/// <summary>
-		/// Sets the data.
-		/// </summary>
-		/// <param name="node">Node.</param>
-		/// <param name="depth">Depth.</param>
-		public virtual void SetData(TreeNode<T> node, int depth)
-		{
-			NodeDepth = depth;
-
-			if (node != null)
-			{
-				Node = node;
-				SetToggle(Node.IsExpanded);
-			}
-
-			if (Indentation != null)
-			{
-				Indentation.minWidth = NodeDepth * PaddingPerLevel;
-				Indentation.preferredWidth = NodeDepth * PaddingPerLevel;
-				Indentation.flexibleWidth = 0;
-			}
-
-			if ((Toggle != null) && (Toggle.gameObject != null))
-			{
-				var toggle_active = (node != null) && (node.Nodes != null) && (node.Nodes.Count > 0);
-				if (Toggle.gameObject.activeSelf != toggle_active)
-				{
-					Toggle.gameObject.SetActive(toggle_active);
-				}
-			}
-		}
-
-		/// <summary>
 		/// Upgrade this instance.
 		/// </summary>
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Text, ref TextAdapter);
+			Utilities.RequireComponent(Text, ref TextAdapter);
 #pragma warning restore 0612, 0618
 		}
 
@@ -418,6 +408,15 @@ namespace UIWidgets
 			{
 				styleText.GetFrom(TextAdapter.gameObject);
 			}
+		}
+
+		/// <inheritdoc/>
+		public override void SetThemeImagesPropertiesOwner(Component owner)
+		{
+			base.SetThemeImagesPropertiesOwner(owner);
+
+			UIThemes.Utilities.SetTargetOwner(typeof(Sprite), Icon, nameof(Icon.sprite), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Icon, nameof(Icon.color), owner);
 		}
 	}
 }

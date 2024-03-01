@@ -19,12 +19,9 @@
 		{
 			get
 			{
-				if (objectsToResize == null)
-				{
-					objectsToResize = (TextAdapter == null)
+				objectsToResize ??= (TextAdapter == null)
 						 ? new GameObject[] { Icon.transform.parent.gameObject }
 						 : new GameObject[] { Icon.transform.parent.gameObject, TextAdapter.gameObject, };
-				}
 
 				return objectsToResize;
 			}
@@ -71,9 +68,13 @@
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[] { UtilitiesUI.GetGraphic(TextAdapter), };
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -163,6 +164,15 @@
 			});
 		}
 
+		/// <inheritdoc/>
+		public override void SetThemeImagesPropertiesOwner(Component owner)
+		{
+			base.SetThemeImagesPropertiesOwner(owner);
+
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Icon, nameof(Icon.color), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(Sprite), Icon, nameof(Icon.sprite), owner);
+		}
+
 		/// <summary>
 		/// Called when item moved to cache, you can use it free used resources.
 		/// </summary>
@@ -182,7 +192,7 @@
 			base.Upgrade();
 
 #pragma warning disable 0618
-			Utilities.GetOrAddComponent(Text, ref TextAdapter);
+			Utilities.RequireComponent(Text, ref TextAdapter);
 #pragma warning restore 0618
 		}
 	}

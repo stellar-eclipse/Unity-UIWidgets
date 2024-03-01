@@ -31,6 +31,7 @@ namespace UIWidgets
 	/// </summary>
 	/// <typeparam name="T">Type of slider value.</typeparam>
 	[DataBindSupport]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/rangeslider.html")]
 	public abstract class RangeSliderBase<T> : UIWidgetsBehaviour, IPointerClickHandler, IStylable, IValidateable
 		where T : struct
 	{
@@ -671,7 +672,7 @@ namespace UIWidgets
 		/// <returns>The start point.</returns>
 		protected float GetStartPoint()
 		{
-			var result = IsHorizontal() ? -UsableRangeRect.sizeDelta.x / 2f : UsableRangeRect.sizeDelta.y / 2f;
+			var result = IsHorizontal() ? -UsableRangeRect.sizeDelta.x / 2f : -UsableRangeRect.sizeDelta.y / 2f;
 			if (type == RangeSliderType.DisableHandleOverlay)
 			{
 				result += IsHorizontal() ? HandleMinRect.rect.width : HandleMinRect.rect.height;
@@ -794,7 +795,7 @@ namespace UIWidgets
 
 			if (IsHorizontal())
 			{
-				if (size[0] == 0f)
+				if (size.x == 0f)
 				{
 					return;
 				}
@@ -802,21 +803,21 @@ namespace UIWidgets
 				var rate = ((type == RangeSliderType.DisableHandleOverlay) && (handle == HandleMinRect))
 					? 1.5f
 					: 0.5f;
-				anchorMin.x = (ValueToPosition(value) + (handle.rect.width * (handle.pivot.x - rate))) / size[0];
+				anchorMin.x = (ValueToPosition(value) + (handle.rect.width * (handle.pivot.x - rate))) / size.x;
 				anchorMax.x = anchorMin.x;
 				pos.x = 0;
 			}
 			else
 			{
-				if (size[1] == 0f)
+				if (size.y == 0f)
 				{
 					return;
 				}
 
 				var rate = ((type == RangeSliderType.DisableHandleOverlay) && (handle == HandleMinRect))
-					? 0.0f
-					: -1.0f;
-				anchorMin.y = (ValueToPosition(value) + (handle.rect.height * (handle.pivot.y - rate))) / size[1];
+					? 1.5f
+					: 0.5f;
+				anchorMin.y = (ValueToPosition(value) + (handle.rect.height * (handle.pivot.y - rate))) / size.y;
 				anchorMax.y = anchorMin.y;
 				pos.y = 0;
 			}
@@ -882,11 +883,7 @@ namespace UIWidgets
 				return;
 			}
 
-			Vector2 position;
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(UsableRangeRect, eventData.position, eventData.pressEventCamera, out position))
-			{
-				return;
-			}
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(UsableRangeRect, eventData.position, eventData.pressEventCamera, out var position);
 
 			position -= UsableRangeRect.rect.position;
 

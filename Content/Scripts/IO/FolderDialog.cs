@@ -7,6 +7,7 @@
 	/// <summary>
 	/// Folder dialog.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/dialogs/folderdialog.html")]
 	public class FolderDialog : Picker<string, FolderDialog>
 	{
 		/// <summary>

@@ -11,12 +11,13 @@
 	/// You can use it to get colors from custom Texture2D.
 	/// The texture must have the Read/Write Enabled flag set in the import settings, otherwise this function will fail.
 	/// </summary>
-	public class ColorPickerImagePalette : MonoBehaviour
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/colorpicker.html")]
+	public class ColorPickerImagePalette : MonoBehaviour, UIThemes.ITargetOwner
 	{
 		/// <summary>
 		/// Coordinates.
 		/// </summary>
-		protected struct Coordinates : IEquatable<Coordinates>
+		protected readonly struct Coordinates : IEquatable<Coordinates>
 		{
 			/// <summary>
 			/// X.
@@ -31,13 +32,7 @@
 			/// <summary>
 			/// Is valid?
 			/// </summary>
-			public bool Valid
-			{
-				get
-				{
-					return (X > -1) && (Y > -1);
-				}
-			}
+			public readonly bool Valid => (X > -1) && (Y > -1);
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="Coordinates"/> struct.
@@ -55,34 +50,20 @@
 			/// </summary>
 			/// <param name="obj">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is Coordinates)
-				{
-					return Equals((Coordinates)obj);
-				}
-
-				return false;
-			}
+			public readonly override bool Equals(object obj) => (obj is Coordinates coordinates) && Equals(coordinates);
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
 			/// </summary>
 			/// <param name="other">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public bool Equals(Coordinates other)
-			{
-				return (X == other.X) && (Y == other.Y);
-			}
+			public readonly bool Equals(Coordinates other) => (X == other.X) && (Y == other.Y);
 
 			/// <summary>
 			/// Hash function.
 			/// </summary>
 			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
-			{
-				return X ^ Y;
-			}
+			public override readonly int GetHashCode() => X ^ Y;
 
 			/// <summary>
 			/// Compare specified instances.
@@ -90,10 +71,7 @@
 			/// <param name="a">First instance.</param>
 			/// <param name="b">Second instance.</param>
 			/// <returns>true if the instances are equal; otherwise, false.</returns>
-			public static bool operator ==(Coordinates a, Coordinates b)
-			{
-				return a.Equals(b);
-			}
+			public static bool operator ==(Coordinates a, Coordinates b) => a.Equals(b);
 
 			/// <summary>
 			/// Compare specified instances.
@@ -101,10 +79,7 @@
 			/// <param name="a">First instance.</param>
 			/// <param name="b">Second instance.</param>
 			/// <returns>true if the instances not equal; otherwise, false.</returns>
-			public static bool operator !=(Coordinates a, Coordinates b)
-			{
-				return !a.Equals(b);
-			}
+			public static bool operator !=(Coordinates a, Coordinates b) => !a.Equals(b);
 		}
 
 		[SerializeField]
@@ -123,15 +98,9 @@
 		/// <value>The palette.</value>
 		public Image Image
 		{
-			get
-			{
-				return image;
-			}
+			get => image;
 
-			set
-			{
-				SetImage(value);
-			}
+			set => SetImage(value);
 		}
 
 		[SerializeField]
@@ -143,10 +112,7 @@
 		/// <value>The palette cursor.</value>
 		public RectTransform ImageCursor
 		{
-			get
-			{
-				return imageCursor;
-			}
+			get => imageCursor;
 
 			set
 			{
@@ -166,15 +132,9 @@
 		/// <value>The input mode.</value>
 		public ColorPickerInputMode InputMode
 		{
-			get
-			{
-				return inputMode;
-			}
+			get => inputMode;
 
-			set
-			{
-				inputMode = value;
-			}
+			set => inputMode = value;
 		}
 
 		ColorPickerPaletteMode paletteMode;
@@ -185,16 +145,16 @@
 		/// <value>The palette mode.</value>
 		public ColorPickerPaletteMode PaletteMode
 		{
-			get
-			{
-				return paletteMode;
-			}
+			get => paletteMode;
 
-			set
-			{
-				SetPaletteMode(value);
-			}
+			set => SetPaletteMode(value);
 		}
+
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
 
 		/// <summary>
 		/// OnChangeRGB event.
@@ -216,10 +176,7 @@
 		/// <summary>
 		/// Start this instance.
 		/// </summary>
-		public virtual void Start()
-		{
-			Init();
-		}
+		public virtual void Start() => Init();
 
 		/// <summary>
 		/// Init this instance.
@@ -260,10 +217,10 @@
 			{
 				imageRect = image.transform as RectTransform;
 
-				dragListener = Utilities.GetOrAddComponent<DragListener>(image);
+				dragListener = Utilities.RequireComponent<DragListener>(image);
 				dragListener.OnDragEvent.AddListener(OnDrag);
 
-				clickListener = Utilities.GetOrAddComponent<ClickListener>(image);
+				clickListener = Utilities.RequireComponent<ClickListener>(image);
 				clickListener.ClickEvent.AddListener(OnDrag);
 			}
 			else
@@ -333,19 +290,33 @@
 		}
 
 		/// <summary>
-		/// When draging is occuring this will be called every time the cursor is moved.
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return eventData.button == DragButton;
+		}
+
+		/// <summary>
+		/// When drag is occurring this will be called every time the cursor is moved.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		protected virtual void OnDrag(PointerEventData eventData)
 		{
+			if (!CanDrag(eventData))
+			{
+				return;
+			}
+
 			if (!imageCursor.gameObject.activeSelf)
 			{
 				imageCursor.gameObject.SetActive(true);
 			}
 
 			Vector2 size = imageRect.rect.size;
-			Vector2 cur_pos;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(imageRect, eventData.position, eventData.pressEventCamera, out cur_pos);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(imageRect, eventData.position, eventData.pressEventCamera, out var cur_pos);
 
 			cur_pos.x = Mathf.Clamp(cur_pos.x, 0, size.x);
 			cur_pos.y = Mathf.Clamp(cur_pos.y, -size.y, 0);
@@ -360,13 +331,11 @@
 		/// <returns>The color.</returns>
 		protected Color32 GetColor()
 		{
-			switch (paletteMode)
+			return paletteMode switch
 			{
-				case ColorPickerPaletteMode.Image:
-					return GetPixelColorUnderCursor();
-				default:
-					return currentColor;
-			}
+				ColorPickerPaletteMode.Image => (Color32)GetPixelColorUnderCursor(),
+				_ => currentColor,
+			};
 		}
 
 		/// <summary>
@@ -560,6 +529,14 @@
 		protected virtual void UpdateMaterial()
 		{
 			UpdateViewReal();
+		}
+
+		/// <summary>
+		/// Set target owner.
+		/// </summary>
+		public void SetTargetOwner()
+		{
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Image, nameof(Graphic.color), this);
 		}
 
 		/// <summary>

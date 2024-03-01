@@ -94,8 +94,8 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(MinLabel, ref MinLabelAdapter);
-			Utilities.GetOrAddComponent(MaxLabel, ref MaxLabelAdapter);
+			Utilities.RequireComponent(MinLabel, ref MinLabelAdapter);
+			Utilities.RequireComponent(MaxLabel, ref MaxLabelAdapter);
 #pragma warning restore 0612, 0618
 		}
 

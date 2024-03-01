@@ -8,7 +8,7 @@
 	/// <content>
 	/// Base class for custom ListViews.
 	/// </content>
-	public partial class ListViewCustom<TItemView, TItem> : ListViewCustomBase
+	public partial class ListViewCustom<TItemView, TItem> : ListViewCustom<TItem>, IUpdatable, ILateUpdatable, IListViewCallbacks<TItemView>
 		where TItemView : ListViewItem
 	{
 		/// <summary>
@@ -222,10 +222,7 @@
 					}
 				}
 
-				var created = CreateTemplate(component);
-				Owner.Templates.Add(created);
-
-				return created;
+				return CreateTemplate(component);
 			}
 
 			/// <summary>
@@ -237,6 +234,7 @@
 			{
 				var created = ListViewItemTemplate<TItemView>.Create<Template>(component);
 				created.AddCallbacks(OwnerID, Owner);
+				Owner.Templates.Add(created);
 
 				return created;
 			}
@@ -315,10 +313,9 @@
 			{
 				Owner.Instances.Clear();
 
-				bool is_new;
 				foreach (var index in indices)
 				{
-					var instance = GetTemplate(index).RequestInstance(OwnerID, index, InstanceCompare, out is_new);
+					var instance = GetTemplate(index).RequestInstance(OwnerID, index, InstanceCompare, out var is_new);
 					Owner.Instances.Add(instance);
 
 					if (is_new || allAsNew)

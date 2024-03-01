@@ -7,6 +7,7 @@
 	/// Redirect drag events from current gameobject to specified.
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/drag-redirect.html")]
 	public class DragRedirect : UIBehaviour, IBeginDragHandler, IInitializePotentialDragHandler, IDragHandler, IEndDragHandler, IScrollHandler
 	{
 		/// <summary>

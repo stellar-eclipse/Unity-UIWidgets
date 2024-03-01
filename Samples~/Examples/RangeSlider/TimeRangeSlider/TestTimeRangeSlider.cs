@@ -132,8 +132,8 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(StartText, ref StartTextAdapter);
-			Utilities.GetOrAddComponent(EndText, ref EndTextAdapter);
+			Utilities.RequireComponent(StartText, ref StartTextAdapter);
+			Utilities.RequireComponent(EndText, ref EndTextAdapter);
 #pragma warning restore 0612, 0618
 		}
 

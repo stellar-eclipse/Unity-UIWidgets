@@ -173,7 +173,9 @@
 		/// </summary>
 		public void SelectNode()
 		{
+			Nodes[1].IsExpanded = true;
 			Tree.Select(Nodes[1].Nodes[0]);
+			Tree.ScrollToAnimated(Nodes[1].Nodes[0]);
 		}
 
 		/// <summary>
@@ -328,10 +330,7 @@
 			// or find parent node by name
 			/* var node = nodes.Find(x => x.Item.Name = "Node 2");*/
 
-			if (node.Nodes == null)
-			{
-				node.Nodes = new ObservableList<TreeNode<TreeViewItem>>();
-			}
+			node.Nodes ??= new ObservableList<TreeNode<TreeViewItem>>();
 
 			var new_item1 = new TreeViewItem("Subnode 1");
 			var new_node1 = new TreeNode<TreeViewItem>(new_item1);
@@ -444,6 +443,8 @@
 			}
 
 			// replace on find node "Node 1 - 1"
+			Nodes[0].IsExpanded = true;
+			Nodes[0].Nodes[0].IsExpanded = true;
 			var parent_node = Nodes[0].Nodes[0];
 			var children = new List<TreeNode<TreeViewItem>>();
 			GetChildrenNodes(parent_node, children);
@@ -771,6 +772,7 @@
 		/// </summary>
 		public void ToggleNode()
 		{
+			Nodes[0].IsExpanded = true;
 			Nodes[0].Nodes[0].IsExpanded = !Nodes[0].Nodes[0].IsExpanded;
 		}
 

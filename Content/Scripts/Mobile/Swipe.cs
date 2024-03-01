@@ -10,13 +10,13 @@
 	/// Swipe.
 	/// </summary>
 	[RequireComponent(typeof(Graphic))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/mobile/swipe.html")]
 	public class Swipe : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 	{
 		/// <summary>
 		/// Direction.
 		/// </summary>
-		[Serializable]
-		public struct Direction
+		public readonly struct Direction
 		{
 			/// <summary>
 			/// Left.
@@ -104,14 +104,32 @@
 		public float MinDistance = 50f;
 
 		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
+
+		/// <summary>
 		/// Swipe event.
 		/// </summary>
 		[SerializeField]
 		public SwipeEvent OnSwipe = new SwipeEvent();
 
+		bool isDrag;
+
 		float start;
 
 		Vector2 position;
+
+		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return eventData.button == DragButton;
+		}
 
 		/// <summary>
 		/// Processing the begin drag event.
@@ -119,8 +137,14 @@
 		/// <param name="eventData">Event data.</param>
 		public void OnBeginDrag(PointerEventData eventData)
 		{
+			if (!CanDrag(eventData))
+			{
+				return;
+			}
+
 			start = UtilitiesTime.GetTime(UnscaledTime);
 			position = eventData.position;
+			isDrag = true;
 		}
 
 		/// <summary>
@@ -129,6 +153,16 @@
 		/// <param name="eventData">Event data.</param>
 		public void OnDrag(PointerEventData eventData)
 		{
+			if (!isDrag)
+			{
+				return;
+			}
+
+			if (!CanDrag(eventData))
+			{
+				OnEndDrag(eventData);
+				return;
+			}
 		}
 
 		/// <summary>
@@ -137,6 +171,13 @@
 		/// <param name="eventData">Event data.</param>
 		public void OnEndDrag(PointerEventData eventData)
 		{
+			if (!isDrag)
+			{
+				return;
+			}
+
+			isDrag = false;
+
 			var time = UtilitiesTime.GetTime(UnscaledTime);
 			if ((time - start) > MaxTime)
 			{

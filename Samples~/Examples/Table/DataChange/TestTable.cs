@@ -9,7 +9,7 @@ namespace UIWidgets.Examples.DataChange
 	/// </summary>
 	public class TestTable : MonoBehaviour
 	{
-		Dictionary<string, Data> data = new Dictionary<string, Data>()
+		readonly Dictionary<string, Data> data = new Dictionary<string, Data>()
 		{
 			{ "Item 1", new Data("Item 1", 0) },
 			{ "Item 2", new Data("Item 2", 8) },

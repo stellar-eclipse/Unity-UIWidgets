@@ -5,6 +5,7 @@ namespace UIWidgets
 	using UIWidgets.Attributes;
 	using UIWidgets.Extensions;
 	using UIWidgets.Internal;
+	using UIWidgets.Pool;
 	using UnityEngine;
 	using UnityEngine.Events;
 	using UnityEngine.EventSystems;
@@ -15,6 +16,7 @@ namespace UIWidgets
 	/// </summary>
 	/// <typeparam name="TItemView">Type of DefaultItem.</typeparam>
 	/// <typeparam name="TItem">Type of item.</typeparam>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/treeview.html")]
 	public class TreeViewCustom<TItemView, TItem> : ListViewCustom<TItemView, ListNode<TItem>>
 		where TItemView : TreeViewComponentBase<TItem>
 	{
@@ -42,15 +44,26 @@ namespace UIWidgets
 
 			set
 			{
+				if (ReferenceEquals(nodes, value))
+				{
+					return;
+				}
+
 				if (!isTreeViewCustomInited)
 				{
 					Init();
 				}
 
-				RemoveNodes(nodes);
+				if (nodes != null)
+				{
+					nodes.OnChangeMono.RemoveListener(NodesChanged);
+				}
 
+				RootNode.DeattachNodes();
 				nodes = value;
 				RootNode.Nodes = value;
+
+				Cleanup();
 				ListRenderer.SetPosition(0f);
 				Refresh();
 
@@ -118,9 +131,12 @@ namespace UIWidgets
 			{
 				selectedNodes.Clear();
 
-				Nodes2Indices(value, tempIndices);
-				SelectedIndices = tempIndices;
-				tempIndices.Clear();
+				using var _ = ListPool<int>.Get(out var temp);
+
+				Nodes2Indices(value, temp);
+
+				// safe to use because only items copied, not the list reference
+				SelectedIndices = temp;
 			}
 		}
 
@@ -225,7 +241,8 @@ namespace UIWidgets
 		/// <summary>
 		/// Always allows the node's IsExpanded property modification.
 		/// </summary>
-		public static Func<TreeNode<TItem>, bool> DefaultAllowToggle = node => true;
+		[DomainReloadExclude]
+		public static readonly Func<TreeNode<TItem>, bool> DefaultAllowToggle = node => true;
 
 		/// <summary>
 		/// Cache.
@@ -248,8 +265,6 @@ namespace UIWidgets
 		protected UnityAction<int, ListViewItem, BaseEventData> ProcessInstanceCancelDelegate;
 
 		readonly Queue<TreeNode<TItem>> tempQueue = new Queue<TreeNode<TItem>>();
-
-		readonly List<int> tempIndices = new List<int>();
 
 		NodeInstanceSizes<TItem> instancesSizes;
 
@@ -274,10 +289,7 @@ namespace UIWidgets
 		{
 			get
 			{
-				if (instancesSizes == null)
-				{
-					instancesSizes = new NodeInstanceSizes<TItem>();
-				}
+				instancesSizes ??= new NodeInstanceSizes<TItem>();
 
 				return instancesSizes;
 			}
@@ -314,9 +326,9 @@ namespace UIWidgets
 				listType = ListViewType.ListViewWithFixedSize;
 			}
 
-			rootNode = new TreeNode<TItem>(default(TItem));
+			rootNode = new TreeNode<TItem>(default);
 
-			ContainerLayoutElement = Utilities.GetOrAddComponent<LayoutElement>(Container);
+			ContainerLayoutElement = Utilities.RequireComponent<LayoutElement>(Container);
 
 			setContentSizeFitter = false;
 
@@ -430,27 +442,16 @@ namespace UIWidgets
 		/// <inheritdoc/>
 		protected override ListViewTypeBase GetRenderer(ListViewType type)
 		{
-			ListViewTypeBase renderer;
-			switch (type)
+			ListViewTypeBase renderer = type switch
 			{
-				case ListViewType.ListViewWithFixedSize:
-					renderer = new ListViewTypeFixed(this);
-					break;
-				case ListViewType.ListViewWithVariableSize:
-					renderer = new ListViewTypeSize(this, InstancesSizes);
-					break;
-				case ListViewType.ListViewEllipse:
-					throw new NotSupportedException("ListViewType.ListViewEllipse not supported for the TreeView");
-				case ListViewType.TileViewWithFixedSize:
-					throw new NotSupportedException("ListViewType.TileViewWithFixedSize not supported for the TreeView");
-				case ListViewType.TileViewWithVariableSize:
-					throw new NotSupportedException("ListViewType.TileViewWithVariableSize not supported for the TreeView");
-				case ListViewType.TileViewStaggered:
-					throw new NotSupportedException("ListViewType.TileViewStaggered not supported for the TreeView");
-				default:
-					throw new NotSupportedException(string.Format("Unknown ListView type: {0}", EnumHelper<ListViewType>.ToString(type)));
-			}
-
+				ListViewType.ListViewWithFixedSize => new ListViewTypeFixed(this),
+				ListViewType.ListViewWithVariableSize => new ListViewTypeSize(this, InstancesSizes),
+				ListViewType.ListViewEllipse => throw new NotSupportedException("ListViewType.ListViewEllipse not supported for the TreeView"),
+				ListViewType.TileViewWithFixedSize => throw new NotSupportedException("ListViewType.TileViewWithFixedSize not supported for the TreeView"),
+				ListViewType.TileViewWithVariableSize => throw new NotSupportedException("ListViewType.TileViewWithVariableSize not supported for the TreeView"),
+				ListViewType.TileViewStaggered => throw new NotSupportedException("ListViewType.TileViewStaggered not supported for the TreeView"),
+				_ => throw new NotSupportedException(string.Format("Unknown ListView type: {0}", EnumHelper<ListViewType>.ToString(type))),
+			};
 			renderer.Enable();
 			renderer.ToggleScrollToItemCenter(ScrollInertiaUntilItemCenter);
 
@@ -862,19 +863,6 @@ namespace UIWidgets
 		/// <summary>
 		/// Get indices of specified nodes.
 		/// </summary>
-		/// <returns>The indices.</returns>
-		/// <param name="targetNodes">Target nodes.</param>
-		protected List<int> Nodes2Indices(List<TreeNode<TItem>> targetNodes)
-		{
-			tempIndices.Clear();
-			Nodes2Indices(targetNodes, tempIndices);
-
-			return tempIndices;
-		}
-
-		/// <summary>
-		/// Get indices of specified nodes.
-		/// </summary>
 		/// <param name="targetNodes">Target nodes.</param>
 		/// <param name="output">Indices.</param>
 		protected void Nodes2Indices(List<TreeNode<TItem>> targetNodes, List<int> output)
@@ -960,9 +948,10 @@ namespace UIWidgets
 
 			SilentDeselect(SelectedIndicesList);
 
-			Nodes2Indices(selected_nodes, tempIndices);
-			SilentSelect(tempIndices);
-			tempIndices.Clear();
+			using var _ = ListPool<int>.Get(out var temp);
+
+			Nodes2Indices(selected_nodes, temp);
+			SilentSelect(temp);
 
 			NodesList.EndUpdate();
 
@@ -1258,23 +1247,11 @@ namespace UIWidgets
 		}
 
 		/// <summary>
-		/// Remove nodes parent.
+		/// Cleanup.
 		/// </summary>
-		/// <param name="nodes">Nodes.</param>
-		protected void RemoveNodes(ObservableList<TreeNode<TItem>> nodes)
+		protected void Cleanup()
 		{
-			if (nodes == null)
-			{
-				return;
-			}
-
-			nodes.OnChangeMono.RemoveListener(NodesChanged);
-			for (int i = nodes.Count - 1; i >= 0; i--)
-			{
-				nodes[i].Parent = null;
-			}
-
-			InstancesSizes.RemoveUnexisting(IsNodeInTree);
+			InstancesSizes.RemoveNotExisting(IsNodeInTree);
 		}
 
 		/// <inheritdoc/>
@@ -1355,7 +1332,12 @@ namespace UIWidgets
 				InstancesEventsInternal.Cancel.RemoveListener(ProcessInstanceCancelDelegate);
 			}
 
-			RemoveNodes(nodes);
+			if (rootNode != null)
+			{
+				rootNode.DeattachNodes();
+			}
+
+			Cleanup();
 
 			nodes = null;
 

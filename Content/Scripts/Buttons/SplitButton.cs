@@ -4,11 +4,13 @@
 	using System.Collections.Generic;
 	using UIWidgets.Styles;
 	using UnityEngine;
+	using UnityEngine.Serialization;
 	using UnityEngine.UI;
 
 	/// <summary>
 	/// Split Button.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/controls/split-button.html")]
 	public class SplitButton : MonoBehaviour, IStylable
 	{
 		/// <summary>
@@ -127,17 +129,45 @@
 			}
 		}
 
+		[SerializeField]
+		[FormerlySerializedAs("ModalSprite")]
+		Sprite modalSprite = null;
+
 		/// <summary>
 		/// Modal sprite.
 		/// </summary>
+		public Sprite ModalSprite
+		{
+			get
+			{
+				return modalSprite;
+			}
+
+			set
+			{
+				modalSprite = value;
+			}
+		}
+
 		[SerializeField]
-		public Sprite ModalSprite = null;
+		[FormerlySerializedAs("ModalColor")]
+		Color modalColor = new Color(1f, 1f, 1f, 0f);
 
 		/// <summary>
 		/// Modal color.
 		/// </summary>
-		[SerializeField]
-		public Color ModalColor = new Color(0, 0, 0, 0.0f);
+		public Color ModalColor
+		{
+			get
+			{
+				return modalColor;
+			}
+
+			set
+			{
+				modalColor = value;
+			}
+		}
 
 		/// <summary>
 		/// Modal ID.
@@ -335,6 +365,15 @@
 			ButtonsPosition.Restore();
 
 			AdditionalButtonsBlock.SetActive(false);
+		}
+
+		/// <summary>
+		/// Process the destroy event.
+		/// </summary>
+		protected virtual void OnDestroy()
+		{
+			ButtonsPosition.ParentDestroyed();
+			Close();
 		}
 
 		#region IStylable implementation

@@ -1,123 +1,145 @@
 ﻿namespace UIWidgets.WidgetGeneration
 {
 	using UnityEngine;
+	using UnityEngine.Serialization;
 	using UnityEngine.UI;
 
 	/// <summary>
 	/// Scene generator helper.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/generator.html")]
 	public class SceneGeneratorHelper : MonoBehaviour
 	{
 		/// <summary>
-		/// The canvas.
+		/// Canvas.
 		/// </summary>
 		[SerializeField]
 		public GameObject Canvas;
 
 		/// <summary>
-		/// The Accordion.
+		/// Accordion.
 		/// </summary>
 		[SerializeField]
 		public Accordion Accordion;
 
 		/// <summary>
-		/// The ListView's parent.
+		/// Tabs.
+		/// </summary>
+		[SerializeField]
+		public Tabs Tabs;
+
+		/// <summary>
+		/// ListView's parent.
 		/// </summary>
 		[SerializeField]
 		public RectTransform ListsParent;
 
 		/// <summary>
-		/// The TileView parent.
+		/// TileView parent.
 		/// </summary>
 		[SerializeField]
 		public RectTransform TileViewParent;
 
 		/// <summary>
-		/// the TreeView parent.
+		/// TreeView parent.
 		/// </summary>
 		[SerializeField]
 		public RectTransform TreeViewParent;
 
 		/// <summary>
-		/// The ListView label.
+		/// ListView label.
 		/// </summary>
 		[SerializeField]
 		public GameObject LabelListView;
 
 		/// <summary>
-		/// The ListView button.
+		/// ListView button.
 		/// </summary>
 		[SerializeField]
 		public Button ListViewButton;
 
 		/// <summary>
-		/// The TreeView button.
+		/// TreeView button.
 		/// </summary>
 		[SerializeField]
 		public Button TreeViewButton;
 
 		/// <summary>
-		/// The button to set default style.
+		/// First button to toggle style/theme.
 		/// </summary>
 		[SerializeField]
-		public Button StyleDefaultButton;
+		[FormerlySerializedAs("StyleDefaultButton")]
+		public Button StyleButton01;
 
 		/// <summary>
-		/// The button to set blue style.
+		/// Second button to toggle style/theme.
 		/// </summary>
 		[SerializeField]
-		public Button StyleBlueButton;
+		[FormerlySerializedAs("StyleBlueButton")]
+		public Button StyleButton02;
 
 		/// <summary>
-		/// The Table parent.
+		/// Third button to toggle style/theme.
+		/// </summary>
+		[SerializeField]
+		public Button StyleButton03;
+
+		/// <summary>
+		/// Fourth button to toggle style/theme.
+		/// </summary>
+		[SerializeField]
+		public Button StyleButton04;
+
+		/// <summary>
+		/// Table parent.
 		/// </summary>
 		[SerializeField]
 		public RectTransform TableParent;
 
 		/// <summary>
-		/// The Table label.
+		/// Table label.
 		/// </summary>
 		[SerializeField]
 		public GameObject LabelTable;
 
 		/// <summary>
-		/// The TreeGraph parent.
+		/// TreeGraph parent.
 		/// </summary>
 		[SerializeField]
 		public RectTransform TreeGraphParent;
 
 		/// <summary>
-		/// The TreeGraph label.
+		/// TreeGraph label.
 		/// </summary>
 		[SerializeField]
 		public GameObject LabelTreeGraph;
 
 		/// <summary>
-		/// The Autocomplete parent.
+		/// Autocomplete parent.
 		/// </summary>
 		[SerializeField]
 		public RectTransform AutocompleteParent;
 
 		/// <summary>
-		/// The Autocomplete label.
+		/// Autocomplete label.
 		/// </summary>
 		[SerializeField]
 		public GameObject LabelAutocomplete;
 
 		/// <summary>
-		/// The AutoCombobox label.
+		/// AutoCombobox label.
 		/// </summary>
 		[SerializeField]
 		public GameObject LabelAutoCombobox;
 
 		/// <summary>
-		/// The Combobox label.
+		/// Combobox label.
 		/// </summary>
 		[SerializeField]
 		public GameObject LabelCombobox;
 
 		/// <summary>
-		/// The ComboboxMultiselect label.
+		/// ComboboxMultiselect label.
 		/// </summary>
 		[SerializeField]
 		public GameObject LabelComboboxMultiselect;

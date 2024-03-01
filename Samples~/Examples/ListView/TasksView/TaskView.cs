@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets.Examples.Tasks
 {
 	using UIWidgets;
+	using UIWidgets.Attributes;
 
 	/// <summary>
 	/// TaskView.
@@ -10,6 +11,7 @@
 		/// <summary>
 		/// Tasks comparison.
 		/// </summary>
+		[DomainReloadExclude]
 		static readonly System.Comparison<Task> ItemsComparison = (x, y) => UtilitiesCompare.Compare(x.Name, y.Name);
 
 		bool isTaskViewInited;

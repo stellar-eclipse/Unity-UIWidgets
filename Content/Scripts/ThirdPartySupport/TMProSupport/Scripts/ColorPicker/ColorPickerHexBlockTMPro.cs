@@ -2,13 +2,12 @@
 namespace UIWidgets.TMProSupport
 {
 	using TMPro;
-	using UIWidgets.Styles;
 	using UnityEngine;
-	using UnityEngine.UI;
 
 	/// <summary>
 	/// Color picker Hex block.
 	/// </summary>
+	[System.Obsolete("Use ColorPickerHexBlock with TextAdapter.")]
 	public class ColorPickerHexBlockTMPro : ColorPickerHexBlockBase
 	{
 		/// <summary>
@@ -25,7 +24,7 @@ namespace UIWidgets.TMProSupport
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(InputHex, ref InputHexAdapter);
+			Utilities.RequireComponent(InputHex, ref InputHexAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

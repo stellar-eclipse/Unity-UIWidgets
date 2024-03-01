@@ -7,6 +7,7 @@
 	/// <summary>
 	/// FileListViewPath.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/filelistview.html")]
 	public class FileListViewPath : MonoBehaviour, IStylable
 	{
 		/// <summary>

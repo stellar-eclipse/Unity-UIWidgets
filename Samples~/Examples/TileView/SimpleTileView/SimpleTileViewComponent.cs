@@ -57,8 +57,8 @@
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(ItemName, ref ItemNameAdapter);
-			Utilities.GetOrAddComponent(ItemText, ref ItemTextAdapter);
+			Utilities.RequireComponent(ItemName, ref ItemNameAdapter);
+			Utilities.RequireComponent(ItemText, ref ItemTextAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

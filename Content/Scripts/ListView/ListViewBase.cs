@@ -5,8 +5,8 @@ namespace UIWidgets
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Collections.ObjectModel;
 	using UIWidgets.Attributes;
+	using UIWidgets.Pool;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.Events;
@@ -18,10 +18,11 @@ namespace UIWidgets
 	/// ListViewBase.
 	/// You can use it for creating custom ListViews.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/listview.html")]
 	public abstract partial class ListViewBase : UIBehaviour,
 			ISelectHandler, IDeselectHandler,
 			ISubmitHandler, ICancelHandler,
-			IStylable, IUpgradeable
+			IStylable, IUpgradeable, UIThemes.ITargetOwner
 	{
 		/// <summary>
 		/// Range selection mode.
@@ -125,6 +126,9 @@ namespace UIWidgets
 		protected override void OnValidate()
 		{
 			base.OnValidate();
+			
+			ComponentsColoring(true);
+
 			MultipleSelect = multipleSelect;
 		}
 		#endif
@@ -170,10 +174,6 @@ namespace UIWidgets
 
 		List<int> selectedIndicesList = new List<int>();
 
-		List<int> tempDeselect = new List<int>();
-
-		List<int> tempSelect = new List<int>();
-
 		/// <summary>
 		/// Gets or sets indices of the selected items.
 		/// </summary>
@@ -187,11 +187,14 @@ namespace UIWidgets
 
 			set
 			{
+				using var _ = ListPool<int>.Get(out var temp_deselect);
+				using var __ = ListPool<int>.Get(out var temp_select);
+
 				foreach (var index in selectedIndices)
 				{
 					if (!value.Contains(index))
 					{
-						tempDeselect.Add(index);
+						temp_deselect.Add(index);
 					}
 				}
 
@@ -199,21 +202,19 @@ namespace UIWidgets
 				{
 					if (!selectedIndices.Contains(index))
 					{
-						tempSelect.Add(index);
+						temp_select.Add(index);
 					}
 				}
 
-				foreach (var index in tempDeselect)
+				foreach (var index in temp_deselect)
 				{
 					Deselect(index);
 				}
-				tempDeselect.Clear();
 
-				foreach (var index in tempSelect)
+				foreach (var index in temp_select)
 				{
 					Select(index);
 				}
-				tempSelect.Clear();
 			}
 		}
 
@@ -256,6 +257,36 @@ namespace UIWidgets
 		[Tooltip("Which element is the start when selecting a range with the Shift key.")]
 		public RangeSelectionMode RangeMode = RangeSelectionMode.StartFromFirst;
 
+		#region Coloring fields
+
+		/// <summary>
+		/// Allow items coloring.
+		/// </summary>
+		[SerializeField]
+		protected bool allowColoring = true;
+
+		/// <summary>
+		/// Allow items coloring.
+		/// </summary>
+		public bool AllowColoring
+		{
+			get
+			{
+				return allowColoring;
+			}
+
+			set
+			{
+				if (allowColoring != value)
+				{
+					allowColoring = value;
+					ToggleThemeSupport();
+					ComponentsColoring(true);
+				}
+			}
+		}
+
+
 		/// <summary>
 		/// Apply style for the table instead of ListView style.
 		/// </summary>
@@ -280,6 +311,221 @@ namespace UIWidgets
 				StyleTable = value;
 			}
 		}
+
+		[SerializeField]
+		bool coloringStriped = false;
+
+		/// <summary>
+		/// Striped background color.
+		/// </summary>
+		public bool ColoringStriped
+		{
+			get
+			{
+				return coloringStriped;
+			}
+
+			set
+			{
+				if (coloringStriped != value)
+				{
+					coloringStriped = value;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Default background color.
+		/// </summary>
+		[SerializeField]
+		protected Color defaultBackgroundColor = Color.white;
+
+		/// <summary>
+		/// Default color.
+		/// </summary>
+		[SerializeField]
+		protected Color defaultColor = Color.black;
+
+		/// <summary>
+		/// Default background color.
+		/// </summary>
+		public Color DefaultBackgroundColor
+		{
+			get
+			{
+				return defaultBackgroundColor;
+			}
+
+			set
+			{
+				defaultBackgroundColor = value;
+				ComponentsColoring(true);
+			}
+		}
+
+		/// <summary>
+		/// Default text color.
+		/// </summary>
+		public Color DefaultColor
+		{
+			get
+			{
+				return defaultColor;
+			}
+
+			set
+			{
+				defaultColor = value;
+				ComponentsColoring(true);
+			}
+		}
+
+		/// <summary>
+		/// Highlighted background color.
+		/// </summary>
+		[SerializeField]
+		[FormerlySerializedAs("HighlightedBackgroundColor")]
+		protected Color highlightedBackgroundColor = new Color(203, 230, 244, 255);
+
+		/// <summary>
+		/// Color of background on pointer over.
+		/// </summary>
+		public Color HighlightedBackgroundColor
+		{
+			get
+			{
+				return highlightedBackgroundColor;
+			}
+
+			set
+			{
+				highlightedBackgroundColor = value;
+				ComponentsHighlightedColoring();
+			}
+		}
+
+		/// <summary>
+		/// Color of text on pointer text.
+		/// </summary>
+		[SerializeField]
+		[FormerlySerializedAs("HighlightedColor")]
+		protected Color highlightedColor = Color.black;
+
+		/// <summary>
+		/// Color of background on pointer over.
+		/// </summary>
+		public Color HighlightedColor
+		{
+			get
+			{
+				return highlightedColor;
+			}
+
+			set
+			{
+				highlightedColor = value;
+				ComponentsHighlightedColoring();
+			}
+		}
+
+		/// <summary>
+		/// Selected background color.
+		/// </summary>
+		[SerializeField]
+		protected Color selectedBackgroundColor = new Color(53, 83, 227, 255);
+
+		/// <summary>
+		/// Selected color.
+		/// </summary>
+		[SerializeField]
+		protected Color selectedColor = Color.black;
+
+		/// <summary>
+		/// Background color of selected item.
+		/// </summary>
+		public Color SelectedBackgroundColor
+		{
+			get
+			{
+				return selectedBackgroundColor;
+			}
+
+			set
+			{
+				selectedBackgroundColor = value;
+				ComponentsColoring(true);
+			}
+		}
+
+		/// <summary>
+		/// Text color of selected item.
+		/// </summary>
+		public Color SelectedColor
+		{
+			get
+			{
+				return selectedColor;
+			}
+
+			set
+			{
+				selectedColor = value;
+				ComponentsColoring(true);
+			}
+		}
+
+		/// <summary>
+		/// Default background color if index is even and ColoringStriped enabled.
+		/// </summary>
+		[SerializeField]
+		protected Color defaultEvenBackgroundColor = Color.white;
+
+		/// <summary>
+		/// Default background color if index is even and ColoringStriped enabled.
+		/// </summary>
+		public Color DefaultEvenBackgroundColor
+		{
+			get
+			{
+				return defaultEvenBackgroundColor;
+			}
+
+			set
+			{
+				defaultEvenBackgroundColor = value;
+				ComponentsColoring(true);
+			}
+		}
+
+		/// <summary>
+		/// Default background color if index is odd and ColoringStriped enabled.
+		/// </summary>
+		[SerializeField]
+		protected Color defaultOddBackgroundColor = Color.white;
+
+		/// <summary>
+		/// Default background color if index is odd and ColoringStriped enabled.
+		/// </summary>
+		public Color DefaultOddBackgroundColor
+		{
+			get
+			{
+				return defaultOddBackgroundColor;
+			}
+
+			set
+			{
+				defaultOddBackgroundColor = value;
+				ComponentsColoring(true);
+			}
+		}
+
+		/// <summary>
+		/// How long a color transition should take.
+		/// </summary>
+		[SerializeField]
+		public float FadeDuration = 0f;
+		#endregion
 
 		/// <summary>
 		/// List can be looped and items is enough to make looped list.
@@ -638,8 +884,6 @@ namespace UIWidgets
 		[Obsolete("Now always enabled.")]
 		public bool FixHighlightItemUnderPointer = true;
 
-		readonly List<RaycastResult> raycastResults = new List<RaycastResult>();
-
 		/// <summary>
 		/// Highlighted indices.
 		/// </summary>
@@ -663,13 +907,13 @@ namespace UIWidgets
 		/// <summary>
 		/// Highlighted indices.
 		/// </summary>
-		public ReadOnlyCollection<int> HighlightedIndices
+		public IReadOnlyList<int> HighlightedIndices
 		{
 			get
 			{
 				FindHighlightedIndices();
 
-				return highlightedIndices.AsReadOnly();
+				return highlightedIndices;
 			}
 		}
 
@@ -761,8 +1005,19 @@ namespace UIWidgets
 			}
 		}
 
-		PointerEventData ItemUnderPointerEventData;
-		EventSystem ItemUnderPointerEventSystem;
+		/// <summary>
+		/// Items under pointer.
+		/// </summary>
+		protected static ItemsUnderPointerFinder ItemsUnderPointer = new ItemsUnderPointerFinder();
+
+		#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(ItemsUnderPointer))]
+		static void StaticInit()
+		{
+			ItemsUnderPointer.Reset();
+		}
+		#endif
 
 		/// <summary>
 		/// Find item under pointer.
@@ -770,40 +1025,14 @@ namespace UIWidgets
 		/// <returns>Item.</returns>
 		protected ListViewItem FindItemUnderPointer()
 		{
-			if (!CompatibilityInput.MousePresent)
+			var id = GetInstanceID();
+			foreach (var item in ItemsUnderPointer)
 			{
-				return null;
-			}
-
-			if (EventSystem.current != null)
-			{
-				var es = EventSystem.current;
-				if ((ItemUnderPointerEventData == null) || (ItemUnderPointerEventSystem != es))
-				{
-					ItemUnderPointerEventSystem = es;
-					ItemUnderPointerEventData = new PointerEventData(es);
-				}
-
-				ItemUnderPointerEventData.position = CompatibilityInput.MousePosition;
-
-				EventSystem.current.RaycastAll(ItemUnderPointerEventData, raycastResults);
-			}
-
-			foreach (var raycastResult in raycastResults)
-			{
-				if (!raycastResult.isValid)
-				{
-					continue;
-				}
-
-				var item = raycastResult.gameObject.GetComponent<ListViewItem>();
-				if ((item != null) && (item.Owner != null) && (item.Owner.GetInstanceID() == GetInstanceID()) && Items.Contains(item))
+				if ((item.Owner.GetInstanceID() == id) && Items.Contains(item))
 				{
 					return item;
 				}
 			}
-
-			raycastResults.Clear();
 
 			return null;
 		}
@@ -1121,7 +1350,7 @@ namespace UIWidgets
 		/// <param name="instance">Instance to cancel highlight.</param>
 		protected virtual void CancelHighlight(ListViewItem instance)
 		{
-			if (!IsSelected(instance.Index) && (!IsHighlighted(instance.Index)))
+			if (!IsSelected(instance.Index) && (IndexUnderPointer != instance.Index))
 			{
 				DefaultColoring(instance);
 				instance.StateDefault();
@@ -1473,14 +1702,13 @@ namespace UIWidgets
 		/// <param name="raiseEvents">Raise select events?</param>
 		public void DeselectAll(bool raiseEvents = true)
 		{
-			GetSelectedIndices(tempSelect);
+			using var _ = ListPool<int>.Get(out var temp);
 
-			foreach (var index in tempSelect)
+			GetSelectedIndices(temp);
+			foreach (var index in temp)
 			{
 				Deselect(index, raiseEvents);
 			}
-
-			tempSelect.Clear();
 		}
 
 		/// <summary>
@@ -1578,12 +1806,14 @@ namespace UIWidgets
 					: selectedIndices.Last();
 
 				// deselect all items
-				tempDeselect.AddRange(selectedIndices);
-				foreach (var i in tempDeselect)
 				{
-					Deselect(i);
+					using var _ = ListPool<int>.Get(out var temp_deselect);
+					temp_deselect.AddRange(selectedIndices);
+					foreach (var i in temp_deselect)
+					{
+						Deselect(i);
+					}
 				}
-				tempDeselect.Clear();
 
 				// find min and max indices
 				var min = Mathf.Min(start_index, index);
@@ -1634,6 +1864,13 @@ namespace UIWidgets
 		/// </summary>
 		/// <param name="index">Index.</param>
 		protected virtual void DeselectItem(int index)
+		{
+		}
+
+		/// <summary>
+		/// Toggle theme support.
+		/// </summary>
+		protected virtual void ToggleThemeSupport()
 		{
 		}
 
@@ -1976,7 +2213,8 @@ namespace UIWidgets
 		/// </summary>
 		/// <returns>The item position.</returns>
 		/// <param name="index">Index.</param>
-		public virtual float GetItemPosition(int index)
+		/// <param name="clampPosition">Clamp position.</param>
+		public virtual float GetItemPosition(int index, bool clampPosition = true)
 		{
 			throw new NotSupportedException();
 		}
@@ -1986,7 +2224,8 @@ namespace UIWidgets
 		/// </summary>
 		/// <returns>The item position.</returns>
 		/// <param name="index">Index.</param>
-		public virtual float GetItemPositionBorderEnd(int index)
+		/// <param name="clampPosition">Clamp position.</param>
+		public virtual float GetItemPositionBorderEnd(int index, bool clampPosition = true)
 		{
 			throw new NotSupportedException();
 		}
@@ -1996,7 +2235,8 @@ namespace UIWidgets
 		/// </summary>
 		/// <returns>The item middle position.</returns>
 		/// <param name="index">Index.</param>
-		public virtual float GetItemPositionMiddle(int index)
+		/// <param name="clampPosition">Clamp position.</param>
+		public virtual float GetItemPositionMiddle(int index, bool clampPosition = true)
 		{
 			throw new NotSupportedException();
 		}
@@ -2006,7 +2246,8 @@ namespace UIWidgets
 		/// </summary>
 		/// <returns>The item bottom position.</returns>
 		/// <param name="index">Index.</param>
-		public virtual float GetItemPositionBottom(int index)
+		/// <param name="clampPosition">Clamp position.</param>
+		public virtual float GetItemPositionBottom(int index, bool clampPosition = true)
 		{
 			throw new NotSupportedException();
 		}
@@ -2360,5 +2601,10 @@ namespace UIWidgets
 		public virtual void Upgrade()
 		{
 		}
+
+		/// <summary>
+		/// Set theme target owner.
+		/// </summary>
+		public abstract void SetTargetOwner();
 	}
 }

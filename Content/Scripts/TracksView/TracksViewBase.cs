@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using UIWidgets.Attributes;
+	using UIWidgets.Pool;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
 	using UnityEngine.Serialization;
@@ -13,6 +14,7 @@
 	/// </summary>
 	/// <typeparam name="TData">Data type.</typeparam>
 	/// <typeparam name="TPoint">Point type.</typeparam>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/tracksview.html")]
 	public abstract class TracksViewBase<TData, TPoint> : UIBehaviourConditional, IUpdatable
 		where TData : class, ITrackData<TPoint>
 		where TPoint : IComparable<TPoint>
@@ -613,15 +615,12 @@
 		/// <returns>Position.</returns>
 		public virtual Vector2 GetDataPosition(RectTransform dataView)
 		{
-			switch (PointsNamesView.BasePosition)
+			return PointsNamesView.BasePosition switch
 			{
-				case ScrollBlockBase.Position.Start:
-					return dataView.anchoredPosition;
-				case ScrollBlockBase.Position.Center:
-					return dataView.localPosition;
-				default:
-					return dataView.anchoredPosition;
-			}
+				ScrollBlockBase.Position.Start => dataView.anchoredPosition,
+				ScrollBlockBase.Position.Center => (Vector2)dataView.localPosition,
+				_ => dataView.anchoredPosition,
+			};
 		}
 
 		/// <summary>
@@ -646,8 +645,8 @@
 		protected virtual bool UpdateVisibleStartEnd()
 		{
 			var count = PointsNamesView.Count;
-			TPoint new_start = default(TPoint);
-			TPoint new_end = default(TPoint);
+			TPoint new_start = default;
+			TPoint new_end = default;
 
 			switch (PointsNamesView.BasePosition)
 			{
@@ -727,15 +726,12 @@
 		/// <returns>Distance.</returns>
 		protected virtual float DistanceToBase()
 		{
-			switch (PointsNamesView.BasePosition)
+			return PointsNamesView.BasePosition switch
 			{
-				case ScrollBlockBase.Position.Start:
-					return PointsNamesView.DistanceToBase;
-				case ScrollBlockBase.Position.Center:
-					return PointsNamesView.DistanceToBase + (DataHeaderSize.x / 2f);
-				default:
-					return PointsNamesView.DistanceToBase;
-			}
+				ScrollBlockBase.Position.Start => PointsNamesView.DistanceToBase,
+				ScrollBlockBase.Position.Center => PointsNamesView.DistanceToBase + (DataHeaderSize.x / 2f),
+				_ => PointsNamesView.DistanceToBase,
+			};
 		}
 
 		/// <summary>
@@ -763,12 +759,6 @@
 		}
 
 		/// <summary>
-		/// Temporary list.
-		/// Used by TrackIntersection() method.
-		/// </summary>
-		protected List<TData> TempList = new List<TData>();
-
-		/// <summary>
 		/// Check if target item has intersection with items in the track within range and order.
 		/// </summary>
 		/// <param name="track">Track.</param>
@@ -785,11 +775,10 @@
 				return false;
 			}
 
-			GetPossibleIntersections(track.Data, order, target, TempList);
+			using var _ = ListPool<TData>.Get(out var temp);
 
-			var result = ListIntersection(TempList, start, end, order, target);
-
-			TempList.Clear();
+			GetPossibleIntersections(track.Data, order, target, temp);
+			var result = ListIntersection(temp, start, end, order, target);
 
 			return result;
 		}
@@ -866,8 +855,7 @@
 		/// <returns>Point.</returns>
 		public virtual TPoint Position2Point(Vector2 position, Camera camera)
 		{
-			Vector2 point;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(TracksDataView.transform as RectTransform, position, camera, out point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(TracksDataView.transform as RectTransform, position, camera, out var point);
 
 			return Position2Point(point.x);
 		}
@@ -920,14 +908,14 @@
 			dataView.horizontal = true;
 			dataView.vertical = true;
 
-			var data_drag = Utilities.GetOrAddComponent<DragListener>(dataView);
+			var data_drag = Utilities.RequireComponent<DragListener>(dataView);
 			data_drag.OnInitializePotentialDragEvent.AddListener(OnDataDragInit);
-			data_drag.OnDragStartEvent.AddListener(OnDataDragBegin);
+			data_drag.OnBeginDragEvent.AddListener(OnDataDragBegin);
 			data_drag.OnDragEvent.AddListener(OnDataDrag);
-			data_drag.OnDragEndEvent.AddListener(OnDataDragEnd);
+			data_drag.OnEndDragEvent.AddListener(OnDataDragEnd);
 			data_drag.OnScrollEvent.AddListener(OnDataScroll);
 
-			var data_resize = Utilities.GetOrAddComponent<ResizeListener>(dataView);
+			var data_resize = Utilities.RequireComponent<ResizeListener>(dataView);
 			data_resize.OnResizeNextFrame.AddListener(OnResize);
 		}
 
@@ -946,9 +934,9 @@
 			if (data_drag != null)
 			{
 				data_drag.OnInitializePotentialDragEvent.RemoveListener(OnDataDragInit);
-				data_drag.OnDragStartEvent.RemoveListener(OnDataDragBegin);
+				data_drag.OnBeginDragEvent.RemoveListener(OnDataDragBegin);
 				data_drag.OnDragEvent.RemoveListener(OnDataDrag);
-				data_drag.OnDragEndEvent.RemoveListener(OnDataDragEnd);
+				data_drag.OnEndDragEvent.RemoveListener(OnDataDragEnd);
 				data_drag.OnScrollEvent.RemoveListener(OnDataScroll);
 			}
 
@@ -975,11 +963,11 @@
 			tracksView.horizontal = true;
 			tracksView.vertical = true;
 
-			var tracks_drag = Utilities.GetOrAddComponent<DragListener>(tracksView);
+			var tracks_drag = Utilities.RequireComponent<DragListener>(tracksView);
 			tracks_drag.OnInitializePotentialDragEvent.AddListener(OnTracksDragInit);
-			tracks_drag.OnDragStartEvent.AddListener(OnTracksDragBegin);
+			tracks_drag.OnBeginDragEvent.AddListener(OnTracksDragBegin);
 			tracks_drag.OnDragEvent.AddListener(OnTracksDrag);
-			tracks_drag.OnDragEndEvent.AddListener(OnTracksDragEnd);
+			tracks_drag.OnEndDragEvent.AddListener(OnTracksDragEnd);
 			tracks_drag.OnScrollEvent.AddListener(OnTracksScroll);
 		}
 
@@ -998,9 +986,9 @@
 			if (tracks_drag != null)
 			{
 				tracks_drag.OnInitializePotentialDragEvent.RemoveListener(OnTracksDragInit);
-				tracks_drag.OnDragStartEvent.RemoveListener(OnTracksDragBegin);
+				tracks_drag.OnBeginDragEvent.RemoveListener(OnTracksDragBegin);
 				tracks_drag.OnDragEvent.RemoveListener(OnTracksDrag);
-				tracks_drag.OnDragEndEvent.RemoveListener(OnTracksDragEnd);
+				tracks_drag.OnEndDragEvent.RemoveListener(OnTracksDragEnd);
 				tracks_drag.OnScrollEvent.RemoveListener(OnTracksScroll);
 			}
 		}
@@ -1024,11 +1012,11 @@
 
 			DataHeaderSize = pointsView.DefaultItemSize;
 
-			var points_drag = Utilities.GetOrAddComponent<DragListener>(pointsView);
+			var points_drag = Utilities.RequireComponent<DragListener>(pointsView);
 			points_drag.OnInitializePotentialDragEvent.AddListener(OnPointsDragInit);
-			points_drag.OnDragStartEvent.AddListener(OnPointsDragBegin);
+			points_drag.OnBeginDragEvent.AddListener(OnPointsDragBegin);
 			points_drag.OnDragEvent.AddListener(OnPointsDrag);
-			points_drag.OnDragEndEvent.AddListener(OnPointsDragEnd);
+			points_drag.OnEndDragEvent.AddListener(OnPointsDragEnd);
 			points_drag.OnScrollEvent.AddListener(OnPointsScroll);
 		}
 
@@ -1051,9 +1039,9 @@
 			if (points_drag != null)
 			{
 				points_drag.OnInitializePotentialDragEvent.RemoveListener(OnPointsDragInit);
-				points_drag.OnDragStartEvent.RemoveListener(OnPointsDragBegin);
+				points_drag.OnBeginDragEvent.RemoveListener(OnPointsDragBegin);
 				points_drag.OnDragEvent.RemoveListener(OnPointsDrag);
-				points_drag.OnDragEndEvent.RemoveListener(OnPointsDragEnd);
+				points_drag.OnEndDragEvent.RemoveListener(OnPointsDragEnd);
 				points_drag.OnScrollEvent.RemoveListener(OnPointsScroll);
 			}
 		}
@@ -1310,9 +1298,8 @@
 				return;
 			}
 
-			Vector2 point;
 			var target = TracksDataView.transform as RectTransform;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(target, eventData.position, eventData.pressEventCamera, out point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(target, eventData.position, eventData.pressEventCamera, out var point);
 			var pivot = target.pivot;
 			var size = target.rect.size;
 

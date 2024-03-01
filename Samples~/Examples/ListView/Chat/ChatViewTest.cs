@@ -3,6 +3,8 @@
 	using System;
 	using UIWidgets;
 	using UnityEngine;
+	using UnityEngine.Scripting;
+	using UnityEngine.Serialization;
 	using UnityEngine.UI;
 
 	/// <summary>
@@ -10,6 +12,16 @@
 	/// </summary>
 	public class ChatViewTest : MonoBehaviour, IUpgradeable
 	{
+		/// <summary>
+		/// Add wrappers.
+		/// </summary>
+		[UIThemes.PropertiesRegistry]
+		[Preserve]
+		public static void AddWrappers()
+		{
+			UIThemes.PropertyWrappers<Sprite>.AddIgnore(typeof(ChatViewTest), nameof(TestImage));
+		}
+
 		/// <summary>
 		/// ChatView.
 		/// </summary>
@@ -62,11 +74,25 @@
 		[SerializeField]
 		public Switch AttachImage;
 
+		[SerializeField]
+		[FormerlySerializedAs("TestImage")]
+		Sprite testImage;
+
 		/// <summary>
 		/// Attached image.
 		/// </summary>
-		[SerializeField]
-		public Sprite TestImage;
+		public Sprite TestImage
+		{
+			get
+			{
+				return testImage;
+			}
+
+			set
+			{
+				testImage = value;
+			}
+		}
 
 		/// <summary>
 		/// Attached audio.
@@ -212,8 +238,8 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(UserName, ref UserNameAdapter);
-			Utilities.GetOrAddComponent(Message, ref MessageAdapter);
+			Utilities.RequireComponent(UserName, ref UserNameAdapter);
+			Utilities.RequireComponent(Message, ref MessageAdapter);
 #pragma warning restore 0612, 0618
 		}
 

@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using EasyLayoutNS;
+	using UIWidgets.Extensions;
 	using UIWidgets.Internal;
 	using UIWidgets.Styles;
 	using UnityEngine;
@@ -12,7 +13,7 @@
 	/// <content>
 	/// Base class for the custom ListViews.
 	/// </content>
-	public partial class ListViewCustom<TItemView, TItem> : ListViewCustomBase, IStylable
+	public partial class ListViewCustom<TItemView, TItem> : ListViewCustom<TItem>, IUpdatable, ILateUpdatable, IListViewCallbacks<TItemView>
 		where TItemView : ListViewItem
 	{
 		/// <summary>
@@ -134,8 +135,8 @@
 				var spacing_x = Owner.GetItemSpacingX();
 				var spacing_y = Owner.GetItemSpacingY();
 
-				var height = Owner.Viewport.Size.y + spacing_y - Owner.LayoutBridge.GetFullMarginY();
-				var width = Owner.Viewport.Size.x + spacing_x - Owner.LayoutBridge.GetFullMarginX();
+				var height = ViewportHeight();
+				var width = ViewportWidth();
 
 				Blocks = Owner.IsHorizontal()
 					? Mathf.FloorToInt(height / (Owner.DefaultInstanceSize.y + spacing_y))
@@ -158,7 +159,7 @@
 			{
 				for (int i = list.Count; i < size; i++)
 				{
-					list.Add(default(T));
+					list.Add(default);
 				}
 			}
 
@@ -364,13 +365,15 @@
 			/// <inheritdoc/>
 			public override int GetFirstVisibleIndex(bool strict = false)
 			{
-				return GetIndexAtBlock(GetPosition(), 0);
+				var pos = Mathf.Max(0f, GetPosition() - Owner.LayoutBridge.GetMargin());
+				return GetIndexAtBlock(pos, 0);
 			}
 
 			/// <inheritdoc/>
 			public override int GetLastVisibleIndex(bool strict = false)
 			{
-				var last_visible_index = GetIndexAtBlock(GetPosition() + Owner.Viewport.ScaledAxisSize, BlocksIndices.Count - 1);
+				var pos = Mathf.Max(0f, GetPosition() - Owner.LayoutBridge.GetMargin());
+				var last_visible_index = GetIndexAtBlock(pos + Owner.Viewport.ScaledAxisSize, BlocksIndices.Count - 1);
 
 				return last_visible_index;
 			}
@@ -387,7 +390,7 @@
 				EnsureListSize(LayoutPaddingStart, Blocks);
 				EnsureListSize(LayoutPaddingEnd, Blocks);
 
-				var start = GetPosition();
+				var start = Mathf.Max(0f, GetPosition() - Owner.LayoutBridge.GetMargin());
 				var end = start + Owner.Viewport.ScaledAxisSize;
 				var spacing = Owner.LayoutBridge.GetSpacing();
 
@@ -430,8 +433,8 @@
 				var spacing = Owner.IsHorizontal() ? Owner.LayoutBridge.GetSpacingY() : Owner.LayoutBridge.GetSpacingX();
 				var size = Owner.IsHorizontal() ? Owner.DefaultInstanceSize.y : Owner.DefaultInstanceSize.x;
 
-				var block_pos = Owner.IsHorizontal() ? Mathf.Abs(point.y) : point.x;
-				var item_pos = Owner.IsHorizontal() ? point.x : Mathf.Abs(point.y);
+				var block_pos = Owner.IsHorizontal() ? Mathf.Abs(point.y) - Owner.LayoutBridge.GetFullMarginY() : point.x - Owner.LayoutBridge.GetFullMarginX();
+				var item_pos = (Owner.IsHorizontal() ? point.x : Mathf.Abs(point.y)) - Owner.LayoutBridge.GetMargin();
 				var block_index = (block_pos < size) ? 0 : Mathf.FloorToInt((block_pos - size) / (size + spacing)) + 1;
 
 				return GetIndexAtBlock(item_pos, block_index, type);
@@ -457,7 +460,7 @@
 					max = Mathf.Max(max, BlocksFullSizes[i]);
 				}
 
-				return max;
+				return max + Owner.LayoutBridge.GetFullMargin();
 			}
 
 			float GetPositionAtBlock(int index)
@@ -574,38 +577,25 @@
 			/// <inheritdoc/>
 			public override void GetDebugInfo(System.Text.StringBuilder builder)
 			{
-				builder.Append("Blocks: ");
-				builder.Append(Blocks);
-				builder.AppendLine();
+				base.GetDebugInfo(builder);
+
+				builder.AppendValue("Blocks: ", Blocks);
 
 				builder.AppendLine("Blocks Indices");
 				for (int i = 0; i < BlocksIndices.Count; i++)
 				{
 					var block = BlocksIndices[i];
-					builder.Append("\t");
-					builder.Append(i);
-					builder.Append(". ");
-					builder.Append(UtilitiesCollections.List2String(block));
-					builder.AppendLine();
+					builder.AppendValue("\t", i, ". ", UtilitiesCollections.List2String(block));
 				}
 
 				builder.AppendLine("Blocks Sizes");
 				for (int i = 0; i < BlocksFullSizes.Count; i++)
 				{
-					builder.Append("\t");
-					builder.Append(i);
-					builder.Append(". ");
-					builder.Append(BlocksFullSizes[i]);
-					builder.AppendLine();
+					builder.AppendValue("\t", i, ". ", BlocksFullSizes[i]);
 				}
 
-				builder.Append("LayoutPaddingStart: ");
-				builder.Append(UtilitiesCollections.List2String(LayoutPaddingStart));
-				builder.AppendLine();
-
-				builder.Append("LayoutPaddingEnd: ");
-				builder.Append(UtilitiesCollections.List2String(LayoutPaddingEnd));
-				builder.AppendLine();
+				builder.AppendValue("LayoutPaddingStart: ", UtilitiesCollections.List2String(LayoutPaddingStart));
+				builder.AppendValue("LayoutPaddingEnd: ", UtilitiesCollections.List2String(LayoutPaddingEnd));
 			}
 		}
 	}

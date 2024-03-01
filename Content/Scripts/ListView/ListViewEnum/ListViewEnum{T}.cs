@@ -2,6 +2,7 @@ namespace UIWidgets
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 
 	/// <summary>
 	/// ListViewEnum typed wrapper.
@@ -68,10 +69,12 @@ namespace UIWidgets
 
 		readonly Func<long, T> Long2Enum;
 
+		[DomainReloadExclude]
 		static readonly Func<long, T> DefaultLong2Enum = value => (T)Enum.ToObject(typeof(T), value);
 
 		readonly Func<T, long> Enum2Long;
 
+		[DomainReloadExclude]
 		static readonly Func<T, long> DefaultEnum2Long = value => Convert.ToInt64(value);
 
 		/// <summary>

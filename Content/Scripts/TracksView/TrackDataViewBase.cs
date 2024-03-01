@@ -10,6 +10,7 @@
 	/// <typeparam name="TData">Type of the data.</typeparam>
 	/// <typeparam name="TPoint">Type of the points.</typeparam>
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/tracksview.html")]
 	public abstract class TrackDataViewBase<TData, TPoint> : MonoBehaviour, IMovableToCache
 		where TData : class, ITrackData<TPoint>
 		where TPoint : IComparable<TPoint>
@@ -89,7 +90,7 @@
 		/// </summary>
 		protected virtual void AddListeners()
 		{
-			var click = Utilities.GetOrAddComponent<ClickListener>(this);
+			var click = Utilities.RequireComponent<ClickListener>(this);
 			click.DoubleClickEvent.AddListener(OnDoubleClick);
 
 			Resizable = GetComponent<Resizable>();

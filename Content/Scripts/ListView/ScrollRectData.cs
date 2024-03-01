@@ -13,7 +13,7 @@
 		/// </summary>
 		protected class ScrollRectData
 		{
-			ListViewCustomBase owner;
+			readonly ListViewCustomBase owner;
 
 			ScrollRect scrollRect;
 
@@ -24,10 +24,7 @@
 			/// </summary>
 			public ScrollRect ScrollRect
 			{
-				get
-				{
-					return scrollRect;
-				}
+				get => scrollRect;
 
 				set
 				{
@@ -64,24 +61,12 @@
 			/// <summary>
 			/// Axis size.
 			/// </summary>
-			public float AxisSize
-			{
-				get
-				{
-					return owner.IsHorizontal() ? Size.x : Size.y;
-				}
-			}
+			public float AxisSize => owner.IsHorizontal() ? Size.x : Size.y;
 
 			/// <summary>
 			/// Scaled axis size.
 			/// </summary>
-			public float ScaledAxisSize
-			{
-				get
-				{
-					return owner.IsHorizontal() ? ScaledSize.x : ScaledSize.y;
-				}
-			}
+			public float ScaledAxisSize => owner.IsHorizontal() ? ScaledSize.x : ScaledSize.y;
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="ScrollRectData"/> class.

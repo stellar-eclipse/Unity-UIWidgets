@@ -60,10 +60,7 @@
 		{
 			var parent = GetPlaylistNode(Source.Node);
 
-			if (parent.Nodes == null)
-			{
-				parent.Nodes = new ObservableList<TreeNode<JRPGOrderLine>>();
-			}
+			parent.Nodes ??= new ObservableList<TreeNode<JRPGOrderLine>>();
 
 			// calculate insert position
 			var index = Source.Node.Item.IsPlaylist ? -1 : Source.Node.Parent.Nodes.IndexOf(Source.Node);

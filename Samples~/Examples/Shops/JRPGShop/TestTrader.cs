@@ -228,8 +228,8 @@
 			{
 				// binary save
 				var stream = File.OpenRead(Filename);
-				var deserializer = new BinaryFormatter();
-				var raw_data = (List<TreeNodeSerialized<JRPGOrderLine>>)deserializer.Deserialize(stream);
+				var formatter = new BinaryFormatter();
+				var raw_data = (List<TreeNodeSerialized<JRPGOrderLine>>)formatter.Deserialize(stream);
 				stream.Close();
 
 				TraderTreeView.Nodes = TreeNode<JRPGOrderLine>.Deserialize(raw_data);

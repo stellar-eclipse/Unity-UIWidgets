@@ -20,7 +20,7 @@ namespace UIWidgets.Examples
 		[SerializeField]
 		List<ListViewIconsItemDescription> items = new List<ListViewIconsItemDescription>();
 
-		ObservableList<ListViewIconsItemDescription> oitems;
+		ObservableList<ListViewIconsItemDescription> observableItems;
 
 		/// <summary>
 		/// Items.
@@ -29,18 +29,12 @@ namespace UIWidgets.Examples
 		{
 			get
 			{
-				if (oitems == null)
-				{
-					oitems = new ObservableList<ListViewIconsItemDescription>(items);
-				}
+				observableItems ??= new ObservableList<ListViewIconsItemDescription>(items);
 
-				return oitems;
+				return observableItems;
 			}
 
-			set
-			{
-				oitems = value;
-			}
+			set => observableItems = value;
 		}
 	}
 }

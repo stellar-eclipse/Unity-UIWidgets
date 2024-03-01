@@ -9,6 +9,7 @@ namespace UIWidgets
 	/// ScrollRect drag sensitivity.
 	/// </summary>
 	[RequireComponent(typeof(ScrollRect))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/scrollrect/scrollrect-drag-sensitivity.html")]
 	public class ScrollRectDragSensitivity : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
 	{
 		/// <summary>
@@ -22,6 +23,12 @@ namespace UIWidgets
 		/// </summary>
 		[SerializeField]
 		public Vector2 Sensitivity = Vector2.one;
+
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
 
 		/// <summary>
 		/// Start cursor.
@@ -83,17 +90,22 @@ namespace UIWidgets
 		}
 
 		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return ScrollRect.IsActive() && (eventData.button == DragButton);
+		}
+
+		/// <summary>
 		/// Process begin drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnBeginDrag(PointerEventData eventData)
 		{
-			if (eventData.button != PointerEventData.InputButton.Left)
-			{
-				return;
-			}
-
-			if (!ScrollRect.IsActive())
+			if (!CanDrag(eventData))
 			{
 				return;
 			}
@@ -111,11 +123,6 @@ namespace UIWidgets
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnEndDrag(PointerEventData eventData)
 		{
-			if (eventData.button != PointerEventData.InputButton.Left)
-			{
-				return;
-			}
-
 			Dragging = false;
 		}
 
@@ -125,26 +132,18 @@ namespace UIWidgets
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnDrag(PointerEventData eventData)
 		{
-			if (eventData.button != PointerEventData.InputButton.Left)
-			{
-				return;
-			}
-
-			if (!ScrollRect.IsActive())
-			{
-				return;
-			}
-
 			if (!Dragging)
 			{
 				return;
 			}
 
-			Vector2 cursor;
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(ViewRectTransform, eventData.position, eventData.pressEventCamera, out cursor))
+			if (!CanDrag(eventData))
 			{
+				OnEndDrag(eventData);
 				return;
 			}
+
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(ViewRectTransform, eventData.position, eventData.pressEventCamera, out var cursor);
 
 			var view_bounds = new Bounds(ViewRectTransform.rect.center, ViewRectTransform.rect.size);
 			var delta = cursor - StartCursor;
@@ -230,7 +229,7 @@ namespace UIWidgets
 		{
 			if (ScrollRect.content == null)
 			{
-				return default(Bounds);
+				return default;
 			}
 
 			ScrollRect.content.GetWorldCorners(Corners);

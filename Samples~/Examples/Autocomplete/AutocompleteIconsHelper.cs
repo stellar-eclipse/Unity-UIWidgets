@@ -95,7 +95,7 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Input, ref InputAdapter);
+			Utilities.RequireComponent(Input, ref InputAdapter);
 #pragma warning restore 0612, 0618
 		}
 

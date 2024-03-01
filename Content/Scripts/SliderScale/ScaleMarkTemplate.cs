@@ -7,6 +7,7 @@ namespace UIWidgets
 	/// <summary>
 	/// Scale mark template.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/scale.html")]
 	public class ScaleMarkTemplate : MonoBehaviour, IStylable
 	{
 		/// <summary>

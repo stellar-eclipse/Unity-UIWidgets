@@ -16,9 +16,9 @@ namespace UIWidgets.Examples
 		[SerializeField]
 		protected List<ListViewIcons> Lists;
 
-		List<ListViewIcons.Template> SharedTemplates = new List<ListViewIcons.Template>();
+		readonly List<ListViewIcons.Template> SharedTemplates = new List<ListViewIcons.Template>();
 
-		List<ListViewIcons.Template> SharedTemplates2 = new List<ListViewIcons.Template>();
+		readonly List<ListViewIcons.Template> SharedTemplates2 = new List<ListViewIcons.Template>();
 
 		/// <summary>
 		/// Set shared templates.

@@ -28,40 +28,21 @@
 			/// Serves as a hash function for a object.
 			/// </summary>
 			/// <returns>A hash code for this instance that is suitable for use in hashing algorithms and data structures such as a hash table.</returns>
-			public override int GetHashCode()
-			{
-				return Offset.GetHashCode() ^ Spacing.GetHashCode();
-			}
+			public override int GetHashCode() => Offset.GetHashCode() ^ Spacing.GetHashCode();
 
 			/// <summary>
 			/// Determines whether the specified System.Object is equal to the current axis data.
 			/// </summary>
 			/// <param name="obj">The System.Object to compare with the current axis data.</param>
 			/// <returns><c>true</c> if the specified System.Object is equal to the current axis data; otherwise, <c>false</c>.</returns>
-			public override bool Equals(object obj)
-			{
-				if (!(obj is AxisData))
-				{
-					return false;
-				}
-
-				return Equals((AxisData)obj);
-			}
+			public readonly override bool Equals(object obj) => (obj is AxisData data) && Equals(data);
 
 			/// <summary>
 			/// Determines whether the specified axis data is equal to the current axis data.
 			/// </summary>
 			/// <param name="other">The axis data to compare with the current axis data.</param>
 			/// <returns><c>true</c> if the specified axis data is equal to the current axis data; otherwise, <c>false</c>.</returns>
-			public bool Equals(AxisData other)
-			{
-				if (Offset != other.Offset)
-				{
-					return false;
-				}
-
-				return Spacing == other.Spacing;
-			}
+			public readonly bool Equals(AxisData other) => (Offset == other.Offset) && (Spacing == other.Spacing);
 
 			/// <summary>
 			/// Compare axis data.
@@ -69,10 +50,7 @@
 			/// <param name="obj1">First axis data.</param>
 			/// <param name="obj2">Second axis data.</param>
 			/// <returns>True if data are equals; otherwise false.</returns>
-			public static bool operator ==(AxisData obj1, AxisData obj2)
-			{
-				return obj1.Equals(obj2);
-			}
+			public static bool operator ==(AxisData obj1, AxisData obj2) => obj1.Equals(obj2);
 
 			/// <summary>
 			/// Compare axis data.
@@ -80,10 +58,7 @@
 			/// <param name="obj1">First axis data.</param>
 			/// <param name="obj2">Seconds axis data.</param>
 			/// <returns>True if data are not equals; otherwise false.</returns>
-			public static bool operator !=(AxisData obj1, AxisData obj2)
-			{
-				return !obj1.Equals(obj2);
-			}
+			public static bool operator !=(AxisData obj1, AxisData obj2) => !obj1.Equals(obj2);
 		}
 
 		/// <summary>

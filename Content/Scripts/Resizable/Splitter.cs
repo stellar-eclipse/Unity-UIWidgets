@@ -45,6 +45,7 @@
 	[AddComponentMenu("UI/New UI Widgets/Interactions/Splitter")]
 	[DisallowMultipleComponent]
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/splitter.html")]
 	public class Splitter : UIBehaviour,
 		IInitializePotentialDragHandler, IBeginDragHandler, IEndDragHandler, IDragHandler,
 		IPointerEnterHandler, IPointerExitHandler, ILateUpdatable
@@ -209,6 +210,12 @@
 		public bool UpdateLayoutElements = true;
 
 		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
+
+		/// <summary>
 		/// The current camera. For Screen Space - Overlay let it empty.
 		/// </summary>
 		[NonSerialized]
@@ -288,32 +295,49 @@
 		[SerializeField]
 		protected SplitterMode Mode = SplitterMode.Auto;
 
+		[SerializeField]
+		[FormerlySerializedAs("leftTarget")]
+		[FormerlySerializedAs("PreviousObject")]
+		RectTransform previousObject;
+
 		/// <summary>
 		/// Previous object.
 		/// </summary>
-		[SerializeField]
-		[FormerlySerializedAs("leftTarget")]
-		protected RectTransform PreviousObject;
+		public RectTransform PreviousObject
+		{
+			get => previousObject;
+			protected set => previousObject = value;
+		}
 
 		/// <summary>
 		/// Next object.
 		/// </summary>
 		[SerializeField]
 		[FormerlySerializedAs("rightTarget")]
-		protected RectTransform NextObject;
+		[FormerlySerializedAs("NextObject")]
+		RectTransform nextObject;
+
+		/// <summary>
+		/// Previous object.
+		/// </summary>
+		public RectTransform NextObject
+		{
+			get => nextObject;
+			protected set => nextObject = value;
+		}
 
 		LayoutElement previousLayoutElement;
 
 		/// <summary>
 		/// LayoutElement of the previous target.
 		/// </summary>
-		protected LayoutElement PreviousLayoutElement
+		public LayoutElement PreviousLayoutElement
 		{
 			get
 			{
 				if ((previousLayoutElement == null) || (previousLayoutElement.gameObject != PreviousObject.gameObject))
 				{
-					previousLayoutElement = Utilities.GetOrAddComponent<LayoutElement>(PreviousObject);
+					previousLayoutElement = Utilities.RequireComponent<LayoutElement>(PreviousObject);
 				}
 
 				return previousLayoutElement;
@@ -325,13 +349,13 @@
 		/// <summary>
 		/// LayoutElement of the next target.
 		/// </summary>
-		protected LayoutElement NextLayoutElement
+		public LayoutElement NextLayoutElement
 		{
 			get
 			{
 				if ((nextLayoutElement == null) || (nextLayoutElement.gameObject != NextObject.gameObject))
 				{
-					nextLayoutElement = Utilities.GetOrAddComponent<LayoutElement>(NextObject);
+					nextLayoutElement = Utilities.RequireComponent<LayoutElement>(NextObject);
 				}
 
 				return nextLayoutElement;
@@ -358,11 +382,11 @@
 		/// </summary>
 		protected Vector2 NextMinSize;
 
+		readonly List<Splitter> nestedSplitters = new List<Splitter>();
+
 		Vector2 summarySize;
 
 		bool processDrag;
-
-		List<Splitter> nestedSplitters = new List<Splitter>();
 
 		bool isInited;
 
@@ -513,7 +537,7 @@
 				return IsHorizontal() ? UICursor.Cursors.NorthSouthArrow : UICursor.Cursors.EastWestArrow;
 			}
 
-			return default(Cursors.Cursor);
+			return default;
 		}
 
 		/// <summary>
@@ -560,11 +584,7 @@
 				return;
 			}
 
-			Vector2 point;
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, CompatibilityInput.MousePosition, CurrentCamera, out point))
-			{
-				return;
-			}
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, CompatibilityInput.MousePosition, CurrentCamera, out var point);
 
 			var rect = RectTransform.rect;
 			if (rect.Contains(point))
@@ -579,30 +599,35 @@
 		}
 
 		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return IsActive() && (eventData.button == DragButton);
+		}
+
+		/// <summary>
 		/// Process the begin drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		public void OnBeginDrag(PointerEventData eventData)
 		{
-			if (!IsActive())
+			if (!CanDrag(eventData))
 			{
 				return;
 			}
 
-			Vector2 point;
 			processDrag = false;
 
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.pressPosition, eventData.pressEventCamera, out point))
-			{
-				return;
-			}
-
 			var index = transform.GetSiblingIndex();
-
 			if (index == 0 || transform.parent.childCount == (index + 1))
 			{
 				return;
 			}
+
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.pressPosition, eventData.pressEventCamera, out var point);
 
 			UICursor.Set(this, GetCursor());
 			cursorChanged = true;
@@ -657,11 +682,14 @@
 				return;
 			}
 
-			Vector2 current_point;
-			Vector2 original_point;
+			if (!CanDrag(eventData))
+			{
+				OnEndDrag(eventData);
+				return;
+			}
 
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out current_point);
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.pressPosition, eventData.pressEventCamera, out original_point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out var current_point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.pressPosition, eventData.pressEventCamera, out var original_point);
 
 			var delta = current_point - original_point;
 

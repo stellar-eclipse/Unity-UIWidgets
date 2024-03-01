@@ -10,6 +10,7 @@
 	/// AudioPlayer.
 	/// Play single AudioClip.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/misc/audioplayer.html")]
 	public class AudioPlayer : MonoBehaviour, IStylable, IUpdatable
 	{
 		/// <summary>
@@ -117,6 +118,11 @@
 			}
 
 			isInited = true;
+
+			if (Source != null)
+			{
+				CurrentClip = Source.clip;
+			}
 
 			if (PlayButton != null)
 			{

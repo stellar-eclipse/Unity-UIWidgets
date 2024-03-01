@@ -3,7 +3,7 @@
 	/// <summary>
 	/// Base class for the custom ListViews.
 	/// </summary>
-	public partial class ListViewCustom<TItemView, TItem> : ListViewCustomBase
+	public partial class ListViewCustom<TItemView, TItem> : ListViewCustom<TItem>, IUpdatable, ILateUpdatable, IListViewCallbacks<TItemView>
 		where TItemView : ListViewItem
 	{
 		/// <summary>

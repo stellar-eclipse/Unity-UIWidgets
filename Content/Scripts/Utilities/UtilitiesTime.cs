@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets
 {
 	using System;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 
 	/// <summary>
@@ -38,6 +39,7 @@
 
 		#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(GetTime), nameof(GetDeltaTime), nameof(GetFrameCount), nameof(Wait))]
 		static void StaticInit()
 		{
 			GetTime = DefaultGetTime;

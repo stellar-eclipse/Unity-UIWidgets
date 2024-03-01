@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 namespace UIWidgets
 {
+	using UIWidgets.Attributes;
 	using UnityEditor;
 	using UnityEngine;
 
@@ -90,6 +91,7 @@ namespace UIWidgets
 			}
 		}
 
+		[DomainReloadExclude]
 		static GameObject currentGameObject;
 
 		TreeViewDataSource Component;
@@ -203,7 +205,7 @@ namespace UIWidgets
 			var x = position.x + (DepthIndent * depth.intValue);
 			x = fields.UpdatePosition(x, depth.intValue, position, this);
 
-			x = ListButtons.UpdatePosition(x, position, Spacing);
+			ListButtons.UpdatePosition(x, position, Spacing);
 			ListButtons.UpdateEnabled(depth.intValue, index, info.Depth, List.arraySize);
 
 			GUILayout.Space((DepthIndent * depth.intValue) + Padding);

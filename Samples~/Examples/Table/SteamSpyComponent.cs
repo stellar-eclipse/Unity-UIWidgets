@@ -16,6 +16,7 @@
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[]
 				{
 					UtilitiesUI.GetGraphic(NameAdapter),
@@ -25,8 +26,11 @@
 					UtilitiesUI.GetGraphic(PlayersIn2WeekAdapter),
 					UtilitiesUI.GetGraphic(TimeIn2WeekAdapter),
 				};
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -36,6 +40,7 @@
 		{
 			if (GraphicsBackgroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				graphicsBackground = new Graphic[]
 				{
 					(NameAdapter != null) ? NameAdapter.transform.parent.GetComponent<Graphic>() : null,
@@ -45,8 +50,11 @@
 					(PlayersIn2WeekAdapter != null) ? PlayersIn2WeekAdapter.transform.parent.GetComponent<Graphic>() : null,
 					(TimeIn2WeekAdapter != null) ? TimeIn2WeekAdapter.transform.parent.GetComponent<Graphic>() : null,
 				};
+				#pragma warning restore
 				GraphicsBackgroundVersion = 1;
 			}
+
+			base.GraphicsBackgroundInit();
 		}
 
 		/// <summary>
@@ -201,12 +209,12 @@
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Name, ref NameAdapter);
-			Utilities.GetOrAddComponent(ScoreRank, ref ScoreRankAdapter);
-			Utilities.GetOrAddComponent(Owners, ref OwnersAdapter);
-			Utilities.GetOrAddComponent(Players, ref PlayersAdapter);
-			Utilities.GetOrAddComponent(PlayersIn2Week, ref PlayersIn2WeekAdapter);
-			Utilities.GetOrAddComponent(TimeIn2Week, ref TimeIn2WeekAdapter);
+			Utilities.RequireComponent(Name, ref NameAdapter);
+			Utilities.RequireComponent(ScoreRank, ref ScoreRankAdapter);
+			Utilities.RequireComponent(Owners, ref OwnersAdapter);
+			Utilities.RequireComponent(Players, ref PlayersAdapter);
+			Utilities.RequireComponent(PlayersIn2Week, ref PlayersIn2WeekAdapter);
+			Utilities.RequireComponent(TimeIn2Week, ref TimeIn2WeekAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

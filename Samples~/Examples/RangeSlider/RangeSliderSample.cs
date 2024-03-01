@@ -78,7 +78,7 @@ namespace UIWidgets.Examples
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Text, ref TextAdapter);
+			Utilities.RequireComponent(Text, ref TextAdapter);
 #pragma warning restore 0612, 0618
 		}
 

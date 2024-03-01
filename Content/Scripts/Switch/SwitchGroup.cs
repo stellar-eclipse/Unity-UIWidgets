@@ -10,6 +10,7 @@
 	/// Switches that belong to the same group are constrained so that only one of them can switched on at a time - pressing one of them to switch it on automatically switches the others off.
 	/// </summary>
 	[AddComponentMenu("UI/New UI Widgets/Switch Group")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/switch.html")]
 	public class SwitchGroup : MonoBehaviour
 	{
 		/// <summary>

@@ -33,7 +33,7 @@ namespace {0:WidgetsNamespace}
 
 		static void Create(UnityEngine.GameObject prefab)
 		{{
-			UtilitiesEditor.CreateWidgetFromPrefab(prefab, true, ConverterTMPro.Widget2TMPro);
+			Widgets.CreateFromPrefab(prefab, true, ConverterTMPro.Widget2TMPro, WidgetsReferences.Instance.InstantiatePrefabs);
 		}}
 
 		/// <summary>

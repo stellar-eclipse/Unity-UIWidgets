@@ -3,6 +3,7 @@
 	using System.Collections;
 	using UIWidgets.Attributes;
 	using UIWidgets.Styles;
+	using UIWidgets.UIThemesSupport;
 	using UnityEngine;
 	using UnityEngine.Events;
 	using UnityEngine.EventSystems;
@@ -38,6 +39,7 @@
 	/// Switch.
 	/// </summary>
 	[DataBindSupport]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/switch.html")]
 	public class Switch : Selectable, ISubmitHandler, IPointerClickHandler, IStylable, IValidateable
 	{
 		/// <summary>
@@ -355,12 +357,13 @@
 			var prev_position = GetPosition(!IsOn);
 			var next_position = GetPosition(IsOn);
 			var time = 0f;
+			var rate = AnimationCurve[AnimationCurve.length - 1].time / duration;
 
 			SetMarkPosition(prev_position);
 
 			do
 			{
-				var pos = Mathf.Lerp(prev_position, next_position, AnimationCurve.Evaluate(time / duration));
+				var pos = Mathf.Lerp(prev_position, next_position, AnimationCurve.Evaluate(time * rate));
 
 				SetMarkPosition(pos);
 
@@ -519,9 +522,37 @@
 				return;
 			}
 
+			Init();
+		}
+
+		/// <summary>
+		/// Process the start event.
+		/// </summary>
+		protected override void Start()
+		{
+			base.Start();
+
+			Init();
+		}
+
+		/// <summary>
+		/// Init this instance.
+		/// </summary>
+		public virtual void Init()
+		{
+			SetTargetOwner();
 			SetMarkPosition(false);
 			SetBackgroundColor();
 			SetMarkColor();
+		}
+
+		/// <summary>
+		/// Set target owner.
+		/// </summary>
+		public virtual void SetTargetOwner()
+		{
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Background, nameof(Background.color), this);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Mark, nameof(Background.color), this);
 		}
 
 		/// <summary>
@@ -531,9 +562,7 @@
 		{
 			base.OnEnable();
 
-			SetMarkPosition(false);
-			SetBackgroundColor();
-			SetMarkColor();
+			Init();
 		}
 
 		#if UNITY_EDITOR
@@ -542,9 +571,7 @@
 		/// </summary>
 		public virtual void Validate()
 		{
-			SetMarkPosition(false);
-			SetBackgroundColor();
-			SetMarkColor();
+			Init();
 		}
 		#endif
 

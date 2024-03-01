@@ -432,9 +432,10 @@
 		/// </summary>
 		/// <param name="elements">Elements.</param>
 		/// <param name="setPositions">Set elements positions.</param>
+		/// <param name="setSizes">Set elements sizes.</param>
 		/// <param name="resizeType">Resize type.</param>
 		/// <returns>Size of the group.</returns>
-		public GroupSize PerformLayout(List<LayoutElementInfo> elements, bool setPositions, ResizeType resizeType)
+		public GroupSize PerformLayout(List<LayoutElementInfo> elements, bool setPositions, bool setSizes, ResizeType resizeType)
 		{
 			ElementsGroup.SetElements(elements);
 
@@ -445,7 +446,11 @@
 			CalculateSizes();
 			var size = CalculateGroupSize();
 			CalculatePositions(new Vector2(size.Width, size.Height));
-			SetElementsSize(resizeType);
+
+			if (setSizes)
+			{
+				SetElementsSize(resizeType);
+			}
 
 			if (setPositions)
 			{
@@ -510,7 +515,7 @@
 				{
 					if (mainAxisSize.Count == j)
 					{
-						mainAxisSize.Add(default(GroupSize));
+						mainAxisSize.Add(default);
 					}
 
 					mainAxisSize[j] = mainAxisSize[j].Max(block[j]);
@@ -532,7 +537,9 @@
 				: new GroupSize(sub_axis_size, main_axis_size);
 		}
 
-		List<LayoutElementInfo> resizedElements = new List<LayoutElementInfo>();
+		#if !UNITY_2021_3_OR_NEWER
+		readonly List<LayoutElementInfo> resizedElements = new List<LayoutElementInfo>();
+		#endif
 
 		/// <summary>
 		/// Set elements size.
@@ -540,18 +547,34 @@
 		/// <param name="resizeType">Resize type.</param>
 		protected void SetElementsSize(ResizeType resizeType)
 		{
-			foreach (var element in ElementsGroup.Elements)
+			if (ElementsGroup.Elements.Count == 0)
 			{
-				resizedElements.Add(element);
+				return;
 			}
 
-			foreach (var element in resizedElements)
+			var temp =
+				#if UNITY_2021_3_OR_NEWER
+				UnityEngine.Pool.ListPool<LayoutElementInfo>.Get();
+				#else
+				resizedElements;
+				#endif
+
+			foreach (var element in ElementsGroup.Elements)
 			{
-				SetElementSize(element, resizeType);
+				temp.Add(element);
+			}
+
+			foreach (var element in temp)
+			{
+				SetElementSize(element, resizeType, Target.rect.size);
 				OnElementChangedInvoke(element.Rect, DrivenProperties);
 			}
 
-			resizedElements.Clear();
+			temp.Clear();
+
+			#if UNITY_2021_3_OR_NEWER
+			UnityEngine.Pool.ListPool<LayoutElementInfo>.Release(temp);
+			#endif
 		}
 
 		/// <summary>
@@ -559,8 +582,14 @@
 		/// </summary>
 		/// <param name="element">Element.</param>
 		/// <param name="resizeType">Resize type.</param>
-		protected virtual void SetElementSize(LayoutElementInfo element, ResizeType resizeType)
+		/// <param name="parentSize">Parent size.</param>
+		protected virtual void SetElementSize(LayoutElementInfo element, ResizeType resizeType, Vector2 parentSize)
 		{
+			if (element.Rect.rect.size == element.NewSize)
+			{
+				return;
+			}
+
 			var resize_width = (ChildrenWidth != ChildrenSize.DoNothing) && resizeType.IsSet(ResizeType.Horizontal) && element.ChangedWidth;
 			var resize_height = (ChildrenHeight != ChildrenSize.DoNothing) && resizeType.IsSet(ResizeType.Vertical) && element.ChangedHeight;
 
@@ -572,24 +601,27 @@
 
 			if (ResizeAnimation && Application.isPlaying)
 			{
-				ResizeTarget settings;
 				var id = element.Rect.GetInstanceID();
-				if (!ResizeTargets.TryGetValue(id, out settings) && (settings.EndSize != element.NewSize))
+				if (!ResizeTargets.TryGetValue(id, out var settings) && (settings.EndSize != element.NewSize))
 				{
 					ResizeTargets[id] = new ResizeTarget(element.Rect, element.NewSize, UnscaledTime);
 				}
 			}
 			else
 			{
+				var size_delta = element.Rect.sizeDelta;
+
 				if (resize_width)
 				{
-					element.Rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, element.NewWidth);
+					size_delta.x = element.NewWidth - (parentSize.x * (element.Rect.anchorMax.x - element.Rect.anchorMin.x));
 				}
 
 				if (resize_height)
 				{
-					element.Rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, element.NewHeight);
+					size_delta.y = element.NewHeight - (parentSize.y * (element.Rect.anchorMax.y - element.Rect.anchorMin.y));
 				}
+
+				element.Rect.sizeDelta = size_delta;
 			}
 		}
 
@@ -622,11 +654,10 @@
 
 				if (MovementAnimation && Application.isPlaying)
 				{
-					MovementTarget settings;
 					var id = element.Rect.GetInstanceID();
 
 					var rotation = Quaternion.Euler(element.NewEulerAngles);
-					if (!MovementTargets.TryGetValue(id, out settings) || (settings.EndPosition != element.PositionPivot) || (ChangePivot && (settings.EndPivot != element.NewPivot)) || (ChangeRotation && (settings.EndRotation != rotation)))
+					if (!MovementTargets.TryGetValue(id, out var settings) || (settings.EndPosition != element.PositionPivot) || (ChangePivot && (settings.EndPivot != element.NewPivot)) || (ChangeRotation && (settings.EndRotation != rotation)))
 					{
 						MovementTargets[id] = new MovementTarget(element.Rect, element.PositionPivot, element.NewPivot, rotation, UnscaledTime);
 					}

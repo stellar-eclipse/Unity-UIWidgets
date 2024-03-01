@@ -43,7 +43,7 @@ RenderSettings:
 --- !u!157 &4
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 11
+  serializedVersion: 12
   m_GIWorkflowMode: 1
   m_GISettings:
     serializedVersion: 2
@@ -98,7 +98,8 @@ LightmapSettings:
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
-  m_UseShadowmask: 0
+  m_LightingSettings: {fileID: 4890085278179872738, guid: 449217919c5719a4fb068fd2318259aa,
+    type: 2}
 --- !u!196 &5
 NavMeshSettings:
   serializedVersion: 2
@@ -118,6 +119,8 @@ NavMeshSettings:
     manualTileSize: 0
     tileSize: 256
     accuratePlacement: 0
+    maxJobWorkers: 0
+    preserveTilesOutsideBounds: 0
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
@@ -201,6 +204,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
+  m_PresetInfoIsWorld: 0
 --- !u!223 &356697713
 Canvas:
   m_ObjectHideFlags: 0
@@ -237,6 +241,8 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -269,7 +275,6 @@ GameObject:
   - component: {fileID: 880848655}
   - component: {fileID: 880848654}
   - component: {fileID: 880848653}
-  - component: {fileID: 880848652}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -277,19 +282,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &880848652
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 880848651}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d49b7c1bcd2e07499844da127be038d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_ForceModuleActive: 0
 --- !u!114 &880848653
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -446,6 +438,10 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   UnscaledTime: 0
+  snapGrids: []
+  snapDistance: {x: 10, y: 10}
+  SnapMode: 0
+  RestoreIfNotSnap: 0
   OnStartDrag:
     m_PersistentCalls:
       m_Calls: []
@@ -453,6 +449,15 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   OnEndDrag:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSnap:
+    m_PersistentCalls:
+      m_Calls: []
+  OnEndSnap:
+    m_PersistentCalls:
+      m_Calls: []
+  OnTargetChanged:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &940103805
@@ -478,6 +483,7 @@ MonoBehaviour:
   angleMin: -180
   angleMax: 180
   angleStep: 1
+  Cursors: {fileID: 0}
   CursorTopLeftTexture: {fileID: 2800000, guid: e921cd3ff9141e74183848f396cf3494,
     type: 3}
   CursorTopLeftHotSpot: {x: 16, y: 16}
@@ -499,6 +505,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   OnEndRotate:
+    m_PersistentCalls:
+      m_Calls: []
+  OnTargetChanged:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &940103806
@@ -529,9 +538,11 @@ MonoBehaviour:
   UpdateRectTransform: 1
   UpdateLayoutElement: 1
   ActiveRegion: 5
+  UseCanvasScaler: 1
   MinSize: {x: 0, y: 0}
   MaxSize: {x: 0, y: 0}
   KeepAspectRatio: 0
+  Cursors: {fileID: 0}
   CursorEWTexture: {fileID: 2800000, guid: 6849a3e9e15bf7d4c98cd8bb5762c7bb, type: 3}
   CursorEWHotSpot: {x: 16, y: 16}
   CursorNSTexture: {fileID: 2800000, guid: 1499b07727031c3449372d55f72dca6f, type: 3}
@@ -542,19 +553,24 @@ MonoBehaviour:
   CursorNWSEHotSpot: {x: 16, y: 16}
   DefaultCursorTexture: {fileID: 0}
   DefaultCursorHotSpot: {x: 0, y: 0}
+  snapGrids: []
+  snapDistance: {x: 10, y: 10}
   OnStartResize:
     m_PersistentCalls:
       m_Calls: []
   OnResize:
     m_PersistentCalls:
       m_Calls: []
-  OnResizeDelta:
-    m_PersistentCalls:
-      m_Calls: []
   OnEndResize:
     m_PersistentCalls:
       m_Calls: []
+  OnResizeDelta:
+    m_PersistentCalls:
+      m_Calls: []
   OnResizeDirectionsChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnTargetChanged:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &940103807
@@ -572,6 +588,8 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []

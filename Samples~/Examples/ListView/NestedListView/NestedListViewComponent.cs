@@ -19,12 +19,9 @@ namespace UIWidgets.Examples
 		{
 			get
 			{
-				if (objectsToResize == null)
-				{
-					objectsToResize = (TextAdapter == null)
+				objectsToResize ??= (TextAdapter == null)
 						 ? new GameObject[] { ListView.transform.parent.gameObject }
 						 : new GameObject[] { ListView.transform.parent.gameObject, TextAdapter.gameObject, };
-				}
 
 				return objectsToResize;
 			}

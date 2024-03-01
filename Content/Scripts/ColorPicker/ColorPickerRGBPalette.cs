@@ -8,7 +8,8 @@ namespace UIWidgets
 	/// <summary>
 	/// Color picker RGB palette.
 	/// </summary>
-	public class ColorPickerRGBPalette : MonoBehaviour
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/colorpicker.html")]
+	public class ColorPickerRGBPalette : MonoBehaviour, UIThemes.ITargetOwner
 	{
 		[SerializeField]
 		Image palette;
@@ -25,15 +26,9 @@ namespace UIWidgets
 		/// <value>The palette.</value>
 		public Image Palette
 		{
-			get
-			{
-				return palette;
-			}
+			get => palette;
 
-			set
-			{
-				SetPalette(value);
-			}
+			set => SetPalette(value);
 		}
 
 		[SerializeField]
@@ -45,10 +40,7 @@ namespace UIWidgets
 		/// <value>The palette shader.</value>
 		public Shader PaletteShader
 		{
-			get
-			{
-				return paletteShader;
-			}
+			get => paletteShader;
 
 			set
 			{
@@ -66,10 +58,7 @@ namespace UIWidgets
 		/// <value>The palette cursor.</value>
 		public RectTransform PaletteCursor
 		{
-			get
-			{
-				return paletteCursor;
-			}
+			get => paletteCursor;
 
 			set
 			{
@@ -90,15 +79,9 @@ namespace UIWidgets
 		/// <value>The slider.</value>
 		public Slider Slider
 		{
-			get
-			{
-				return slider;
-			}
+			get => slider;
 
-			set
-			{
-				SetSlider(value);
-			}
+			set => SetSlider(value);
 		}
 
 		[SerializeField]
@@ -110,10 +93,7 @@ namespace UIWidgets
 		/// <value>The slider background.</value>
 		public Image SliderBackground
 		{
-			get
-			{
-				return sliderBackground;
-			}
+			get => sliderBackground;
 
 			set
 			{
@@ -131,10 +111,7 @@ namespace UIWidgets
 		/// <value>The slider shader.</value>
 		public Shader SliderShader
 		{
-			get
-			{
-				return sliderShader;
-			}
+			get => sliderShader;
 
 			set
 			{
@@ -151,15 +128,9 @@ namespace UIWidgets
 		/// <value>The input mode.</value>
 		public ColorPickerInputMode InputMode
 		{
-			get
-			{
-				return inputMode;
-			}
+			get => inputMode;
 
-			set
-			{
-				inputMode = value;
-			}
+			set => inputMode = value;
 		}
 
 		ColorPickerPaletteMode paletteMode;
@@ -170,16 +141,16 @@ namespace UIWidgets
 		/// <value>The palette mode.</value>
 		public ColorPickerPaletteMode PaletteMode
 		{
-			get
-			{
-				return paletteMode;
-			}
+			get => paletteMode;
 
-			set
-			{
-				SetPaletteMode(value);
-			}
+			set => SetPaletteMode(value);
 		}
+
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
 
 		/// <summary>
 		/// OnChangeRGB event.
@@ -201,10 +172,7 @@ namespace UIWidgets
 		/// <summary>
 		/// Start this instance.
 		/// </summary>
-		public virtual void Start()
-		{
-			Init();
-		}
+		public virtual void Start() => Init();
 
 		/// <summary>
 		/// Init this instance.
@@ -247,10 +215,10 @@ namespace UIWidgets
 			{
 				paletteRect = palette.transform as RectTransform;
 
-				dragListener = Utilities.GetOrAddComponent<DragListener>(palette);
+				dragListener = Utilities.RequireComponent<DragListener>(palette);
 				dragListener.OnDragEvent.AddListener(OnDrag);
 
-				clickListener = Utilities.GetOrAddComponent<ClickListener>(palette);
+				clickListener = Utilities.RequireComponent<ClickListener>(palette);
 				clickListener.ClickEvent.AddListener(OnDrag);
 
 				UpdateMaterial();
@@ -270,7 +238,7 @@ namespace UIWidgets
 			paletteMode = value;
 			var is_active = paletteMode == ColorPickerPaletteMode.Red
 				|| paletteMode == ColorPickerPaletteMode.Green
-					|| paletteMode == ColorPickerPaletteMode.Blue;
+				|| paletteMode == ColorPickerPaletteMode.Blue;
 			gameObject.SetActive(is_active);
 			if (is_active)
 			{
@@ -347,14 +315,28 @@ namespace UIWidgets
 		}
 
 		/// <summary>
-		/// When draging is occuring this will be called every time the cursor is moved.
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return eventData.button == DragButton;
+		}
+
+		/// <summary>
+		/// When drag is occurring this will be called every time the cursor is moved.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		protected virtual void OnDrag(PointerEventData eventData)
 		{
+			if (!CanDrag(eventData))
+			{
+				return;
+			}
+
 			Vector2 size = paletteRect.rect.size;
-			Vector2 cur_pos;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(paletteRect, eventData.position, eventData.pressEventCamera, out cur_pos);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(paletteRect, eventData.position, eventData.pressEventCamera, out var cur_pos);
 
 			cur_pos.x = Mathf.Clamp(cur_pos.x, 0, size.x);
 			cur_pos.y = Mathf.Clamp(cur_pos.y, -size.y, 0);
@@ -369,23 +351,19 @@ namespace UIWidgets
 		/// <returns>The color.</returns>
 		protected Color32 GetColor()
 		{
-			var coords = GetCursorCoords();
+			var coordinates = GetCursorCoords();
 
 			var s = (byte)slider.value;
-			var x = (byte)Mathf.RoundToInt(coords.x);
-			var y = (byte)Mathf.RoundToInt(coords.y);
+			var x = (byte)Mathf.RoundToInt(coordinates.x);
+			var y = (byte)Mathf.RoundToInt(coordinates.y);
 
-			switch (paletteMode)
+			return paletteMode switch
 			{
-				case ColorPickerPaletteMode.Red:
-					return new Color32(s, y, x, currentColor.a);
-				case ColorPickerPaletteMode.Green:
-					return new Color32(y, s, x, currentColor.a);
-				case ColorPickerPaletteMode.Blue:
-					return new Color32(x, y, s, currentColor.a);
-				default:
-					return currentColor;
-			}
+				ColorPickerPaletteMode.Red => new Color32(s, y, x, currentColor.a),
+				ColorPickerPaletteMode.Green => new Color32(y, s, x, currentColor.a),
+				ColorPickerPaletteMode.Blue => new Color32(x, y, s, currentColor.a),
+				_ => currentColor,
+			};
 		}
 
 		/// <summary>
@@ -466,17 +444,13 @@ namespace UIWidgets
 		/// <returns>The slider value.</returns>
 		protected int GetSliderValue()
 		{
-			switch (paletteMode)
+			return paletteMode switch
 			{
-				case ColorPickerPaletteMode.Red:
-					return currentColor.r;
-				case ColorPickerPaletteMode.Green:
-					return currentColor.g;
-				case ColorPickerPaletteMode.Blue:
-					return currentColor.b;
-				default:
-					return 0;
-			}
+				ColorPickerPaletteMode.Red => currentColor.r,
+				ColorPickerPaletteMode.Green => currentColor.g,
+				ColorPickerPaletteMode.Blue => currentColor.b,
+				_ => 0,
+			};
 		}
 
 		/// <summary>
@@ -485,33 +459,29 @@ namespace UIWidgets
 		/// <returns>The slider colors.</returns>
 		protected Color32[] GetSliderColors()
 		{
-			switch (paletteMode)
+			return paletteMode switch
 			{
-				case ColorPickerPaletteMode.Red:
-					return new Color32[]
-					{
-						new Color32(0, currentColor.g, currentColor.b, 255),
-						new Color32(255, currentColor.g, currentColor.b, 255),
-					};
-				case ColorPickerPaletteMode.Green:
-					return new Color32[]
-					{
-						new Color32(currentColor.r, 0, currentColor.b, 255),
-						new Color32(currentColor.r, 255, currentColor.b, 255),
-					};
-				case ColorPickerPaletteMode.Blue:
-					return new Color32[]
-					{
-						new Color32(currentColor.r, currentColor.g, 0, 255),
-						new Color32(currentColor.r, currentColor.g, 255, 255),
-					};
-				default:
-					return new Color32[]
-					{
-						new Color32(0, 0, 0, 255),
-						new Color32(255, 255, 255, 255),
-					};
-			}
+				ColorPickerPaletteMode.Red => new Color32[]
+				{
+					new Color32(0, currentColor.g, currentColor.b, 255),
+					new Color32(255, currentColor.g, currentColor.b, 255),
+				},
+				ColorPickerPaletteMode.Green => new Color32[]
+				{
+					new Color32(currentColor.r, 0, currentColor.b, 255),
+					new Color32(currentColor.r, 255, currentColor.b, 255),
+				},
+				ColorPickerPaletteMode.Blue => new Color32[]
+				{
+					new Color32(currentColor.r, currentColor.g, 0, 255),
+					new Color32(currentColor.r, currentColor.g, 255, 255),
+				},
+				_ => new Color32[]
+				{
+					new Color32(0, 0, 0, 255),
+					new Color32(255, 255, 255, 255),
+				},
+			};
 		}
 
 		/// <summary>
@@ -520,17 +490,13 @@ namespace UIWidgets
 		/// <returns>The palette coords.</returns>
 		protected Vector2 GetPaletteCoords()
 		{
-			switch (paletteMode)
+			return paletteMode switch
 			{
-				case ColorPickerPaletteMode.Red:
-					return new Vector2(currentColor.b, currentColor.g);
-				case ColorPickerPaletteMode.Green:
-					return new Vector2(currentColor.b, currentColor.r);
-				case ColorPickerPaletteMode.Blue:
-					return new Vector2(currentColor.r, currentColor.g);
-				default:
-					return new Vector2(0, 0);
-			}
+				ColorPickerPaletteMode.Red => new Vector2(currentColor.b, currentColor.g),
+				ColorPickerPaletteMode.Green => new Vector2(currentColor.b, currentColor.r),
+				ColorPickerPaletteMode.Blue => new Vector2(currentColor.r, currentColor.g),
+				_ => new Vector2(0, 0),
+			};
 		}
 
 		/// <summary>
@@ -539,41 +505,37 @@ namespace UIWidgets
 		/// <returns>The palette colors.</returns>
 		protected Color[] GetPaletteColors()
 		{
-			switch (paletteMode)
+			return paletteMode switch
 			{
-				case ColorPickerPaletteMode.Red:
-					return new Color[]
-					{
-						new Color(currentColor.r / 255f / 2f, 0f, 0f, 1f),
-						new Color(currentColor.r / 255f / 2f, 0f, 1f, 1f),
-						new Color(currentColor.r / 255f / 2f, 0f, 0f, 1f),
-						new Color(currentColor.r / 255f / 2f, 1f, 0f, 1f),
-					};
-				case ColorPickerPaletteMode.Green:
-					return new Color[]
-					{
-						new Color(0f, currentColor.g / 255f / 2f, 0f, 1f),
-						new Color(0f, currentColor.g / 255f / 2f, 1f, 1f),
-						new Color(0f, currentColor.g / 255f / 2f, 0f, 1f),
-						new Color(1f, currentColor.g / 255f / 2f, 0f, 1f),
-					};
-				case ColorPickerPaletteMode.Blue:
-					return new Color[]
-					{
-						new Color(0f, 0f, currentColor.b / 255f / 2f, 1f),
-						new Color(1f, 0f, currentColor.b / 255f / 2f, 1f),
-						new Color(0f, 0f, currentColor.b / 255f / 2f, 1f),
-						new Color(0f, 1f, currentColor.b / 255f / 2f, 1f),
-					};
-				default:
-					return new Color[]
-					{
-						new Color(0f, 0f, 0f, 1f),
-						new Color(1f, 1f, 1f, 1f),
-						new Color(0f, 0f, 0f, 1f),
-						new Color(1f, 1f, 1f, 1f),
-					};
-			}
+				ColorPickerPaletteMode.Red => new Color[]
+				{
+					new Color(currentColor.r / 255f / 2f, 0f, 0f, 1f),
+					new Color(currentColor.r / 255f / 2f, 0f, 1f, 1f),
+					new Color(currentColor.r / 255f / 2f, 0f, 0f, 1f),
+					new Color(currentColor.r / 255f / 2f, 1f, 0f, 1f),
+				},
+				ColorPickerPaletteMode.Green => new Color[]
+				{
+					new Color(0f, currentColor.g / 255f / 2f, 0f, 1f),
+					new Color(0f, currentColor.g / 255f / 2f, 1f, 1f),
+					new Color(0f, currentColor.g / 255f / 2f, 0f, 1f),
+					new Color(1f, currentColor.g / 255f / 2f, 0f, 1f),
+				},
+				ColorPickerPaletteMode.Blue => new Color[]
+				{
+					new Color(0f, 0f, currentColor.b / 255f / 2f, 1f),
+					new Color(1f, 0f, currentColor.b / 255f / 2f, 1f),
+					new Color(0f, 0f, currentColor.b / 255f / 2f, 1f),
+					new Color(0f, 1f, currentColor.b / 255f / 2f, 1f),
+				},
+				_ => new Color[]
+				{
+					new Color(0f, 0f, 0f, 1f),
+					new Color(1f, 1f, 1f, 1f),
+					new Color(0f, 0f, 0f, 1f),
+					new Color(1f, 1f, 1f, 1f),
+				},
+			};
 		}
 
 		/// <summary>
@@ -592,6 +554,15 @@ namespace UIWidgets
 			}
 
 			UpdateViewReal();
+		}
+
+		/// <summary>
+		/// Set target owner.
+		/// </summary>
+		public void SetTargetOwner()
+		{
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), palette, nameof(Graphic.color), this);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), sliderBackground, nameof(Graphic.color), this);
 		}
 
 		/// <summary>

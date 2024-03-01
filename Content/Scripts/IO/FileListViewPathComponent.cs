@@ -22,7 +22,7 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Name, ref NameAdapter);
+			Utilities.RequireComponent(Name, ref NameAdapter);
 #pragma warning restore 0612, 0618
 		}
 

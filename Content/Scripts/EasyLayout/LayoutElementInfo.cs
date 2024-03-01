@@ -154,6 +154,11 @@
 
 			set
 			{
+				if (ceilValues)
+				{
+					value = Mathf.Ceil(value);
+				}
+
 				if (newWidth != value)
 				{
 					newWidth = value;
@@ -189,6 +194,11 @@
 
 			set
 			{
+				if (ceilValues)
+				{
+					value = Mathf.Ceil(value);
+				}
+
 				if (newHeight != value)
 				{
 					newHeight = value;
@@ -360,25 +370,50 @@
 		/// </summary>
 		public int Column;
 
+		bool ceilValues;
+
 		/// <summary>
 		/// Set element.
 		/// </summary>
 		/// <param name="rectTransform">RectTransform.</param>
 		/// <param name="active">Is gameobject active?</param>
 		/// <param name="layout">Current layout.</param>
-		public void SetElement(RectTransform rectTransform, bool active, EasyLayout layout)
+		/// <param name="ceilSize">Ceil size.</param>
+		public void SetElement(RectTransform rectTransform, bool active, EasyLayout layout, bool ceilSize = false)
 		{
+			this.ceilValues = ceilSize;
 			Rect = rectTransform;
 			Active = active;
 			Layout = layout;
 
 			Scale = rectTransform.localScale;
+
 			Width = rectTransform.rect.width * Scale.x;
+			if (ceilSize)
+			{
+				Width = Mathf.Ceil(Width);
+			}
+
 			Height = rectTransform.rect.height * Scale.y;
+			if (ceilSize)
+			{
+				Height = Mathf.Ceil(Height);
+			}
+
 			Pivot = rectTransform.pivot;
 
 			newWidth = rectTransform.rect.width * Scale.x;
+			if (ceilSize)
+			{
+				newWidth = Mathf.Ceil(newWidth);
+			}
+
 			newHeight = rectTransform.rect.height * Scale.y;
+			if (ceilSize)
+			{
+				newHeight = Mathf.Ceil(newHeight);
+			}
+
 			newPivot = rectTransform.pivot;
 
 			newEulerAngles = rectTransform.localEulerAngles;
@@ -413,7 +448,7 @@
 		{
 			if (Rect == null)
 			{
-				return default(Size);
+				return default;
 			}
 
 			if (Rect.gameObject.activeInHierarchy)
@@ -437,7 +472,7 @@
 		{
 			if (Rect == null)
 			{
-				return default(Size);
+				return default;
 			}
 
 			if (Rect.gameObject.activeInHierarchy)
@@ -469,13 +504,6 @@
 				NewHeight = size;
 			}
 		}
-
-#if UNITY_4_6 || UNITY_4_7
-		/// <summary>
-		/// Components list.
-		/// </summary>
-		protected List<Component> Components = new List<Component>();
-#endif
 
 		/// <summary>
 		/// All ILayoutElements Of current gameobject.
@@ -511,16 +539,7 @@
 		protected void RefreshLayoutElements()
 		{
 			LayoutElements.Clear();
-#if UNITY_5_0 || UNITY_5_1 || UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER
 			Rect.GetComponents<ILayoutElement>(LayoutElements);
-#else
-			Components.Clear();
-			Rect.GetComponents(typeof(ILayoutElement), Components);
-			for (int i = 0; i < Components.Count; i++)
-			{
-				LayoutElements.Add(Components[i] as ILayoutElement);
-			}
-#endif
 		}
 
 		/// <summary>

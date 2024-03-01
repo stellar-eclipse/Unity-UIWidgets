@@ -8,6 +8,7 @@
 	/// <summary>
 	/// InputField adapter to work with both Unity text and TMPro text.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/third-party-support/tmpro.html")]
 	public class InputFieldExtendedAdapter : MonoBehaviour, IInputFieldExtended
 	{
 		IInputFieldExtended proxy;
@@ -29,30 +30,18 @@
 		}
 
 		/// <summary>
-		/// Proxy gameobject.
+		/// Proxy game object.
 		/// </summary>
-		public GameObject GameObject
-		{
-			get
-			{
-				return Proxy.gameObject;
-			}
-		}
+		public GameObject GameObject => Proxy.gameObject;
 
 		/// <summary>
 		/// Proxy value.
 		/// </summary>
 		public string Value
 		{
-			get
-			{
-				return Proxy.text;
-			}
+			get => Proxy.text;
 
-			set
-			{
-				Proxy.text = (value == null) ? string.Empty : value;
-			}
+			set => Proxy.text = (value == null) ? string.Empty : value;
 		}
 
 		/// <summary>
@@ -61,53 +50,29 @@
 		/// </summary>
 		public string text
 		{
-			get
-			{
-				return Proxy.text;
-			}
+			get => Proxy.text;
 
-			set
-			{
-				Proxy.text = value;
-			}
+			set => Proxy.text = value;
 		}
 
 		/// <summary>
 		/// Is InputField has rich text support?
 		/// </summary>
-		public bool richText
-		{
-			get
-			{
-				return Proxy.richText;
-			}
-		}
+		public bool richText => Proxy.richText;
 
 		/// <summary>
 		/// The Unity Event to call when edit.
 		/// </summary>
 		/// <value>The OnValueChange.</value>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Compatibility with Unity.InputField.")]
-		public UnityEvent<string> onValueChanged
-		{
-			get
-			{
-				return Proxy.onValueChanged;
-			}
-		}
+		public UnityEvent<string> onValueChanged => Proxy.onValueChanged;
 
 		/// <summary>
 		/// The Unity Event to call when editing has ended.
 		/// </summary>
 		/// <value>The OnEndEdit.</value>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Compatibility with Unity.InputField.")]
-		public UnityEvent<string> onEndEdit
-		{
-			get
-			{
-				return Proxy.onEndEdit;
-			}
-		}
+		public UnityEvent<string> onEndEdit => Proxy.onEndEdit;
 
 		/// <summary>
 		/// Current InputField caret position (also selection tail).
@@ -115,15 +80,9 @@
 		/// <value>The caret position.</value>
 		public int caretPosition
 		{
-			get
-			{
-				return Proxy.caretPosition;
-			}
+			get => Proxy.caretPosition;
 
-			set
-			{
-				Proxy.caretPosition = value;
-			}
+			set => Proxy.caretPosition = value;
 		}
 
 		/// <summary>
@@ -132,15 +91,9 @@
 		/// <value><c>true</c> if interactable; otherwise, <c>false</c>.</value>
 		public bool interactable
 		{
-			get
-			{
-				return Proxy.interactable;
-			}
+			get => Proxy.interactable;
 
-			set
-			{
-				Proxy.interactable = value;
-			}
+			set => Proxy.interactable = value;
 		}
 
 		/// <summary>
@@ -148,15 +101,9 @@
 		/// </summary>
 		public Graphic textComponent
 		{
-			get
-			{
-				return Proxy.textComponent;
-			}
+			get => Proxy.textComponent;
 
-			set
-			{
-				Proxy.textComponent = value;
-			}
+			set => Proxy.textComponent = value;
 		}
 
 		/// <summary>
@@ -164,27 +111,15 @@
 		/// </summary>
 		public Graphic placeholder
 		{
-			get
-			{
-				return Proxy.placeholder;
-			}
+			get => Proxy.placeholder;
 
-			set
-			{
-				Proxy.placeholder = value;
-			}
+			set => Proxy.placeholder = value;
 		}
 
 		/// <summary>
 		/// If the proxy was canceled and will revert back to the original text.
 		/// </summary>
-		public bool wasCanceled
-		{
-			get
-			{
-				return Proxy.wasCanceled;
-			}
-		}
+		public bool wasCanceled => Proxy.wasCanceled;
 
 		/// <summary>
 		/// Get text proxy.

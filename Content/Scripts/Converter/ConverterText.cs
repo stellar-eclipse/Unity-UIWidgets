@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR && UIWIDGETS_TMPRO_SUPPORT
+#if UNITY_EDITOR && UIWIDGETS_TMPRO_SUPPORT
 namespace UIWidgets
 {
 	using UnityEngine;
@@ -64,7 +64,7 @@ namespace UIWidgets
 			/// <param name="text">New component.</param>
 			public void Set(TMPro.TextMeshProUGUI text)
 			{
-				text.font = ConverterTMPro.GetTMProFont();
+				text.font = GetTMProFont();
 
 				text.fontSize = fontSize;
 				text.fontStyle = Convert(fontStyle);
@@ -78,7 +78,11 @@ namespace UIWidgets
 				text.fontSizeMax = resizeTextMaxSize;
 				text.lineSpacing = (lineSpacing - 1) * fontSize * (98f / 36f);
 
+				#if UNITY_2023_2_OR_NEWER || UIWIDGETS_TMPRO_3_2_OR_NEWER
+				text.textWrappingMode = horizontalWrapMode == HorizontalWrapMode.Wrap ? TMPro.TextWrappingModes.Normal : TMPro.TextWrappingModes.NoWrap;
+				#else
 				text.enableWordWrapping = horizontalWrapMode == HorizontalWrapMode.Wrap;
+				#endif
 				text.overflowMode = verticalWrapMode == VerticalWrapMode.Overflow ? TMPro.TextOverflowModes.Overflow : TMPro.TextOverflowModes.Truncate;
 				text.richText = supportRichText;
 
@@ -87,19 +91,14 @@ namespace UIWidgets
 
 			static TMPro.FontStyles Convert(FontStyle style)
 			{
-				switch (style)
+				return style switch
 				{
-					case FontStyle.Normal:
-						return TMPro.FontStyles.Normal;
-					case FontStyle.Bold:
-						return TMPro.FontStyles.Bold;
-					case FontStyle.Italic:
-						return TMPro.FontStyles.Italic;
-					case FontStyle.BoldAndItalic:
-						return TMPro.FontStyles.Bold | TMPro.FontStyles.Italic;
-				}
-
-				return TMPro.FontStyles.Normal;
+					FontStyle.Normal => TMPro.FontStyles.Normal,
+					FontStyle.Bold => TMPro.FontStyles.Bold,
+					FontStyle.Italic => TMPro.FontStyles.Italic,
+					FontStyle.BoldAndItalic => TMPro.FontStyles.Bold | TMPro.FontStyles.Italic,
+					_ => TMPro.FontStyles.Normal,
+				};
 			}
 
 			/// <summary>
@@ -109,29 +108,19 @@ namespace UIWidgets
 			/// <returns>TmPro alignment.</returns>
 			static TMPro.TextAlignmentOptions Convert(TextAnchor align)
 			{
-				switch (align)
+				return align switch
 				{
-					case TextAnchor.UpperLeft:
-						return TMPro.TextAlignmentOptions.TopLeft;
-					case TextAnchor.UpperCenter:
-						return TMPro.TextAlignmentOptions.Top;
-					case TextAnchor.UpperRight:
-						return TMPro.TextAlignmentOptions.TopRight;
-					case TextAnchor.MiddleLeft:
-						return TMPro.TextAlignmentOptions.MidlineLeft;
-					case TextAnchor.MiddleCenter:
-						return TMPro.TextAlignmentOptions.Center;
-					case TextAnchor.MiddleRight:
-						return TMPro.TextAlignmentOptions.MidlineRight;
-					case TextAnchor.LowerLeft:
-						return TMPro.TextAlignmentOptions.BottomLeft;
-					case TextAnchor.LowerCenter:
-						return TMPro.TextAlignmentOptions.Bottom;
-					case TextAnchor.LowerRight:
-						return TMPro.TextAlignmentOptions.BottomRight;
-				}
-
-				return TMPro.TextAlignmentOptions.TopLeft;
+					TextAnchor.UpperLeft => TMPro.TextAlignmentOptions.TopLeft,
+					TextAnchor.UpperCenter => TMPro.TextAlignmentOptions.Top,
+					TextAnchor.UpperRight => TMPro.TextAlignmentOptions.TopRight,
+					TextAnchor.MiddleLeft => TMPro.TextAlignmentOptions.MidlineLeft,
+					TextAnchor.MiddleCenter => TMPro.TextAlignmentOptions.Center,
+					TextAnchor.MiddleRight => TMPro.TextAlignmentOptions.MidlineRight,
+					TextAnchor.LowerLeft => TMPro.TextAlignmentOptions.BottomLeft,
+					TextAnchor.LowerCenter => TMPro.TextAlignmentOptions.Bottom,
+					TextAnchor.LowerRight => TMPro.TextAlignmentOptions.BottomRight,
+					_ => TMPro.TextAlignmentOptions.TopLeft,
+				};
 			}
 		}
 	}

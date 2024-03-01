@@ -6,6 +6,7 @@
 	/// <summary>
 	/// Combobox generator helper.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/generator.html")]
 	public class ComboboxGeneratorHelper : MonoBehaviour
 	{
 		/// <summary>

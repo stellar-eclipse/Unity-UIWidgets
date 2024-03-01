@@ -2,6 +2,7 @@
 {
 	using System.Collections.Generic;
 	using UIWidgets;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 
 	/// <summary>
@@ -79,7 +80,8 @@
 			PlayerPrefs.SetString(Key, Indices2String(list.SelectedIndices));
 		}
 
-		static char[] Separator = new char[] { ';' };
+		[DomainReloadExclude]
+		static readonly char[] Separator = new char[] { ';' };
 
 		static List<int> String2Indices(string str)
 		{

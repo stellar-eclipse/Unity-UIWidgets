@@ -12,63 +12,36 @@
 		/// <returns>Human-readable string.</returns>
 		public static string ToHumanString(this HotKeyCode code)
 		{
-			switch (code)
+			return code switch
 			{
-				case HotKeyCode.Quote:
-					return "'";
-				case HotKeyCode.Comma:
-					return ",";
-				case HotKeyCode.Minus:
-					return "-";
-				case HotKeyCode.Period:
-					return ".";
-				case HotKeyCode.Slash:
-					return "/";
-				case HotKeyCode.Semicolon:
-					return ";";
-				case HotKeyCode.Equals:
-					return "=";
-				case HotKeyCode.Backslash:
-					return "\\";
-				case HotKeyCode.LeftBracket:
-					return "[";
-				case HotKeyCode.RightBracket:
-					return "]";
-				case HotKeyCode.Alpha0:
-					return "0";
-				case HotKeyCode.Alpha1:
-					return "1";
-				case HotKeyCode.Alpha2:
-					return "2";
-				case HotKeyCode.Alpha3:
-					return "3";
-				case HotKeyCode.Alpha4:
-					return "4";
-				case HotKeyCode.Alpha5:
-					return "5";
-				case HotKeyCode.Alpha6:
-					return "6";
-				case HotKeyCode.Alpha7:
-					return "7";
-				case HotKeyCode.Alpha8:
-					return "8";
-				case HotKeyCode.Alpha9:
-					return "9";
-				case HotKeyCode.Multiply:
-					return "*";
-				case HotKeyCode.Plus:
-					return "Num+";
-				case HotKeyCode.UpArrow:
-					return "↑";
-				case HotKeyCode.DownArrow:
-					return "↓";
-				case HotKeyCode.RightArrow:
-					return "→";
-				case HotKeyCode.LeftArrow:
-					return "←";
-				default:
-					return EnumHelper<HotKeyCode>.ToString(code);
-			}
+				HotKeyCode.Quote => "'",
+				HotKeyCode.Comma => ",",
+				HotKeyCode.Minus => "-",
+				HotKeyCode.Period => ".",
+				HotKeyCode.Slash => "/",
+				HotKeyCode.Semicolon => ";",
+				HotKeyCode.Equals => "=",
+				HotKeyCode.Backslash => "\\",
+				HotKeyCode.LeftBracket => "[",
+				HotKeyCode.RightBracket => "]",
+				HotKeyCode.Alpha0 => "0",
+				HotKeyCode.Alpha1 => "1",
+				HotKeyCode.Alpha2 => "2",
+				HotKeyCode.Alpha3 => "3",
+				HotKeyCode.Alpha4 => "4",
+				HotKeyCode.Alpha5 => "5",
+				HotKeyCode.Alpha6 => "6",
+				HotKeyCode.Alpha7 => "7",
+				HotKeyCode.Alpha8 => "8",
+				HotKeyCode.Alpha9 => "9",
+				HotKeyCode.Multiply => "*",
+				HotKeyCode.Plus => "Num+",
+				HotKeyCode.UpArrow => "↑",
+				HotKeyCode.DownArrow => "↓",
+				HotKeyCode.RightArrow => "→",
+				HotKeyCode.LeftArrow => "←",
+				_ => EnumHelper<HotKeyCode>.ToString(code),
+			};
 		}
 	}
 }

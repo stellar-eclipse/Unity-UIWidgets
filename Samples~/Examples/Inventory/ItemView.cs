@@ -2,6 +2,7 @@
 {
 	using System;
 	using UnityEngine;
+	using UnityEngine.Serialization;
 	using UnityEngine.UI;
 
 	/// <summary>
@@ -33,11 +34,25 @@
 		[SerializeField]
 		public TextAdapter PriceView;
 
+		[SerializeField]
+		[FormerlySerializedAs("EmptyColor")]
+		Color emptyColor = Color.clear;
+
 		/// <summary>
 		/// Empty color.
 		/// </summary>
-		[SerializeField]
-		public Color EmptyColor = Color.clear;
+		public Color EmptyColor
+		{
+			get
+			{
+				return emptyColor;
+			}
+
+			set
+			{
+				emptyColor = value;
+			}
+		}
 
 		/// <summary>
 		/// Tooltip.
@@ -131,6 +146,15 @@
 			{
 				PriceView.text = not_null ? Item.Price.ToString() : string.Empty;
 			}
+		}
+
+		/// <inheritdoc/>
+		public override void SetThemeImagesPropertiesOwner(Component owner)
+		{
+			base.SetThemeImagesPropertiesOwner(owner);
+
+			UIThemes.Utilities.SetTargetOwner(typeof(Sprite), ColorView, nameof(Image.sprite), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), ColorView, nameof(ColorView.color), owner);
 		}
 	}
 }

@@ -40,7 +40,7 @@ namespace UIWidgets.TMProSupport
 		public override void Upgrade()
 		{
 #pragma warning disable 0618
-			Utilities.GetOrAddComponent(InputFieldTMPro, ref inputFieldAdapter);
+			Utilities.RequireComponent(InputFieldTMPro, ref inputFieldAdapter);
 #pragma warning restore 0618
 		}
 	}

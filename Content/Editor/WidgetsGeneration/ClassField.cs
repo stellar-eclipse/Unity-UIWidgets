@@ -5,6 +5,7 @@ namespace UIWidgets.WidgetGeneration
 	using System.Collections.Generic;
 	using System.Globalization;
 	using System.Reflection;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 
 	/// <summary>
@@ -137,6 +138,7 @@ namespace UIWidgets.WidgetGeneration
 		[NonSerialized]
 		protected List<Attribute> Attributes;
 
+		[DomainReloadExclude]
 		static readonly Type[] PrintableTypes =
 		{
 			typeof(Enum),
@@ -147,10 +149,12 @@ namespace UIWidgets.WidgetGeneration
 			typeof(TimeSpan),
 		};
 
+		[DomainReloadExclude]
 		static readonly Type[] ImageTypes =
 		{
 			typeof(Sprite),
 			typeof(Texture2D),
+			typeof(Texture),
 			typeof(Color),
 			typeof(Color32),
 		};
@@ -179,7 +183,7 @@ namespace UIWidgets.WidgetGeneration
 					IsImage = true;
 					IsNullable = true;
 				}
-				else if (type == typeof(Texture2D))
+				else if ((type == typeof(Texture2D)) || (type == typeof(Texture)))
 				{
 					WidgetClass = typeof(UnityEngine.UI.RawImage);
 					WidgetValueField = "texture";
@@ -237,6 +241,7 @@ namespace UIWidgets.WidgetGeneration
 		/// <summary>
 		/// Prohibited field names.
 		/// </summary>
+		[DomainReloadExclude]
 		protected static HashSet<string> ProhibitedNames;
 
 		/// <summary>
@@ -401,21 +406,18 @@ namespace UIWidgets.WidgetGeneration
 		/// <returns>The value of the current instance in the specified format.</returns>
 		public string ToString(string format, IFormatProvider formatProvider)
 		{
-			switch (format)
+			return format switch
 			{
-				case "FieldName":
-					return FieldName;
-				case "WidgetFieldName":
-					return WidgetFieldName;
-				case "WidgetClass":
-					return UtilitiesEditor.GetFriendlyTypeName(WidgetClass);
-				case "WidgetValueField":
-					return WidgetValueField;
-				case "FieldFormat":
-					return FieldFormat;
-				default:
-					throw new ArgumentOutOfRangeException("Unsupported format: " + format);
-			}
+				"FieldName" => FieldName,
+				"FieldType" => (FieldType == typeof(Texture2D))
+										? UtilitiesEditor.GetFriendlyTypeName(typeof(Texture))
+										: UtilitiesEditor.GetFriendlyTypeName(FieldType),
+				"WidgetFieldName" => WidgetFieldName,
+				"WidgetClass" => UtilitiesEditor.GetFriendlyTypeName(WidgetClass),
+				"WidgetValueField" => WidgetValueField,
+				"FieldFormat" => FieldFormat,
+				_ => throw new ArgumentOutOfRangeException("Unsupported format: " + format),
+			};
 		}
 	}
 }

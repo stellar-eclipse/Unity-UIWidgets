@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets.Styles
 {
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UnityEditor;
 	using UnityEngine;
 	using UnityEngine.UI;
@@ -34,19 +35,20 @@
 		/// <summary>
 		/// The labels.
 		/// </summary>
+		[DomainReloadExclude]
 		protected static Dictionary<string, string> Labels = new Dictionary<string, string>()
 		{
-			{ "Sprite", "Sprite" },
-			{ "Color", "Color" },
-			{ "ImageType", "Image Type" },
-			{ "PreserveAspect", "Preserve Aspect" },
-			{ "FillCenter", "Fill Center" },
-			{ "FillMethod", "Fill Method" },
-			{ "FillOrigin", "Fill Origin" },
-			{ "FillAmount", "Fill Amount" },
-			{ "FillClockwise", "Clockwise" },
-			{ "Material", "Material" },
-			{ "PixelsPerUnitMultiplier", "Pixels Per Unit Multiplier" },
+			{ "sprite", "Sprite" },
+			{ "color", "Color" },
+			{ "imageType", "Image Type" },
+			{ "preserveAspect", "Preserve Aspect" },
+			{ "fillCenter", "Fill Center" },
+			{ "fillMethod", "Fill Method" },
+			{ "fillOrigin", "Fill Origin" },
+			{ "fillAmount", "Fill Amount" },
+			{ "fillClockwise", "Clockwise" },
+			{ "material", "Material" },
+			{ "pixelsPerUnitMultiplier", "Pixels Per Unit Multiplier" },
 		};
 
 		/// <summary>
@@ -72,8 +74,8 @@
 			{
 				IndentLevel++;
 
-				var sprite = property.FindPropertyRelative("Sprite");
-				var image_type = property.FindPropertyRelative("ImageType");
+				var sprite = property.FindPropertyRelative("sprite");
+				var image_type = property.FindPropertyRelative("imageType");
 
 				EditorGUI.BeginChangeCheck();
 				position = DrawProperty(position, sprite);
@@ -94,8 +96,8 @@
 					}
 				}
 
-				position = DrawProperty(position, property.FindPropertyRelative("Color"));
-				position = DrawProperty(position, property.FindPropertyRelative("Material"));
+				position = DrawProperty(position, property.FindPropertyRelative("color"));
+				position = DrawProperty(position, property.FindPropertyRelative("material"));
 
 				if (sprite.objectReferenceValue is Sprite)
 				{
@@ -119,23 +121,23 @@
 		/// <returns>New position.</returns>
 		protected Rect DrawImageProperties(Rect position, Image.Type imageType, SerializedProperty property)
 		{
-			var fill_method_property = property.FindPropertyRelative("FillMethod");
-			var fill_origin = property.FindPropertyRelative("FillOrigin");
+			var fill_method_property = property.FindPropertyRelative("fillMethod");
+			var fill_origin = property.FindPropertyRelative("fillOrigin");
 
 			IndentLevel++;
 
 			switch (imageType)
 			{
 				case Image.Type.Simple:
-					position = DrawProperty(position, property.FindPropertyRelative("PreserveAspect"));
+					position = DrawProperty(position, property.FindPropertyRelative("preserveAspect"));
 					break;
 				case Image.Type.Sliced:
-					position = DrawProperty(position, property.FindPropertyRelative("FillCenter"));
-					position = DrawProperty(position, property.FindPropertyRelative("PixelsPerUnitMultiplier"));
+					position = DrawProperty(position, property.FindPropertyRelative("fillCenter"));
+					position = DrawProperty(position, property.FindPropertyRelative("pixelsPerUnitMultiplier"));
 					break;
 				case Image.Type.Tiled:
-					position = DrawProperty(position, property.FindPropertyRelative("FillCenter"));
-					position = DrawProperty(position, property.FindPropertyRelative("PixelsPerUnitMultiplier"));
+					position = DrawProperty(position, property.FindPropertyRelative("fillCenter"));
+					position = DrawProperty(position, property.FindPropertyRelative("pixelsPerUnitMultiplier"));
 					break;
 				case Image.Type.Filled:
 					EditorGUI.BeginChangeCheck();
@@ -149,14 +151,14 @@
 
 					position = DrawFillOrigin(position, fill_method, fill_origin);
 
-					position = DrawProperty(position, property.FindPropertyRelative("FillAmount"));
+					position = DrawProperty(position, property.FindPropertyRelative("fillAmount"));
 
 					if (fill_method == Image.FillMethod.Radial90 || fill_method == Image.FillMethod.Radial180 || fill_method == Image.FillMethod.Radial360)
 					{
-						position = DrawProperty(position, property.FindPropertyRelative("FillClockwise"));
+						position = DrawProperty(position, property.FindPropertyRelative("fillClockwise"));
 					}
 
-					position = DrawProperty(position, property.FindPropertyRelative("PreserveAspect"));
+					position = DrawProperty(position, property.FindPropertyRelative("preserveAspect"));
 					break;
 			}
 
@@ -174,34 +176,34 @@
 		protected static float ImagePropertiesHeight(Image.Type imageType, SerializedProperty property)
 		{
 			var result = 0f;
-			var fill_method_property = property.FindPropertyRelative("FillMethod");
-			var fill_origin = property.FindPropertyRelative("FillOrigin");
+			var fill_method_property = property.FindPropertyRelative("fillMethod");
+			var fill_origin = property.FindPropertyRelative("fillOrigin");
 
 			switch (imageType)
 			{
 				case Image.Type.Simple:
-					result += GetPropertyHeight(property.FindPropertyRelative("PreserveAspect"));
+					result += GetPropertyHeight(property.FindPropertyRelative("preserveAspect"));
 					break;
 				case Image.Type.Sliced:
-					result += GetPropertyHeight(property.FindPropertyRelative("FillCenter"));
-					result += GetPropertyHeight(property.FindPropertyRelative("PixelsPerUnitMultiplier"));
+					result += GetPropertyHeight(property.FindPropertyRelative("fillCenter"));
+					result += GetPropertyHeight(property.FindPropertyRelative("pixelsPerUnitMultiplier"));
 					break;
 				case Image.Type.Tiled:
-					result += GetPropertyHeight(property.FindPropertyRelative("FillCenter"));
-					result += GetPropertyHeight(property.FindPropertyRelative("PixelsPerUnitMultiplier"));
+					result += GetPropertyHeight(property.FindPropertyRelative("fillCenter"));
+					result += GetPropertyHeight(property.FindPropertyRelative("pixelsPerUnitMultiplier"));
 					break;
 				case Image.Type.Filled:
 					result += GetPropertyHeight(fill_method_property);
 					result += GetPropertyHeight(fill_origin);
-					result += GetPropertyHeight(property.FindPropertyRelative("FillAmount"));
+					result += GetPropertyHeight(property.FindPropertyRelative("fillAmount"));
 
 					var fill_method = (Image.FillMethod)fill_method_property.enumValueIndex;
 					if (fill_method == Image.FillMethod.Radial90 || fill_method == Image.FillMethod.Radial180 || fill_method == Image.FillMethod.Radial360)
 					{
-						result += GetPropertyHeight(property.FindPropertyRelative("FillClockwise"));
+						result += GetPropertyHeight(property.FindPropertyRelative("fillClockwise"));
 					}
 
-					result += GetPropertyHeight(property.FindPropertyRelative("PreserveAspect"));
+					result += GetPropertyHeight(property.FindPropertyRelative("preserveAspect"));
 					break;
 			}
 
@@ -303,12 +305,12 @@
 				return result;
 			}
 
-			var sprite = property.FindPropertyRelative("Sprite");
-			var image_type = property.FindPropertyRelative("ImageType");
+			var sprite = property.FindPropertyRelative("sprite");
+			var image_type = property.FindPropertyRelative("imageType");
 
 			result += GetPropertyHeight(sprite);
-			result += GetPropertyHeight(property.FindPropertyRelative("Color"));
-			result += GetPropertyHeight(property.FindPropertyRelative("Material"));
+			result += GetPropertyHeight(property.FindPropertyRelative("color"));
+			result += GetPropertyHeight(property.FindPropertyRelative("material"));
 
 			if (sprite.objectReferenceValue is Sprite)
 			{

@@ -79,7 +79,7 @@
 		void UpdateDirection()
 		{
 			SetFiller(0f, 0f);
-			Layout.MarginInner = default(Padding);
+			Layout.MarginInner = default;
 
 			if (UpdateContentSizeFitter)
 			{

@@ -5,6 +5,7 @@
 	using System.Collections.Generic;
 	using System.Collections.ObjectModel;
 	using System.ComponentModel;
+	using UIWidgets.Attributes;
 	using UnityEngine.Events;
 
 	/// <summary>
@@ -33,7 +34,7 @@
 		/// </summary>
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		UnityEvent onChangeMono = new UnityEvent();
+		readonly UnityEvent onChangeMono = new UnityEvent();
 
 		/// <summary>
 		/// Occurs when data changed.
@@ -45,41 +46,23 @@
 		/// - Game object activation is not guaranteed
 		/// So possible cases when listener added but was not with game object destroy and future data change will cause.
 		/// </summary>
-		public UnityEvent OnChangeMono
-		{
-			get
-			{
-				return onChangeMono;
-			}
-		}
+		public UnityEvent OnChangeMono => onChangeMono;
 
-		UnityEvent onCollectionChangeMono = new UnityEvent();
+		readonly UnityEvent onCollectionChangeMono = new UnityEvent();
 
 		/// <summary>
 		/// Occurs when changed collection (added item, removed item, replaced item).
 		/// See OnChangeMono summary.
 		/// </summary>
-		public UnityEvent OnCollectionChangeMono
-		{
-			get
-			{
-				return onCollectionChangeMono;
-			}
-		}
+		public UnityEvent OnCollectionChangeMono => onCollectionChangeMono;
 
-		UnityEvent onCollectionItemChangeMono = new UnityEvent();
+		readonly UnityEvent onCollectionItemChangeMono = new UnityEvent();
 
 		/// <summary>
 		/// Occurs when changed data of the item in the collection.
 		/// See OnChangeMono summary.
 		/// </summary>
-		public UnityEvent OnCollectionItemChangeMono
-		{
-			get
-			{
-				return onCollectionItemChangeMono;
-			}
-		}
+		public UnityEvent OnCollectionItemChangeMono => onCollectionItemChangeMono;
 
 		/// <summary>
 		/// Re-sort items when collection changed.
@@ -132,10 +115,13 @@
 		/// </summary>
 		public bool ObserveItems = true;
 
+		[DomainReloadExclude]
 		private static readonly bool IsValueType;
 
+		[DomainReloadExclude]
 		private static readonly bool IsItemsObservable;
 
+		[DomainReloadExclude]
 		private static readonly bool IsItemsSupportNotifyPropertyChanged;
 
 		static ObservableList()
@@ -431,7 +417,7 @@
 
 		void CollectionChanged(bool resort)
 		{
-			if (inUpdate)
+			if (delayUpdateEvent)
 			{
 				isCollectionChanged = true;
 				isChanged = true;
@@ -482,7 +468,7 @@
 				return;
 			}
 
-			if (inUpdate)
+			if (delayUpdateEvent)
 			{
 				isCollectionItemChanged = true;
 				isChanged = true;
@@ -520,14 +506,14 @@
 
 		bool isChanged;
 
-		bool inUpdate;
+		bool delayUpdateEvent;
 
 		/// <summary>
 		/// Maintains performance while items are added/removed/changed by preventing the widgets from drawing until the EndUpdate method is called.
 		/// </summary>
 		public void BeginUpdate()
 		{
-			inUpdate = true;
+			delayUpdateEvent = true;
 		}
 
 		/// <summary>
@@ -535,7 +521,7 @@
 		/// </summary>
 		public void EndUpdate()
 		{
-			inUpdate = false;
+			delayUpdateEvent = false;
 			if ((isCollectionChanged && ResortOnCollectionItemChanged) || (isCollectionItemChanged && ResortOnCollectionItemChanged))
 			{
 				if (comparison != null)

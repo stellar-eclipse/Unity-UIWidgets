@@ -1,7 +1,9 @@
 ﻿namespace UIWidgets.Examples.Shops
 {
+	using System;
 	using UIWidgets;
 	using UnityEngine;
+	using UnityEngine.Events;
 	using UnityEngine.EventSystems;
 	using UnityEngine.Serialization;
 	using UnityEngine.UI;
@@ -11,6 +13,14 @@
 	/// </summary>
 	public class HarborListViewComponent : ListViewItem, IViewData<HarborOrderLine>
 	{
+		/// <summary>
+		/// Quantity changed event.
+		/// </summary>
+		[Serializable]
+		public class QuantityEvent : UnityEvent<int>
+		{
+		}
+
 		/// <summary>
 		/// Name.
 		/// </summary>
@@ -94,12 +104,19 @@
 		public HarborOrderLine OrderLine;
 
 		/// <summary>
+		/// Event on quantity changed.
+		/// </summary>
+		[SerializeField]
+		public QuantityEvent OnQuantityChanged = new QuantityEvent();
+
+		/// <summary>
 		/// Init graphics foreground.
 		/// </summary>
 		protected override void GraphicsForegroundInit()
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[]
 				{
 					UtilitiesUI.GetGraphic(NameAdapter),
@@ -108,8 +125,11 @@
 					UtilitiesUI.GetGraphic(AvailableBuyCountAdapter),
 					UtilitiesUI.GetGraphic(AvailableSellCountAdapter),
 				};
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -118,7 +138,7 @@
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Required")]
 		protected override void Start()
 		{
-			Quantity.OnValueChanged.AddListener(ChangeCount);
+			Quantity.OnValueChanged.AddListener(ChangeQuantity);
 			base.Start();
 		}
 
@@ -163,9 +183,10 @@
 			Quantity.Value = OrderLine.Quantity;
 		}
 
-		void ChangeCount(int value)
+		void ChangeQuantity(int value)
 		{
 			OrderLine.Quantity = value;
+			OnQuantityChanged.Invoke(value);
 		}
 
 		/// <summary>
@@ -176,7 +197,7 @@
 		{
 			if (Quantity != null)
 			{
-				Quantity.OnValueChanged.RemoveListener(ChangeCount);
+				Quantity.OnValueChanged.RemoveListener(ChangeQuantity);
 			}
 		}
 
@@ -186,11 +207,11 @@
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Name, ref NameAdapter);
-			Utilities.GetOrAddComponent(BuyPrice, ref BuyPriceAdapter);
-			Utilities.GetOrAddComponent(SellPrice, ref SellPriceAdapter);
-			Utilities.GetOrAddComponent(AvailableBuyCount, ref AvailableBuyCountAdapter);
-			Utilities.GetOrAddComponent(AvailableSellCount, ref AvailableSellCountAdapter);
+			Utilities.RequireComponent(Name, ref NameAdapter);
+			Utilities.RequireComponent(BuyPrice, ref BuyPriceAdapter);
+			Utilities.RequireComponent(SellPrice, ref SellPriceAdapter);
+			Utilities.RequireComponent(AvailableBuyCount, ref AvailableBuyCountAdapter);
+			Utilities.RequireComponent(AvailableSellCount, ref AvailableSellCountAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

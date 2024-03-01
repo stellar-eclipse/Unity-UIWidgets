@@ -40,7 +40,7 @@ namespace UIWidgets.Examples
 		[SerializeField]
 		public bool UnscaledTime = true;
 
-		Dictionary<int, IEnumerator> Animations = new Dictionary<int, IEnumerator>();
+		readonly Dictionary<int, IEnumerator> Animations = new Dictionary<int, IEnumerator>();
 
 		/// <summary>
 		/// Process the start event.
@@ -112,8 +112,7 @@ namespace UIWidgets.Examples
 
 		void StopAnimation(int index)
 		{
-			IEnumerator animation;
-			if (Animations.TryGetValue(index, out animation))
+			if (Animations.TryGetValue(index, out var animation))
 			{
 				StopCoroutine(animation);
 				Animations.Remove(index);

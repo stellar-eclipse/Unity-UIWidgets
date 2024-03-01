@@ -11,6 +11,7 @@
 	[RequireComponent(typeof(RectTransform))]
 	[AddComponentMenu("UI/New UI Widgets/Interactions/Object Sliding Vertical Helper")]
 	[DisallowMultipleComponent]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/object-sliding.html")]
 	public class ObjectSlidingVerticalHelper : MonoBehaviour
 	{
 		/// <summary>
@@ -68,7 +69,7 @@
 		/// <param name="rect">RectTransform</param>
 		protected virtual void AddListener(RectTransform rect)
 		{
-			var rl = Utilities.GetOrAddComponent<ResizeListener>(rect);
+			var rl = Utilities.RequireComponent<ResizeListener>(rect);
 			rl.OnResizeNextFrame.AddListener(CalculatePositions);
 		}
 

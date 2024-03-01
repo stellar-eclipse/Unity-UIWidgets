@@ -2,6 +2,7 @@
 {
 	using UIWidgets;
 	using UnityEngine;
+	using UnityEngine.Serialization;
 	using UnityEngine.UI;
 
 	/// <summary>
@@ -27,23 +28,65 @@
 		[SerializeField]
 		public Image ValueBackground;
 
+		[SerializeField]
+		[FormerlySerializedAs("ColorUnchanged")]
+		Color colorUnchanged = Color.black;
+
 		/// <summary>
 		/// Color of unchanged value.
 		/// </summary>
+		public Color ColorUnchanged
+		{
+			get
+			{
+				return colorUnchanged;
+			}
+
+			set
+			{
+				colorUnchanged = value;
+			}
+		}
+
 		[SerializeField]
-		public Color ColorUnchanged = Color.black;
+		[FormerlySerializedAs("ColorDecrease")]
+		Color colorDecrease = Color.red;
 
 		/// <summary>
-		/// Color of increased value.
+		/// Color of the decreased value.
 		/// </summary>
+		public Color ColorDecrease
+		{
+			get
+			{
+				return colorDecrease;
+			}
+
+			set
+			{
+				colorDecrease = value;
+			}
+		}
+
 		[SerializeField]
-		public Color ColorDecrease = Color.red;
+		[FormerlySerializedAs("ColorIncrease")]
+		Color colorIncrease = Color.green;
 
 		/// <summary>
-		/// Color of decreased value.
+		/// Color of the increased value.
 		/// </summary>
-		[SerializeField]
-		public Color ColorIncrease = Color.green;
+		public Color ColorIncrease
+		{
+			get
+			{
+				return colorIncrease;
+			}
+
+			set
+			{
+				colorIncrease = value;
+			}
+		}
 
 		Data Item;
 
@@ -54,13 +97,17 @@
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[]
 				{
 					UtilitiesUI.GetGraphic(Name),
 					UtilitiesUI.GetGraphic(Value),
 				};
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -70,9 +117,13 @@
 		{
 			if (GraphicsBackgroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				graphicsBackground = Compatibility.EmptyArray<Graphic>();
+				#pragma warning restore
 				GraphicsBackgroundVersion = 1;
 			}
+
+			base.GraphicsBackgroundInit();
 		}
 
 		/// <summary>
@@ -116,6 +167,15 @@
 			{
 				ValueBackground.color = (Item.Difference > 0) ? ColorIncrease : ColorDecrease;
 			}
+		}
+
+		/// <inheritdoc/>
+		public override void SetThemeImagesPropertiesOwner(Component owner)
+		{
+			base.SetThemeImagesPropertiesOwner(owner);
+
+			UIThemes.Utilities.SetTargetOwner(typeof(Sprite), ValueBackground, nameof(ValueBackground.sprite), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), ValueBackground, nameof(ValueBackground.color), owner);
 		}
 	}
 }

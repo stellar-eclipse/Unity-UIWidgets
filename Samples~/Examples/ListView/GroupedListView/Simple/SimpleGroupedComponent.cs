@@ -13,7 +13,7 @@
 		/// Name.
 		/// </summary>
 		[SerializeField]
-		public Text Name;
+		public TextAdapter Name;
 
 		/// <summary>
 		/// Gets the current item.

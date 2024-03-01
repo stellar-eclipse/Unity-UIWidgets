@@ -13,6 +13,7 @@
 	/// <summary>
 	/// Accordion.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/containers/accordion.html")]
 	public class Accordion : UIBehaviourConditional, IStylable
 	{
 		/// <summary>
@@ -212,6 +213,15 @@
 		}
 
 		/// <summary>
+		/// Get DataSource enumerator.
+		/// </summary>
+		/// <returns>Enumerator.</returns>
+		public virtual List<AccordionItem>.Enumerator GetEnumerator()
+		{
+			return Application.isPlaying ? DataSource.GetEnumerator() : items.GetEnumerator();
+		}
+
+		/// <summary>
 		/// Updates the items.
 		/// </summary>
 		protected virtual void UpdateItems()
@@ -232,13 +242,13 @@
 		{
 			item.ContentObject.SetActive(true);
 
-			var component = Utilities.GetOrAddComponent<AccordionItemComponent>(item.ToggleObject);
+			var component = Utilities.RequireComponent<AccordionItemComponent>(item.ToggleObject);
 			component.Item = item;
 			component.OnItemClick.AddListener(ToggleItem);
 
 			item.ToggleLabel = item.ToggleObject.GetComponentInChildren<TextAdapter>();
 			item.ContentObjectRect = item.ContentObject.transform as RectTransform;
-			item.ContentLayoutElement = Utilities.GetOrAddComponent<LayoutElement>(item.ContentObject);
+			item.ContentLayoutElement = Utilities.RequireComponent<LayoutElement>(item.ContentObject);
 			if (IsHorizontal())
 			{
 				item.ContentLayoutElement.minWidth = 0f;
@@ -635,7 +645,8 @@
 		/// <summary>
 		/// Do nothing.
 		/// </summary>
-		protected static Action DoNothing = () => { };
+		[DomainReloadExclude]
+		protected static readonly Action DoNothing = () => { };
 
 		/// <summary>
 		/// Close all opened items.

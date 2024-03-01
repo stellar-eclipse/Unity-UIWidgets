@@ -3,6 +3,8 @@
 	using System;
 	using System.Collections.Generic;
 	using EasyLayoutNS;
+	using UIWidgets.Attributes;
+	using UIWidgets.Pool;
 	using UnityEngine;
 	using UnityEngine.UI;
 
@@ -28,8 +30,6 @@
 			layout.SetLayoutVertical();
 		}
 
-		static List<LayoutGroup> layouts = new List<LayoutGroup>();
-
 		/// <summary>
 		/// Updates the layouts for component and all children components.
 		/// </summary>
@@ -42,6 +42,8 @@
 				return;
 			}
 
+			using var _ = ListPool<LayoutGroup>.Get(out var layouts);
+
 			component.GetComponentsInChildren(layouts);
 			layouts.Reverse();
 
@@ -49,8 +51,6 @@
 			{
 				UpdateLayout(l);
 			}
-
-			layouts.Clear();
 		}
 
 		/// <summary>

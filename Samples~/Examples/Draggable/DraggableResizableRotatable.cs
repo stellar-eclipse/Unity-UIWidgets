@@ -148,8 +148,7 @@ namespace UIWidgets.Examples
 				return true;
 			}
 
-			var ev = eventData as PointerEventData;
-			if (ev == null)
+			if (!(eventData is PointerEventData ev))
 			{
 				return false;
 			}

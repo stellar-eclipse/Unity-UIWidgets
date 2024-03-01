@@ -50,9 +50,13 @@
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				graphicsForeground = new Graphic[] { UtilitiesUI.GetGraphic(NameAdapter), };
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -89,7 +93,7 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Name, ref NameAdapter);
+			Utilities.RequireComponent(Name, ref NameAdapter);
 #pragma warning restore 0612, 0618
 		}
 

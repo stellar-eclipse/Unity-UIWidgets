@@ -13,6 +13,7 @@ namespace UIWidgets
 	[DisallowMultipleComponent]
 	[RequireComponent(typeof(Rotatable))]
 	[AddComponentMenu("UI/New UI Widgets/Interactions/Rotatable Handle")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/rotatable-handle.html")]
 	public class RotatableHandle : UIBehaviourConditional
 	{
 		#region Interactable
@@ -162,9 +163,9 @@ namespace UIWidgets
 			{
 				if (handle != null)
 				{
-					handle.OnDragStartEvent.RemoveListener(StartDrag);
-					handle.OnDragEvent.RemoveListener(Drag);
-					handle.OnDragEndEvent.RemoveListener(EndDrag);
+					handle.OnBeginDragEvent.RemoveListener(OnBeginDrag);
+					handle.OnDragEvent.RemoveListener(OnDrag);
+					handle.OnEndDragEvent.RemoveListener(OnEndDrag);
 
 					handle.OnSelectEvent.RemoveListener(ShowHandle);
 					handle.OnDeselectEvent.RemoveListener(HideHandle);
@@ -174,15 +175,21 @@ namespace UIWidgets
 
 				if (handle != null)
 				{
-					handle.OnDragStartEvent.AddListener(StartDrag);
-					handle.OnDragEvent.AddListener(Drag);
-					handle.OnDragEndEvent.AddListener(EndDrag);
+					handle.OnBeginDragEvent.AddListener(OnBeginDrag);
+					handle.OnDragEvent.AddListener(OnDrag);
+					handle.OnEndDragEvent.AddListener(OnEndDrag);
 
 					handle.OnSelectEvent.AddListener(ShowHandle);
 					handle.OnDeselectEvent.AddListener(HideHandle);
 				}
 			}
 		}
+
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
 
 		/// <summary>
 		/// Is currently dragged?
@@ -228,7 +235,8 @@ namespace UIWidgets
 		/// <summary>
 		/// Show Rotatable handle only if target (or one of handles) is selected.
 		/// </summary>
-		public static Func<RotatableHandle, BaseEventData, bool, bool> ShowHandleOnSelect = (rotatableHandle, eventData, select) =>
+		[DomainReloadExclude]
+		public static readonly Func<RotatableHandle, BaseEventData, bool, bool> ShowHandleOnSelect = (rotatableHandle, eventData, select) =>
 		{
 			if (select)
 			{
@@ -303,7 +311,7 @@ namespace UIWidgets
 				TargetFocusListener.onDeselect.RemoveListener(HideHandle);
 			}
 
-			TargetFocusListener = Utilities.GetOrAddComponent<SelectListener>(rotatable.Target);
+			TargetFocusListener = Utilities.RequireComponent<SelectListener>(rotatable.Target);
 			TargetFocusListener.onSelect.AddListener(ShowHandle);
 			TargetFocusListener.onDeselect.AddListener(HideHandle);
 			ToggleHandle();
@@ -453,12 +461,22 @@ namespace UIWidgets
 		}
 
 		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return IsActive() && (eventData.button == DragButton);
+		}
+
+		/// <summary>
 		/// Process begin drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
-		protected virtual void StartDrag(PointerEventData eventData)
+		protected virtual void OnBeginDrag(PointerEventData eventData)
 		{
-			if (!IsActive())
+			if (!CanDrag(eventData))
 			{
 				return;
 			}
@@ -489,8 +507,13 @@ namespace UIWidgets
 		/// Process end drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
-		protected virtual void EndDrag(PointerEventData eventData)
+		protected virtual void OnEndDrag(PointerEventData eventData)
 		{
+			if (!IsDrag)
+			{
+				return;
+			}
+
 			IsDrag = false;
 
 			OnEndRotate.Invoke(Target);
@@ -500,10 +523,16 @@ namespace UIWidgets
 		/// Process drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
-		protected virtual void Drag(PointerEventData eventData)
+		protected virtual void OnDrag(PointerEventData eventData)
 		{
 			if (!IsDrag)
 			{
+				return;
+			}
+
+			if (!CanDrag(eventData))
+			{
+				OnEndDrag(eventData);
 				return;
 			}
 

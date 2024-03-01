@@ -9,7 +9,7 @@
 	/// </summary>
 	public class RectangularPath
 	{
-		List<Vector3> points;
+		readonly List<Vector3> points;
 
 		bool ended;
 
@@ -81,6 +81,8 @@
 		public void End()
 		{
 			ended = true;
+
+			RemoveDuplicates();
 		}
 
 		/// <summary>
@@ -95,7 +97,24 @@
 			}
 
 			points.Add(end);
+
 			ended = true;
+
+			RemoveDuplicates();
+		}
+
+		/// <summary>
+		/// Remove duplicates.
+		/// </summary>
+		protected void RemoveDuplicates()
+		{
+			for (int i = 1; i < points.Count; i++)
+			{
+				if (points[i - 1] == points[i])
+				{
+					points.RemoveAt(i);
+				}
+			}
 		}
 	}
 }

@@ -7,7 +7,9 @@
 	/// Tsunami effect.
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
+	[DisallowMultipleComponent]
 	[AddComponentMenu("UI/New UI Widgets/Effects/Tsunami Effect")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/effects/tsunami.html")]
 	public class TsunamiEffect : MonoBehaviour, IUpdatable
 	{
 		/// <summary>
@@ -63,18 +65,15 @@
 			var rt = transform as RectTransform;
 			var canvas = UtilitiesUI.FindCanvas(rt).GetComponent<Canvas>();
 
-			Vector2 point;
-			float distance;
-
 			var camera = canvas.renderMode == RenderMode.ScreenSpaceCamera ? canvas.worldCamera : null;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(rt, CompatibilityInput.MousePosition, camera, out point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(rt, CompatibilityInput.MousePosition, camera, out var point);
 
 			var old_size = rt.rect.size;
 			var half_size = old_size / 2f;
 			var delta_x = point.x - Mathf.Max(Mathf.Min(point.x, half_size.x), -half_size.x);
 			var delta_y = point.y - Mathf.Max(Mathf.Min(point.y, half_size.y), -half_size.y);
 
-			distance = Mathf.Sqrt(Mathf.Pow(delta_x, 2) + Mathf.Pow(delta_y, 2));
+			var distance = Mathf.Sqrt(Mathf.Pow(delta_x, 2) + Mathf.Pow(delta_y, 2));
 			distance = Mathf.Clamp(distance, 0f, Distance);
 
 			var new_size = Vector2.Lerp(MaxSize, MinSize, distance / Distance);

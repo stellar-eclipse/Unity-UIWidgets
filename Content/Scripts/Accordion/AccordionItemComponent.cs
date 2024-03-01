@@ -7,6 +7,7 @@
 	/// <summary>
 	/// OnClick listener.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/containers/accordion.html")]
 	public class AccordionItemComponent : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler, ISubmitHandler
 	{
 		/// <summary>

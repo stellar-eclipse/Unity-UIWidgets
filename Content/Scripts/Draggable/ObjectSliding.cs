@@ -28,6 +28,7 @@
 	[AddComponentMenu("UI/New UI Widgets/Interactions/Object Sliding")]
 	[RequireComponent(typeof(RectTransform))]
 	[DisallowMultipleComponent]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/object-sliding.html")]
 	public class ObjectSliding : UIBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
 	{
 		#region Interactable
@@ -169,6 +170,12 @@
 		[SerializeField]
 		public bool UnscaledTime = true;
 
+		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
+
 		RectTransform rectTransform;
 
 		/// <summary>
@@ -256,12 +263,22 @@
 		}
 
 		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return IsActive() && (eventData.button == DragButton);
+		}
+
+		/// <summary>
 		/// Handle begin drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		public void OnBeginDrag(PointerEventData eventData)
 		{
-			if (!IsActive())
+			if (!CanDrag(eventData))
 			{
 				return;
 			}
@@ -275,14 +292,11 @@
 				}
 			}
 
-			Vector2 currrent_position;
-			Vector2 original_position;
-
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, null, out currrent_position);
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.pressPosition, eventData.pressEventCamera, out original_position);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, null, out var current_position);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.pressPosition, eventData.pressEventCamera, out var original_position);
 			StartPosition = RectTransform.localPosition;
 
-			var delta = currrent_position - original_position;
+			var delta = current_position - original_position;
 			AllowDrag = (IsHorizontal() && (Mathf.Abs(delta.x) > Mathf.Abs(delta.y)))
 				|| (!IsHorizontal() && (Mathf.Abs(delta.y) > Mathf.Abs(delta.x)));
 
@@ -316,13 +330,16 @@
 				return;
 			}
 
+			if (!CanDrag(eventData))
+			{
+				OnEndDrag(eventData);
+				return;
+			}
+
 			eventData.Use();
 
-			Vector2 current_position;
-			Vector2 original_position;
-
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out current_position);
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.pressPosition, eventData.pressEventCamera, out original_position);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out var current_position);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.pressPosition, eventData.pressEventCamera, out var original_position);
 
 			var position = new Vector3(
 				IsHorizontal() ? StartPosition.x + (current_position.x - original_position.x) : StartPosition.x,

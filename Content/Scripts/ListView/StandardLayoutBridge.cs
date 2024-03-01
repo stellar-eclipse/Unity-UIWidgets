@@ -68,13 +68,13 @@
 			isHorizontal = layout is HorizontalLayoutGroup;
 
 			var firstFillerGO = new GameObject("FirstFiller");
-			var firstFillerTransform = Utilities.GetOrAddComponent<RectTransform>(firstFillerGO);
+			var firstFillerTransform = Utilities.RequireComponent<RectTransform>(firstFillerGO);
 			firstFillerTransform.SetParent(Layout.transform, false);
 			firstFillerTransform.localScale = Vector3.one;
 			FirstFiller = firstFillerGO.AddComponent<LayoutElement>();
 
 			var lastFillerGO = new GameObject("LastFiller");
-			var lastFillerTransform = Utilities.GetOrAddComponent<RectTransform>(lastFillerGO);
+			var lastFillerTransform = Utilities.RequireComponent<RectTransform>(lastFillerGO);
 			lastFillerTransform.SetParent(Layout.transform, false);
 			lastFillerTransform.localScale = Vector3.one;
 			LastFiller = lastFillerGO.AddComponent<LayoutElement>();

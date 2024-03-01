@@ -9,6 +9,7 @@ namespace UIWidgets
 	/// <summary>
 	/// Analog Time widget.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/time-analog.html")]
 	public class TimeAnalog : TimeBase
 	{
 		/// <summary>

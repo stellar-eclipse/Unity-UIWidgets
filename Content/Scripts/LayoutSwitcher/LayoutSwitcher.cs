@@ -10,6 +10,7 @@
 	[ExecuteInEditMode]
 	[DisallowMultipleComponent]
 	[AddComponentMenu("UI/New UI Widgets/Layout/Layout Switcher")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/layout/layout-switcher.html")]
 	public class LayoutSwitcher : MonoBehaviour, IUpdatable
 	{
 		/// <summary>
@@ -202,10 +203,7 @@
 			/// Initializes a new instance of the <see cref="DisplaySizeComparer"/> class.
 			/// </summary>
 			/// <param name="displaySize">Display size.</param>
-			public DisplaySizeComparer(float displaySize)
-			{
-				DisplaySize = displaySize;
-			}
+			public DisplaySizeComparer(float displaySize) => DisplaySize = displaySize;
 
 			/// <summary>
 			/// Compare layouts by display size.
@@ -226,15 +224,7 @@
 			/// </summary>
 			/// <param name="obj">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is DisplaySizeComparer)
-				{
-					return Equals((DisplaySizeComparer)obj);
-				}
-
-				return false;
-			}
+			public override bool Equals(object obj) => (obj is DisplaySizeComparer comparer) && Equals(comparer);
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
@@ -243,7 +233,7 @@
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
 			public bool Equals(DisplaySizeComparer other)
 			{
-				if (ReferenceEquals(other, null))
+				if (other is null)
 				{
 					return false;
 				}
@@ -255,10 +245,7 @@
 			/// Hash function.
 			/// </summary>
 			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
-			{
-				return DisplaySize.GetHashCode();
-			}
+			public override int GetHashCode() => DisplaySize.GetHashCode();
 
 			/// <summary>
 			/// Compare specified instances.
@@ -268,9 +255,9 @@
 			/// <returns>true if the instances are equal; otherwise, false.</returns>
 			public static bool operator ==(DisplaySizeComparer left, DisplaySizeComparer right)
 			{
-				if (ReferenceEquals(left, null))
+				if (left is null)
 				{
-					return ReferenceEquals(right, null);
+					return right is null;
 				}
 
 				return left.Equals(right);
@@ -282,10 +269,7 @@
 			/// <param name="left">Left instance.</param>
 			/// <param name="right">Right instances.</param>
 			/// <returns>true if the instances are now equal; otherwise, false.</returns>
-			public static bool operator !=(DisplaySizeComparer left, DisplaySizeComparer right)
-			{
-				return !(left == right);
-			}
+			public static bool operator !=(DisplaySizeComparer left, DisplaySizeComparer right) => !(left == right);
 		}
 
 		/// <summary>

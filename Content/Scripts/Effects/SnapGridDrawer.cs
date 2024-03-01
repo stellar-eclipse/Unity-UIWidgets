@@ -5,8 +5,8 @@ namespace UIWidgets
 	/// <summary>
 	/// Grid drawer.
 	/// </summary>
-	[RequireComponent(typeof(SnapGridBase))]
 	[AddComponentMenu("UI/New UI Widgets/Effects/Snap Grid Drawer")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/effects/snapgrid-drawer.html")]
 	public class SnapGridDrawer : LinesDrawerBase
 	{
 		/// <summary>
@@ -50,6 +50,10 @@ namespace UIWidgets
 				// ensure only one listener
 				Grid.OnLinesChanged.RemoveListener(UpdateLines);
 				Grid.OnLinesChanged.AddListener(UpdateLines);
+			}
+			else
+			{
+				Debug.LogError("SnapGridDrawer requires SnapGrid or SnapLines components.", this);
 			}
 
 			base.OnEnable();

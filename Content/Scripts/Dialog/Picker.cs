@@ -2,8 +2,8 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Collections.ObjectModel;
 	using System.Runtime.CompilerServices;
+	using UIWidgets.Attributes;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.UI;
@@ -11,6 +11,7 @@
 	/// <summary>
 	/// Base class for Pickers.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/dialogs/picker.html")]
 	public abstract class Picker : MonoBehaviourConditional, ITemplatable, IStylable, INotifyCompletion
 	{
 		bool isTemplate = true;
@@ -102,14 +103,14 @@
 		/// <summary>
 		/// Opened base pickers.
 		/// </summary>
-		public static ReadOnlyCollection<Picker> OpenedBasePickers
+		public static IReadOnlyList<Picker> OpenedBasePickers
 		{
 			get
 			{
 				OpenedBasePickersList.Clear();
 				OpenedBasePickersList.AddRange(openedBasePickers);
 
-				return OpenedBasePickersList.AsReadOnly();
+				return OpenedBasePickersList;
 			}
 		}
 
@@ -184,6 +185,18 @@
 			AddListeners();
 		}
 
+#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(openedBasePickers), nameof(OpenedBasePickersList), nameof(OnBaseInstanceOpen), nameof(OnBaseInstanceClose))]
+		static void StaticInit()
+		{
+			openedBasePickers.Clear();
+			OpenedBasePickersList.Clear();
+			OnBaseInstanceOpen = null;
+			OnBaseInstanceClose = null;
+		}
+#endif
+
 		/// <summary>
 		/// Add listeners.
 		/// </summary>
@@ -203,6 +216,7 @@
 		/// </summary>
 		protected virtual void OnDestroy()
 		{
+			Position.ParentDestroyed();
 			RemoveListeners();
 		}
 

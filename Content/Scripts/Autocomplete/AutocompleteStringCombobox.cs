@@ -1,5 +1,6 @@
 ﻿namespace UIWidgets
 {
+	using System;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.UI;
@@ -7,8 +8,30 @@
 	/// <summary>
 	/// Autocomplete as Combobox.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/autocomplete-combobox.html")]
 	public class AutocompleteStringCombobox : MonoBehaviour, IStylable
 	{
+		/// <summary>
+		/// Invalid mode.
+		/// </summary>
+		public enum InvalidMode
+		{
+			/// <summary>
+			/// Ignore invalid value.
+			/// </summary>
+			Ignore = 0,
+
+			/// <summary>
+			/// Focus on InputField.
+			/// </summary>
+			FocusInputField = 1,
+
+			/// <summary>
+			/// Reset InputField value.
+			/// </summary>
+			ResetInputField = 2,
+		}
+
 		/// <summary>
 		/// Autocomplete.
 		/// </summary>
@@ -25,26 +48,32 @@
 		/// Return focus to InputField if input not found.
 		/// </summary>
 		[SerializeField]
+		[HideInInspector]
+		[Obsolete("Replaced with IfInvalid.")]
 		public bool FocusIfInvalid = false;
+
+		/// <summary>
+		/// What to do when InputField focus lost and value is invalid.
+		/// </summary>
+		[SerializeField]
+		public InvalidMode IfInvalid = InvalidMode.Ignore;
+
+		[SerializeField]
+		[HideInInspector]
+		private int version = 0;
 
 		/// <summary>
 		/// Index of the selected option.
 		/// </summary>
-		[SerializeField]
-		[HideInInspector]
-		public int Index
-		{
-			get
-			{
-				return Autocomplete.DataSource.IndexOf(Autocomplete.InputFieldAdapter.text);
-			}
-		}
+		public int Index => Autocomplete.DataSource.IndexOf(Autocomplete.InputFieldAdapter.text);
 
 		/// <summary>
 		/// Start this instance.
 		/// </summary>
 		protected virtual void Start()
 		{
+			Autocomplete.ResetListViewSelection = false;
+			Autocomplete.Init();
 			Autocomplete.InputFieldAdapter.onEndEdit.AddListener(Validate);
 			AutocompleteToggle.onClick.AddListener(Autocomplete.ShowAllOptions);
 		}
@@ -69,15 +98,32 @@
 				return;
 			}
 
-			if (FocusIfInvalid)
+			if (IfInvalid == InvalidMode.FocusInputField)
 			{
 				Autocomplete.InputFieldAdapter.Focus();
 			}
-			else
+			else if (IfInvalid == InvalidMode.ResetInputField)
 			{
 				Autocomplete.InputFieldAdapter.text = string.Empty;
 			}
 		}
+
+#if UNITY_EDITOR
+		/// <summary>
+		/// Process the validate event.
+		/// </summary>
+		protected virtual void OnValidate()
+		{
+			if (version == 0)
+			{
+				#pragma warning disable 0618
+				IfInvalid = FocusIfInvalid ? InvalidMode.FocusInputField : InvalidMode.Ignore;
+				#pragma warning restore 0618
+
+				version = 1;
+			}
+		}
+#endif
 
 		#region IStylable implementation
 

@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets
 {
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 	using UnityEngine.Events;
 	using UnityEngine.EventSystems;
@@ -13,6 +14,7 @@
 	/// ModalHelper.Close(modalID);</example>
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/modal-helper.html")]
 	public class ModalHelper : MonoBehaviour, ITemplatable, IPointerClickHandler
 	{
 		static readonly Dictionary<InstanceID, ModalHelper> Used = new Dictionary<InstanceID, ModalHelper>();
@@ -23,6 +25,7 @@
 
 		#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(Templates), nameof(Used), nameof(key))]
 		static void StaticInit()
 		{
 			Templates = new Templates<ModalHelper>();
@@ -39,15 +42,9 @@
 		/// <value><c>true</c> if this instance is template; otherwise, <c>false</c>.</value>
 		public bool IsTemplate
 		{
-			get
-			{
-				return isTemplate;
-			}
+			get => isTemplate;
 
-			set
-			{
-				isTemplate = value;
-			}
+			set => isTemplate = value;
 		}
 
 		/// <summary>
@@ -221,6 +218,7 @@
 		/// </summary>
 		protected virtual void OnDestroy()
 		{
+			Used.Remove(new InstanceID(this));
 			Templates.Delete(key);
 		}
 

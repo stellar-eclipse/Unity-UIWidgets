@@ -61,7 +61,7 @@
 
 			SizeChanged();
 
-			var listener = Utilities.GetOrAddComponent<ResizeListener>(Tiles.ScrollRect);
+			var listener = Utilities.RequireComponent<ResizeListener>(Tiles.ScrollRect);
 			listener.OnResizeNextFrame.AddListener(SizeChanged);
 		}
 

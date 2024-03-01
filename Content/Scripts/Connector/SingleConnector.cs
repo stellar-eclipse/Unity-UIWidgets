@@ -109,7 +109,7 @@
 		{
 			if ((Line != null) && (Line.Target != null))
 			{
-				listener = Utilities.GetOrAddComponent<TransformListener>(Line.Target);
+				listener = Utilities.RequireComponent<TransformListener>(Line.Target);
 				listener.OnTransformChanged.AddListener(SetVerticesDirty);
 			}
 		}

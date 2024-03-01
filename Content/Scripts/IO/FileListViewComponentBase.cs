@@ -6,6 +6,7 @@
 	/// <summary>
 	/// FileListViewComponentBase.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/filelistview.html")]
 	public class FileListViewComponentBase : ListViewItem, IViewData<FileSystemEntry>
 	{
 		/// <summary>
@@ -21,9 +22,13 @@
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[] { UtilitiesUI.GetGraphic(NameAdapter), };
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -55,6 +60,15 @@
 			Icon.enabled = Icon.sprite != null;
 
 			NameAdapter.text = item.DisplayName;
+		}
+
+		/// <inheritdoc/>
+		public override void SetThemeImagesPropertiesOwner(Component owner)
+		{
+			base.SetThemeImagesPropertiesOwner(owner);
+
+			UIThemes.Utilities.SetTargetOwner(typeof(Sprite), Icon, nameof(Icon.sprite), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Icon, nameof(Icon.color), owner);
 		}
 
 		/// <summary>

@@ -34,15 +34,15 @@
 
 		class Selector : IListViewTemplateSelector<GroupedTileViewComponentBase, Photo>
 		{
-			GroupedTileViewComponentBase headerTemplate;
+			readonly GroupedTileViewComponentBase headerTemplate;
 
-			GroupedTileViewComponentBase headerEmptyTemplate;
+			readonly GroupedTileViewComponentBase headerEmptyTemplate;
 
-			GroupedTileViewComponentBase itemTemplate;
+			readonly GroupedTileViewComponentBase itemTemplate;
 
-			GroupedTileViewComponentBase itemEmptyTemplate;
+			readonly GroupedTileViewComponentBase itemEmptyTemplate;
 
-			GroupedTileViewComponentBase[] templates;
+			readonly GroupedTileViewComponentBase[] templates;
 
 			public Selector(
 				GroupedTileViewComponentHeader headerTemplate,
@@ -85,8 +85,6 @@
 
 			isGroupedListViewInited = true;
 
-			TemplateSelector = new Selector(HeaderTemplate, HeaderEmptyTemplate, ItemTemplate, ItemEmptyTemplate);
-
 			base.Init();
 
 			GroupedData.GroupComparison = (x, y) => x.Created.CompareTo(y.Created);
@@ -95,6 +93,12 @@
 			GroupedData.EmptyGroupItem = new Photo() { IsGroup = true, IsEmpty = true };
 			GroupedData.EmptyItem = new Photo() { IsEmpty = true };
 			GroupedData.ItemsPerBlock = ListRenderer.GetItemsPerBlock();
+		}
+
+		/// <inheritdoc/>
+		protected override IListViewTemplateSelector<GroupedTileViewComponentBase, Photo> CreateTemplateSelector()
+		{
+			return new Selector(HeaderTemplate, HeaderEmptyTemplate, ItemTemplate, ItemEmptyTemplate);
 		}
 
 		/// <inheritdoc/>

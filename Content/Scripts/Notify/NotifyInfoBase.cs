@@ -7,6 +7,7 @@
 	/// <summary>
 	/// NotifyInfoBase.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/dialogs/notify.html")]
 	public class NotifyInfoBase : MonoBehaviour, IStylable, ILocalizationSupport
 	{
 		[SerializeField]

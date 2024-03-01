@@ -17,6 +17,7 @@ namespace UIWidgets
 	[AddComponentMenu("UI/New UI Widgets/Interactions/Rotatable")]
 	[DisallowMultipleComponent]
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/rotatable.html")]
 	public class Rotatable : UIBehaviourConditional,
 		IBeginDragHandler, IEndDragHandler, IDragHandler,
 		IPointerEnterHandler, IPointerExitHandler,
@@ -68,59 +69,33 @@ namespace UIWidgets
 			/// Gets a value indicating whether any direction is allowed.
 			/// </summary>
 			/// <value><c>true</c> if active; otherwise, <c>false</c>.</value>
-			public bool Active
-			{
-				get
-				{
-					return TopLeft || TopRight || BottomLeft || BottomRight;
-				}
-			}
+			public readonly bool Active => TopLeft || TopRight || BottomLeft || BottomRight;
 
 			/// <summary>
 			/// North-West or South-East.
 			/// </summary>
 			/// <value><c>true</c> if allowed direction is NWSE; otherwise, <c>false</c>.</value>
-			public bool NWSE
-			{
-				get
-				{
-					return TopLeft || BottomRight;
-				}
-			}
+			public readonly bool NWSE => TopLeft || BottomRight;
 
 			/// <summary>
 			/// North-East or South-West.
 			/// </summary>
 			/// <value><c>true</c> if allowed direction is NESW; otherwise, <c>false</c>.</value>
-			public bool NESW
-			{
-				get
-				{
-					return TopRight || BottomLeft;
-				}
-			}
+			public readonly bool NESW => TopRight || BottomLeft;
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
 			/// </summary>
 			/// <param name="obj">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is Directions)
-				{
-					return Equals((Directions)obj);
-				}
-
-				return false;
-			}
+			public readonly override bool Equals(object obj) => (obj is Directions directions) && Equals(directions);
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
 			/// </summary>
 			/// <param name="other">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public bool Equals(Directions other)
+			public readonly bool Equals(Directions other)
 			{
 				return TopLeft == other.TopLeft
 					&& TopRight == other.TopRight
@@ -132,7 +107,7 @@ namespace UIWidgets
 			/// Hash function.
 			/// </summary>
 			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
+			public readonly override int GetHashCode()
 			{
 				var code = 0;
 				if (TopLeft)
@@ -164,10 +139,7 @@ namespace UIWidgets
 			/// <param name="directions1">First direction.</param>
 			/// <param name="directions2">Second direction.</param>
 			/// <returns>true if the directions are equal; otherwise, false.</returns>
-			public static bool operator ==(Directions directions1, Directions directions2)
-			{
-				return directions1.Equals(directions2);
-			}
+			public static bool operator ==(Directions directions1, Directions directions2) => directions1.Equals(directions2);
 
 			/// <summary>
 			/// Compare specified directions.
@@ -175,10 +147,7 @@ namespace UIWidgets
 			/// <param name="directions1">First direction.</param>
 			/// <param name="directions2">Second direction.</param>
 			/// <returns>true if the directions not equal; otherwise, false.</returns>
-			public static bool operator !=(Directions directions1, Directions directions2)
-			{
-				return !directions1.Equals(directions2);
-			}
+			public static bool operator !=(Directions directions1, Directions directions2) => !directions1.Equals(directions2);
 		}
 
 		#region Interactable
@@ -401,6 +370,12 @@ namespace UIWidgets
 		public Cursors Cursors;
 
 		/// <summary>
+		/// Drag button.
+		/// </summary>
+		[SerializeField]
+		public PointerEventData.InputButton DragButton = PointerEventData.InputButton.Left;
+
+		/// <summary>
 		/// The cursor NW texture.
 		/// </summary>
 		[SerializeField]
@@ -557,7 +532,7 @@ namespace UIWidgets
 
 				if (!IsTargetSelf)
 				{
-					var le = Utilities.GetOrAddComponent<LayoutElement>(this);
+					var le = Utilities.RequireComponent<LayoutElement>(this);
 					le.ignoreLayout = true;
 
 					RectTransform.SetParent(target.parent, false);
@@ -727,11 +702,7 @@ namespace UIWidgets
 				return;
 			}
 
-			Vector2 point;
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, CompatibilityInput.MousePosition, CurrentCamera, out point))
-			{
-				return;
-			}
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, CompatibilityInput.MousePosition, CurrentCamera, out var point);
 
 			var r = Target.rect;
 			if (r.Contains(point))
@@ -801,7 +772,7 @@ namespace UIWidgets
 				return UICursor.Cursors.NorthWestRotateArrow;
 			}
 
-			return default(Cursors.Cursor);
+			return default;
 		}
 
 		/// <summary>
@@ -820,7 +791,7 @@ namespace UIWidgets
 				return UICursor.Cursors.NorthEastRotateArrow;
 			}
 
-			return default(Cursors.Cursor);
+			return default;
 		}
 
 		/// <summary>
@@ -839,7 +810,7 @@ namespace UIWidgets
 				return UICursor.Cursors.SouthWestRotateArrow;
 			}
 
-			return default(Cursors.Cursor);
+			return default;
 		}
 
 		/// <summary>
@@ -858,7 +829,7 @@ namespace UIWidgets
 				return UICursor.Cursors.SouthEastRotateArrow;
 			}
 
-			return default(Cursors.Cursor);
+			return default;
 		}
 
 		/// <summary>
@@ -918,23 +889,27 @@ namespace UIWidgets
 		}
 
 		/// <summary>
+		/// Can drag.
+		/// </summary>
+		/// <param name="eventData">Event data.</param>
+		/// <returns>true if drag allowed; otherwise false.</returns>
+		protected virtual bool CanDrag(PointerEventData eventData)
+		{
+			return IsActive() && (eventData.button == DragButton);
+		}
+
+		/// <summary>
 		/// Process the begin drag event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
 		public virtual void OnBeginDrag(PointerEventData eventData)
 		{
-			if (!IsActive())
+			if (!CanDrag(eventData))
 			{
 				return;
 			}
 
-			Vector2 point;
-			processDrag = false;
-
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.pressPosition, eventData.pressEventCamera, out point))
-			{
-				return;
-			}
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.pressPosition, eventData.pressEventCamera, out var point);
 
 			UpdateRegions(point);
 
@@ -1025,6 +1000,12 @@ namespace UIWidgets
 				return;
 			}
 
+			if (!CanDrag(eventData))
+			{
+				OnEndDrag(eventData);
+				return;
+			}
+
 			eventData.Use();
 
 			Rotate(eventData);
@@ -1045,9 +1026,8 @@ namespace UIWidgets
 		/// <param name="eventData">Event data.</param>
 		public virtual void Rotate(PointerEventData eventData)
 		{
-			Vector2 point;
 			Target.localRotation = Quaternion.Euler(Vector3.zero);
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.position, eventData.pressEventCamera, out point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(Target, eventData.position, eventData.pressEventCamera, out var point);
 
 			var base_angle = DragPoint2Angle(point);
 			Rotate(base_angle);

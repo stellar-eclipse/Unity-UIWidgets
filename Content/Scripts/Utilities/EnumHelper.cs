@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 
 	/// <summary>
 	/// Enum helper.
@@ -14,15 +15,19 @@
 		where T : struct
 #endif
 	{
+		[DomainReloadExclude]
 		private static readonly Type EnumType = typeof(T);
 
+		[DomainReloadExclude]
 		private static readonly object Sync = new object();
 
 		/// <summary>
 		/// Is enum has [Flags] attribute.
 		/// </summary>
+		[DomainReloadExclude]
 		public static readonly bool IsFlags = GetIsFlags();
 
+		[DomainReloadExclude]
 		private static long[] valuesLong;
 
 		/// <summary>
@@ -45,6 +50,7 @@
 			}
 		}
 
+		[DomainReloadExclude]
 		private static T[] values;
 
 		/// <summary>
@@ -54,15 +60,13 @@
 		{
 			get
 			{
-				if (values == null)
-				{
-					values = GetValues();
-				}
+				values ??= GetValues();
 
 				return values;
 			}
 		}
 
+		[DomainReloadExclude]
 		private static string[] names;
 
 		/// <summary>
@@ -72,30 +76,26 @@
 		{
 			get
 			{
-				if (names == null)
-				{
-					names = GetNames();
-				}
+				names ??= GetNames();
 
 				return names;
 			}
 		}
 
+		[DomainReloadExclude]
 		private static Dictionary<T, string> value2Name;
 
 		private static Dictionary<T, string> Value2Name
 		{
 			get
 			{
-				if (value2Name == null)
-				{
-					value2Name = GetValue2Name();
-				}
+				value2Name ??= GetValue2Name();
 
 				return value2Name;
 			}
 		}
 
+		[DomainReloadExclude]
 		private static bool[] obsolete;
 
 		/// <summary>
@@ -105,10 +105,7 @@
 		{
 			get
 			{
-				if (obsolete == null)
-				{
-					obsolete = GetObsolete();
-				}
+				obsolete ??= GetObsolete();
 
 				return obsolete;
 			}
@@ -177,6 +174,19 @@
 		}
 
 		/// <summary>
+		/// Check is value contains flag.
+		/// </summary>
+		/// <param name="value">Value.</param>
+		/// <param name="flag">Flag.</param>
+		/// <returns>true if value contains flag; otherwise false.</returns>
+		public static bool HasFlag(T value, T flag)
+		{
+			var value_long = Convert.ToInt64(value);
+			var flag_long = Convert.ToInt64(flag);
+			return (value_long & flag_long) == flag_long;
+		}
+
+		/// <summary>
 		/// Convert enum value to the string.
 		/// </summary>
 		/// <param name="value">Value.</param>
@@ -184,8 +194,7 @@
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0102:Non-overridden virtual method call on value type", Justification = "Temporaty.")]
 		public static string ToString(T value)
 		{
-			string name;
-			if (Value2Name.TryGetValue(value, out name))
+			if (Value2Name.TryGetValue(value, out var name))
 			{
 				return name;
 			}

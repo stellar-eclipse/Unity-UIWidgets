@@ -3,9 +3,8 @@
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
-	using System.Collections.ObjectModel;
 	using System.Runtime.CompilerServices;
-	using System.Threading.Tasks;
+	using UIWidgets.Attributes;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.UI;
@@ -86,10 +85,7 @@
 		{
 			get
 			{
-				if (templates == null)
-				{
-					templates = new Templates<TNotification>(AddCloseCallback);
-				}
+				templates ??= new Templates<TNotification>(AddCloseCallback);
 
 				return templates;
 			}
@@ -192,7 +188,7 @@
 			/// <param name="container">Container.</param>
 			/// <param name="active">List for the active buttons.</param>
 			/// <param name="cache">List for the cached buttons.</param>
-			public ButtonsPool(TNotification owner, ReadOnlyCollection<Button> templates, RectTransform container, List<ButtonInstance> active, List<List<ButtonInstance>> cache)
+			public ButtonsPool(TNotification owner, IReadOnlyList<Button> templates, RectTransform container, List<ButtonInstance> active, List<List<ButtonInstance>> cache)
 				: base(owner, templates, container, active, cache)
 			{
 			}
@@ -218,10 +214,7 @@
 		{
 			get
 			{
-				if (buttonsPool == null)
-				{
-					buttonsPool = new ButtonsPool(this as TNotification, ButtonsTemplates, ButtonsContainer, ButtonsActive, ButtonsCached);
-				}
+				buttonsPool ??= new ButtonsPool(this as TNotification, ButtonsTemplates, ButtonsContainer, ButtonsActive, ButtonsCached);
 
 				return buttonsPool;
 			}
@@ -237,13 +230,7 @@
 		/// <summary>
 		/// Current buttons.
 		/// </summary>
-		public ReadOnlyCollection<ButtonInstance> CurrentButtons
-		{
-			get
-			{
-				return ButtonsActive.AsReadOnly();
-			}
-		}
+		public IReadOnlyList<ButtonInstance> CurrentButtons => ButtonsActive;
 
 		/// <summary>
 		/// The cached buttons.
@@ -265,13 +252,13 @@
 		/// Gets or sets the default buttons.
 		/// </summary>
 		/// <value>The default buttons.</value>
-		public ReadOnlyCollection<Button> ButtonsTemplates
+		public IReadOnlyList<Button> ButtonsTemplates
 		{
 			get
 			{
 				Upgrade();
 
-				return buttonsTemplates.AsReadOnly();
+				return buttonsTemplates;
 			}
 
 			set
@@ -414,14 +401,14 @@
 		/// <summary>
 		/// Opened notifications.
 		/// </summary>
-		public static ReadOnlyCollection<TNotification> OpenedNotifications
+		public static IReadOnlyList<TNotification> OpenedNotifications
 		{
 			get
 			{
 				OpenedNotificationsList.Clear();
 				OpenedNotificationsList.AddRange(openedNotifications);
 
-				return OpenedNotificationsList.AsReadOnly();
+				return OpenedNotificationsList;
 			}
 		}
 
@@ -482,6 +469,27 @@
 			output.AddRange(openedNotifications);
 		}
 
+#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(templates), nameof(openedNotifications), nameof(OpenedNotificationsList), nameof(OnInstanceOpen), nameof(OnInstanceClose))]
+		static void StaticInit()
+		{
+			templates = null;
+			openedNotifications.Clear();
+			OpenedNotificationsList.Clear();
+			OnInstanceOpen = null;
+			OnInstanceClose = null;
+		}
+#endif
+
+		/// <summary>
+		/// Process the start event.
+		/// </summary>
+		protected virtual void Start()
+		{
+			Buttons.Init();
+		}
+
 		/// <summary>
 		/// Process the enable event.
 		/// </summary>
@@ -521,6 +529,7 @@
 				if (gameObject.activeSelf)
 				{
 					IsDestroyed = true;
+					SlideUpOnHide = false;
 					Hide();
 				}
 
@@ -1055,7 +1064,7 @@
 			if (SlideUpOnHide)
 			{
 				var replacement = GetReplacement(this as TNotification);
-				var slide = Utilities.GetOrAddComponent<SlideUp>(replacement);
+				var slide = Utilities.RequireComponent<SlideUp>(replacement);
 				slide.UnscaledTime = UnscaledTime;
 				slide.Run();
 			}
@@ -1079,7 +1088,7 @@
 			if (notifyInfo == null)
 			{
 				notifyInfo = gameObject.AddComponent<NotifyInfoBase>();
-				Utilities.GetOrAddComponent(text, ref notifyInfo.MessageAdapter);
+				Utilities.RequireComponent(text, ref notifyInfo.MessageAdapter);
 			}
 #pragma warning restore 0618
 		}

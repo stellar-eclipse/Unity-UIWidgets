@@ -48,15 +48,7 @@
 		/// </summary>
 		/// <param name="other">The object to compare with the current object.</param>
 		/// <returns><c>true</c> if the specified object is equal to the current object; otherwise, <c>false</c>.</returns>
-		public override bool Equals(object other)
-		{
-			if (other is ListNode<TItem>)
-			{
-				return Equals((ListNode<TItem>)other);
-			}
-
-			return false;
-		}
+		public override bool Equals(object other) => (other is ListNode<TItem> node) && Equals(node);
 
 		/// <summary>
 		/// Determines whether the specified object is equal to the current object.
@@ -65,7 +57,7 @@
 		/// <returns><c>true</c> if the specified object is equal to the current object; otherwise, <c>false</c>.</returns>
 		public virtual bool Equals(ListNode<TItem> other)
 		{
-			if (ReferenceEquals(other, null))
+			if (other is null)
 			{
 				return false;
 			}
@@ -81,9 +73,9 @@
 		/// <returns>true if the objects equal; otherwise, false.</returns>
 		public static bool operator ==(ListNode<TItem> a, ListNode<TItem> b)
 		{
-			if (ReferenceEquals(a, null))
+			if (a is null)
 			{
-				return ReferenceEquals(b, null);
+				return b is null;
 			}
 
 			return a.Equals(b);
@@ -95,27 +87,18 @@
 		/// <param name="a">The first object.</param>
 		/// <param name="b">The second object.</param>
 		/// <returns>true if the objects not equal; otherwise, false.</returns>
-		public static bool operator !=(ListNode<TItem> a, ListNode<TItem> b)
-		{
-			return !(a == b);
-		}
+		public static bool operator !=(ListNode<TItem> a, ListNode<TItem> b) => !(a == b);
 
 		/// <summary>
 		/// Serves as a hash function for a particular type.
 		/// </summary>
 		/// <returns>A hash code for this instance that is suitable for use in hashing algorithms and data structures such as a hash table.</returns>
-		public override int GetHashCode()
-		{
-			return base.GetHashCode();
-		}
+		public override int GetHashCode() => base.GetHashCode();
 
 		/// <summary>
 		/// Convert this instance to string.
 		/// </summary>
 		/// <returns>String.</returns>
-		public override string ToString()
-		{
-			return string.Format("ListNode(Node = {0}; Depth = {1})", Node != null ? Node.ToString() : "null", Depth.ToString());
-		}
+		public override string ToString() => string.Format("ListNode(Node = {0}; Depth = {1})", Node != null ? Node.ToString() : "null", Depth.ToString());
 	}
 }

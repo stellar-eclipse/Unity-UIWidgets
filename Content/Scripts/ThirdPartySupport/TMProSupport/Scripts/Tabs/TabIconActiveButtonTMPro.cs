@@ -1,12 +1,10 @@
 #if UIWIDGETS_TMPRO_SUPPORT
 namespace UIWidgets.TMProSupport
 {
-	using UIWidgets;
-	using UnityEngine;
-
 	/// <summary>
 	/// TabIconActiveButtonTMPro.
 	/// </summary>
+	[System.Obsolete("Use TabIconActiveButton with TextAdapter.")]
 	public class TabIconActiveButtonTMPro : TabIconButtonTMPro
 	{
 	}

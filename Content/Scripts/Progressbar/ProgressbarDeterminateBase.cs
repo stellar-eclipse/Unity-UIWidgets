@@ -12,6 +12,7 @@
 	/// Base class for ProgressbarDeterminate.
 	/// </summary>
 	[DataBindSupport]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/misc/progressbar-determinate.html")]
 	public class ProgressbarDeterminateBase : UIWidgetsMonoBehaviour, IStylable, IValidateable
 	{
 		/// <summary>
@@ -395,6 +396,12 @@
 		/// </summary>
 		protected virtual void UpdateText()
 		{
+			// prevent memory allocation if no text components
+			if ((FullBarTextAdapter == null) && (EmptyBarTextAdapter == null))
+			{
+				return;
+			}
+
 			var text = TextFunc(this);
 
 			if (FullBarTextAdapter != null)

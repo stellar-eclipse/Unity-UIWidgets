@@ -8,6 +8,7 @@ namespace UIWidgets.TMProSupport
 	/// <summary>
 	/// Notify info.
 	/// </summary>
+	[System.Obsolete("Use NotifyInfo with TextAdapter.")]
 	public class NotifyInfoTMPro : NotifyInfoBase, IUpgradeable
 	{
 		/// <summary>
@@ -24,7 +25,7 @@ namespace UIWidgets.TMProSupport
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Message, ref MessageAdapter);
+			Utilities.RequireComponent(Message, ref MessageAdapter);
 #pragma warning restore 0612, 0618
 		}
 

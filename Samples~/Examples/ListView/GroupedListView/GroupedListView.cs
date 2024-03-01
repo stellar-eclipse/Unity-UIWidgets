@@ -58,13 +58,9 @@
 		[SerializeField]
 		protected GroupedListViewComponent ItemTemplate;
 
-		Selector GroupedTemplateSelector;
-
 		bool isGroupedListViewInited;
 
-		/// <summary>
-		/// Init this instance.
-		/// </summary>
+		/// <inheritdoc/>
 		public override void Init()
 		{
 			if (isGroupedListViewInited)
@@ -74,20 +70,22 @@
 
 			isGroupedListViewInited = true;
 
-			GroupedTemplateSelector = new Selector()
-			{
-				GroupTemplate = GroupTemplate,
-				ItemTemplate = ItemTemplate,
-			};
-
-			TemplateSelector = GroupedTemplateSelector;
-
 			base.Init();
 
 			GroupedData.GroupComparison = (x, y) => UtilitiesCompare.Compare(x.Name, y.Name);
 			GroupedData.Data = DataSource;
 
 			CanSelect = IsItem;
+		}
+
+		/// <inheritdoc/>
+		protected override IListViewTemplateSelector<GroupedListViewComponent, IGroupedListItem> CreateTemplateSelector()
+		{
+			return new Selector()
+			{
+				GroupTemplate = GroupTemplate,
+				ItemTemplate = ItemTemplate,
+			};
 		}
 
 		bool IsItem(int index)

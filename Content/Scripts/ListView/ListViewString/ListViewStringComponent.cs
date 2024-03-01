@@ -29,9 +29,13 @@
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[] { UtilitiesUI.GetGraphic(TextAdapter), };
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -56,7 +60,7 @@
 				Text = Compatibility.GetComponentInChildren<Text>(this, true);
 			}
 
-			Utilities.GetOrAddComponent(Text, ref TextAdapter);
+			Utilities.RequireComponent(Text, ref TextAdapter);
 #pragma warning restore 0618
 		}
 	}

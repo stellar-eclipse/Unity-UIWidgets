@@ -141,12 +141,7 @@
 		/// <param name="eventData">Current event data.</param>
 		public override bool CanDrag(PointerEventData eventData)
 		{
-			if (!Source.IsInteractable())
-			{
-				return false;
-			}
-
-			return AllowDrag;
+			return base.CanDrag(eventData) && Source.IsInteractable();
 		}
 
 		/// <summary>

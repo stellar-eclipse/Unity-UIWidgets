@@ -7,6 +7,7 @@
 	/// </summary>
 	/// <typeparam name="TData">Data type.</typeparam>
 	/// <typeparam name="TTooltip">Tooltip type.</typeparam>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/misc/tooltip.html")]
 	public class TooltipViewer<TData, TTooltip> : MonoBehaviour
 		where TTooltip : Tooltip<TData, TTooltip>
 	{

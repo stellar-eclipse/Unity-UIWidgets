@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets.WidgetGeneration
 {
 	using System.Collections.Generic;
+	using UIThemes;
 	using UIWidgets;
 	using UIWidgets.Styles;
 	using UnityEngine;
@@ -45,7 +46,13 @@
 		public GameObject RootCanvas;
 
 		/// <summary>
-		/// Default style.
+		/// Default Theme.
+		/// </summary>
+		[SerializeField]
+		public Theme Theme;
+
+		/// <summary>
+		/// Default Style.
 		/// </summary>
 		[SerializeField]
 		public Style StyleDefault;
@@ -65,6 +72,47 @@
 			{
 				return true;
 			}
+		}
+
+		/// <summary>
+		/// Toggle Theme Blue.
+		/// </summary>
+		public void ToggleThemeBlue()
+		{
+			ToggleTheme("Blue");
+		}
+
+		/// <summary>
+		/// Toggle Theme Red.
+		/// </summary>
+		public void ToggleThemeRed()
+		{
+			ToggleTheme("Red");
+		}
+
+		/// <summary>
+		/// Toggle Theme Dark.
+		/// </summary>
+		public void ToggleThemeDark()
+		{
+			ToggleTheme("Dark");
+		}
+
+		/// <summary>
+		/// Toggle Theme Legacy.
+		/// </summary>
+		public void ToggleThemeLegacy()
+		{
+			ToggleTheme("Legacy");
+		}
+
+		/// <summary>
+		/// Toggle Theme.
+		/// </summary>
+		/// <param name="variation">Variation name.</param>
+		public void ToggleTheme(string variation)
+		{
+			Theme.SetActiveVariation(variation);
 		}
 
 		/// <summary>

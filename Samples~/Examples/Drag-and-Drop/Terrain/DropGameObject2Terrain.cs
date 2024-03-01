@@ -36,9 +36,9 @@ namespace UIWidgets.Examples
 		[SerializeField]
 		protected Vector3 PivotFix = new Vector3(0, 2f, 0f);
 
-		RaycastHit[] hits = new RaycastHit[10];
+		readonly RaycastHit[] hits = new RaycastHit[10];
 
-		RaycastHitComparer comparer = new RaycastHitComparer();
+		readonly RaycastHitComparer comparer = new RaycastHitComparer();
 
 		/// <inheritdoc/>
 		public void Drop(GameObject data, PointerEventData eventData)

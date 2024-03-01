@@ -10,6 +10,7 @@
 	[AddComponentMenu("UI/New UI Widgets/Collections/TreeView DataSource")]
 	[RequireComponent(typeof(TreeView))]
 	[DisallowMultipleComponent]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/collections/treeview-datasource.html")]
 	public class TreeViewDataSource : MonoBehaviour
 	{
 		/// <summary>

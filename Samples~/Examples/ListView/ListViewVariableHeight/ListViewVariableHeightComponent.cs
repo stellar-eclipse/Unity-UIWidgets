@@ -44,13 +44,17 @@
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[]
 				{
 					UtilitiesUI.GetGraphic(NameAdapter),
 					UtilitiesUI.GetGraphic(TextAdapter),
 				};
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -70,8 +74,8 @@
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Name, ref NameAdapter);
-			Utilities.GetOrAddComponent(Text, ref TextAdapter);
+			Utilities.RequireComponent(Name, ref NameAdapter);
+			Utilities.RequireComponent(Text, ref TextAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

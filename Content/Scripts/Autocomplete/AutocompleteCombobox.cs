@@ -31,15 +31,7 @@
 		/// <summary>
 		/// Index of the selected option.
 		/// </summary>
-		[SerializeField]
-		[HideInInspector]
-		public int Index
-		{
-			get
-			{
-				return Autocomplete.DataSource.IndexOf(Autocomplete.InputFieldAdapter.text);
-			}
-		}
+		public int Index => Autocomplete.DataSource.IndexOf(Autocomplete.Value);
 
 		/// <summary>
 		/// Start this instance.
@@ -76,7 +68,7 @@
 			}
 			else
 			{
-				Autocomplete.InputFieldAdapter.text = string.Empty;
+				Autocomplete.Value = string.Empty;
 			}
 		}
 

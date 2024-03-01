@@ -6,6 +6,7 @@ namespace UIWidgets.WidgetGeneration
 	using System.IO;
 	using System.Text;
 	using UIWidgets.Extensions;
+	using UIWidgets.Pool;
 	using UnityEditor;
 	using UnityEngine;
 
@@ -419,8 +420,7 @@ namespace UIWidgets.WidgetGeneration
 		/// <param name="data">Script data.</param>
 		protected virtual void CreateScript(ScriptData data)
 		{
-			bool can_create;
-			if (!Info.Scripts.TryGetValue(data.Type, out can_create))
+			if (!Info.Scripts.TryGetValue(data.Type, out var can_create))
 			{
 				return;
 			}
@@ -482,7 +482,32 @@ namespace UIWidgets.WidgetGeneration
 			typeof(double),
 		};
 
-		List<ClassField> tempFilteredFields = new List<ClassField>();
+		/// <summary>
+		/// Format fields list to list.
+		/// </summary>
+		/// <param name="predicate">Predicate to check if field should be included.</param>
+		/// <param name="format">Format.</param>
+		/// <param name="formatProvider">Format provider.</param>
+		/// <param name="onlyFirst">Include only first field that match predicate.</param>
+		/// <returns>The fields in the specified format.</returns>
+		protected string FormatFields(Predicate<ClassField> predicate, string format, IFormatProvider formatProvider, bool onlyFirst = false)
+		{
+			using var _ = ListPool<ClassField>.Get(out var fields);
+
+			foreach (var field in Info.Fields)
+			{
+				if (predicate(field))
+				{
+					fields.Add(field);
+					if (onlyFirst)
+					{
+						break;
+					}
+				}
+			}
+
+			return fields.ToString(format, this, formatProvider);
+		}
 
 		/// <summary>
 		/// Formats the value of the current instance using the specified format.
@@ -496,195 +521,34 @@ namespace UIWidgets.WidgetGeneration
 			var template = format.Split(new[] { "@" }, 2, StringSplitOptions.None);
 			template[1] = template[1].Replace("[", "{").Replace("]", "}");
 
-			switch (template[0])
+			return template[0] switch
 			{
-				case "IfTMProText":
-					return Info.IsTMProText ? string.Format(template[1], this) : string.Empty;
-				case "!IfTMProText":
-					return !Info.IsTMProText ? string.Format(template[1], this) : string.Empty;
-				case "IfTMProInputField":
-					return Info.IsTMProInputField ? string.Format(template[1], this) : string.Empty;
-				case "!IfTMProInputField":
-					return !Info.IsTMProInputField ? string.Format(template[1], this) : string.Empty;
-				case "IfAutocomplete":
-					return AllowAutocomplete ? string.Format(template[1], this) : string.Empty;
-				case "!IfAutocomplete":
-					return !AllowAutocomplete ? string.Format(template[1], this) : string.Empty;
-				case "IfTable":
-					return AllowTable ? string.Format(template[1], this) : string.Empty;
-				case "!IfTable":
-					return !AllowTable ? string.Format(template[1], this) : string.Empty;
-				case "Fields":
-					return Info.Fields.ToString(template[1], this, formatProvider);
-				case "TextFields":
-					return Info.TextFields.ToString(template[1], this, formatProvider);
-				case "TextFieldsComparableGeneric":
-					return Info.TextFieldsComparableGeneric.ToString(template[1], this, formatProvider);
-				case "TextFieldsComparableNonGeneric":
-					return Info.TextFieldsComparableNonGeneric.ToString(template[1], this, formatProvider);
-
-				case "TextFieldFirst":
-					return Info.TextFieldFirst.ToString(template[1], this, formatProvider);
-				case "TableFieldFirst":
-					return Info.TableFieldFirst.ToString(template[1], this, formatProvider);
-				case "ImageFields":
-					FilterFieldsImage(tempFilteredFields);
-					return tempFilteredFields.ToString(template[1], this, formatProvider);
-				case "ImageFieldsNullable":
-					FilterFieldsImageNullable(tempFilteredFields);
-					return tempFilteredFields.ToString(template[1], this, formatProvider);
-				case "TreeViewFields":
-					FilterFieldsTreeView(tempFilteredFields);
-					return tempFilteredFields.ToString(template[1], this, formatProvider);
-				case "FieldsString":
-					FilterFieldsType<string>(tempFilteredFields);
-					return tempFilteredFields.ToString(template[1], this, formatProvider);
-				case "FieldsStringFirst":
-					FilterFieldsType<string>(tempFilteredFields, true);
-					return tempFilteredFields.ToString(template[1], this, formatProvider);
-				case "FieldsInt":
-					FilterFieldsInt(tempFilteredFields);
-					return tempFilteredFields.ToString(template[1], this, formatProvider);
-				case "FieldsFloat":
-					FilterFieldsFloat(tempFilteredFields);
-					return tempFilteredFields.ToString(template[1], this, formatProvider);
-				case "FieldsSprite":
-					FilterFieldsType<Sprite>(tempFilteredFields);
-					return tempFilteredFields.ToString(template[1], this, formatProvider);
-				case "FieldsTexture2D":
-					FilterFieldsType<Texture2D>(tempFilteredFields);
-					return tempFilteredFields.ToString(template[1], this, formatProvider);
-				case "FieldsColor":
-					FilterFieldsType<Color, Color32>(tempFilteredFields);
-					return tempFilteredFields.ToString(template[1], this, formatProvider);
-				default:
-					throw new ArgumentOutOfRangeException("Unsupported format: " + format);
-			}
-		}
-
-		/// <summary>
-		/// Get fields with enabled IsImage field.
-		/// </summary>
-		/// <param name="filtered">Filtered fields.</param>
-		protected void FilterFieldsImage(List<ClassField> filtered)
-		{
-			filtered.Clear();
-			foreach (var field in Info.Fields)
-			{
-				if (field.IsImage)
-				{
-					filtered.Add(field);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Get fields with both enabled IsImage and IsNullable fields.
-		/// </summary>
-		/// <param name="filtered">Filtered fields.</param>
-		protected void FilterFieldsImageNullable(List<ClassField> filtered)
-		{
-			filtered.Clear();
-			foreach (var field in Info.Fields)
-			{
-				if (field.IsImage && field.IsNullable)
-				{
-					filtered.Add(field);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Get fields excluding existed TreeView fields.
-		/// </summary>
-		/// <param name="filtered">Filtered fields.</param>
-		protected void FilterFieldsTreeView(List<ClassField> filtered)
-		{
-			filtered.Clear();
-			foreach (var field in Info.Fields)
-			{
-				if (field.WidgetFieldName != "TextAdapter" && field.WidgetFieldName != "Icon")
-				{
-					filtered.Add(field);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Get fields of the int types.
-		/// </summary>
-		/// <param name="filtered">Filtered fields.</param>
-		protected void FilterFieldsInt(List<ClassField> filtered)
-		{
-			filtered.Clear();
-			foreach (var field in Info.Fields)
-			{
-				if (TypesInt.Contains(field.FieldType))
-				{
-					filtered.Add(field);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Get fields of the float types.
-		/// </summary>
-		/// <param name="filtered">Filtered fields.</param>
-		protected void FilterFieldsFloat(List<ClassField> filtered)
-		{
-			filtered.Clear();
-			foreach (var field in Info.Fields)
-			{
-				if (TypesFloat.Contains(field.FieldType))
-				{
-					filtered.Add(field);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Get fields of the specified type.
-		/// </summary>
-		/// <typeparam name="T">Field type.</typeparam>
-		/// <param name="filtered">Filtered fields.</param>
-		/// <param name="onlyFirst">Return only first field.</param>
-		protected void FilterFieldsType<T>(List<ClassField> filtered, bool onlyFirst = false)
-		{
-			filtered.Clear();
-			foreach (var field in Info.Fields)
-			{
-				if (field.FieldType == typeof(T))
-				{
-					filtered.Add(field);
-					if (onlyFirst)
-					{
-						break;
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Get fields of the specified types.
-		/// </summary>
-		/// <typeparam name="T1">The first type.</typeparam>
-		/// <typeparam name="T2">The second type.</typeparam>
-		/// <param name="filtered">Filtered fields.</param>
-		/// <param name="onlyFirst">Return only first field.</param>
-		protected void FilterFieldsType<T1, T2>(List<ClassField> filtered, bool onlyFirst = false)
-		{
-			filtered.Clear();
-			foreach (var field in Info.Fields)
-			{
-				if (field.FieldType == typeof(T1) || field.FieldType == typeof(T2))
-				{
-					filtered.Add(field);
-					if (onlyFirst)
-					{
-						break;
-					}
-				}
-			}
+				"IfTMProText" => Info.IsTMProText ? string.Format(template[1], this) : string.Empty,
+				"!IfTMProText" => !Info.IsTMProText ? string.Format(template[1], this) : string.Empty,
+				"IfTMProInputField" => Info.IsTMProInputField ? string.Format(template[1], this) : string.Empty,
+				"!IfTMProInputField" => !Info.IsTMProInputField ? string.Format(template[1], this) : string.Empty,
+				"IfAutocomplete" => AllowAutocomplete ? string.Format(template[1], this) : string.Empty,
+				"!IfAutocomplete" => !AllowAutocomplete ? string.Format(template[1], this) : string.Empty,
+				"IfTable" => AllowTable ? string.Format(template[1], this) : string.Empty,
+				"!IfTable" => !AllowTable ? string.Format(template[1], this) : string.Empty,
+				"Fields" => Info.Fields.ToString(template[1], this, formatProvider),
+				"TextFields" => Info.TextFields.ToString(template[1], this, formatProvider),
+				"TextFieldsComparableGeneric" => Info.TextFieldsComparableGeneric.ToString(template[1], this, formatProvider),
+				"TextFieldsComparableNonGeneric" => Info.TextFieldsComparableNonGeneric.ToString(template[1], this, formatProvider),
+				"TextFieldFirst" => Info.TextFieldFirst.ToString(template[1], this, formatProvider),
+				"TableFieldFirst" => Info.TableFieldFirst.ToString(template[1], this, formatProvider),
+				"ImageFields" => FormatFields(x => x.IsImage, template[1], formatProvider),
+				"ImageFieldsNullable" => FormatFields(x => x.IsImage && x.IsNullable, template[1], formatProvider),
+				"TreeViewFields" => FormatFields(x => x.WidgetFieldName != "TextAdapter" && x.WidgetFieldName != "Icon", template[1], formatProvider),
+				"FieldsString" => FormatFields(x => x.FieldType == typeof(string), template[1], formatProvider),
+				"FieldsStringFirst" => FormatFields(x => x.FieldType == typeof(string), template[1], formatProvider, true),
+				"FieldsInt" => FormatFields(x => TypesInt.Contains(x.FieldType), template[1], formatProvider),
+				"FieldsFloat" => FormatFields(x => TypesFloat.Contains(x.FieldType), template[1], formatProvider),
+				"FieldsSprite" => FormatFields(x => x.FieldType == typeof(Sprite), template[1], formatProvider),
+				"FieldsTexture2D" => FormatFields(x => x.FieldType == typeof(Texture2D), template[1], formatProvider),
+				"FieldsColor" => FormatFields(x => (x.FieldType == typeof(Color)) || (x.FieldType == typeof(Color32)), template[1], formatProvider),
+				_ => throw new ArgumentOutOfRangeException("Unsupported format: " + format),
+			};
 		}
 	}
 }

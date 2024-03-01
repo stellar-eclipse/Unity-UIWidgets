@@ -13,7 +13,8 @@
 	/// Allow to select colors in range between specified colors.
 	/// </summary>
 	[DataBindSupport]
-	public class ColorPickerRange : MonoBehaviour, IStylable
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/colorpicker-range.html")]
+	public class ColorPickerRange : MonoBehaviour, IStylable, UIThemes.ITargetOwner
 	{
 		[SerializeField]
 		Slider slider;
@@ -24,15 +25,9 @@
 		/// <value>The slider.</value>
 		public Slider Slider
 		{
-			get
-			{
-				return slider;
-			}
+			get => slider;
 
-			set
-			{
-				SetSlider(value);
-			}
+			set => SetSlider(value);
 		}
 
 		[SerializeField]
@@ -44,10 +39,7 @@
 		/// <value>The Blue slider background.</value>
 		public Image SliderBackground
 		{
-			get
-			{
-				return sliderBackground;
-			}
+			get => sliderBackground;
 
 			set
 			{
@@ -67,15 +59,9 @@
 		[Obsolete("Use DefaultShaderHorizontal and DefaultShaderVertical instead.")]
 		public Shader DefaultShader
 		{
-			get
-			{
-				return DefaultShaderHorizontal;
-			}
+			get => DefaultShaderHorizontal;
 
-			set
-			{
-				DefaultShaderHorizontal = value;
-			}
+			set => DefaultShaderHorizontal = value;
 		}
 
 		/// <summary>
@@ -84,10 +70,7 @@
 		/// <value>The default shader.</value>
 		public Shader DefaultShaderHorizontal
 		{
-			get
-			{
-				return defaultShaderHorizontal;
-			}
+			get => defaultShaderHorizontal;
 
 			set
 			{
@@ -126,10 +109,7 @@
 		/// <value>The color.</value>
 		public Color ColorLeft
 		{
-			get
-			{
-				return colorLeft;
-			}
+			get => colorLeft;
 
 			set
 			{
@@ -148,10 +128,7 @@
 		/// <value>The color right.</value>
 		public Color ColorRight
 		{
-			get
-			{
-				return colorRight;
-			}
+			get => colorRight;
 
 			set
 			{
@@ -171,10 +148,7 @@
 		[DataBindField]
 		public Color Color
 		{
-			get
-			{
-				return color;
-			}
+			get => color;
 
 			set
 			{
@@ -369,6 +343,14 @@
 			}
 
 			inUpdateMode = false;
+		}
+
+		/// <summary>
+		/// Set target owner.
+		/// </summary>
+		public void SetTargetOwner()
+		{
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), sliderBackground, nameof(Graphic.color), this);
 		}
 
 		#region IStylable implementation

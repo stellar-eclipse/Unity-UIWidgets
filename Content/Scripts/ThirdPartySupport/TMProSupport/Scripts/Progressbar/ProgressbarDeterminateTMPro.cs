@@ -2,12 +2,12 @@
 namespace UIWidgets
 {
 	using TMPro;
-	using UIWidgets.Styles;
 	using UnityEngine;
 
 	/// <summary>
 	/// ProgressbarDeterminateTMPro.
 	/// </summary>
+	[System.Obsolete("Use ProgressbarDeterminate with TextAdapter.")]
 	public class ProgressbarDeterminateTMPro : ProgressbarDeterminateBase, IUpgradeable
 	{
 		/// <summary>
@@ -32,8 +32,8 @@ namespace UIWidgets
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(EmptyBarText, ref EmptyBarTextAdapter);
-			Utilities.GetOrAddComponent(FullBarText, ref FullBarTextAdapter);
+			Utilities.RequireComponent(EmptyBarText, ref EmptyBarTextAdapter);
+			Utilities.RequireComponent(FullBarText, ref FullBarTextAdapter);
 #pragma warning restore 0612, 0618
 		}
 

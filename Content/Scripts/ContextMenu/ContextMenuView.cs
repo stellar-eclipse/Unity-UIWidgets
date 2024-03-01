@@ -2,9 +2,10 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Collections.ObjectModel;
+	using UIWidgets.Attributes;
 	using UIWidgets.Styles;
 	using UnityEngine;
+	using UnityEngine.Events;
 	using UnityEngine.EventSystems;
 	using UnityEngine.UI;
 
@@ -41,6 +42,7 @@
 			}
 		}
 
+		[NonSerialized]
 		MenuItemTemplate defaultItemTemplate;
 
 		/// <summary>
@@ -81,12 +83,9 @@
 		/// <summary>
 		/// Special items.
 		/// </summary>
-		public ReadOnlyCollection<MenuItemTemplate> SpecialItems
+		public IReadOnlyList<MenuItemTemplate> SpecialItems
 		{
-			get
-			{
-				return specialItems.AsReadOnly();
-			}
+			get => specialItems;
 
 			set
 			{
@@ -144,6 +143,18 @@
 			get;
 			protected set;
 		}
+
+		/// <summary>
+		/// Enter event.
+		/// </summary>
+		[SerializeField]
+		public UnityEvent OnEnter = new UnityEvent();
+
+		/// <summary>
+		/// Exit event.
+		/// </summary>
+		[SerializeField]
+		public UnityEvent OnExit = new UnityEvent();
 
 		/// <summary>
 		/// Subscribers.
@@ -389,6 +400,7 @@
 		public void OnPointerEnter(PointerEventData eventData)
 		{
 			IsPointerOver = true;
+			OnEnter.Invoke();
 		}
 
 		/// <summary>
@@ -398,6 +410,7 @@
 		public void OnPointerExit(PointerEventData eventData)
 		{
 			IsPointerOver = false;
+			OnExit.Invoke();
 		}
 
 		#region IStyleable
@@ -405,6 +418,7 @@
 		/// <summary>
 		/// Name of the delimiter template.
 		/// </summary>
+		[DomainReloadExclude]
 		protected static readonly string DelimiterName = "-";
 
 		/// <inheritdoc/>

@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.ComponentModel;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 
 	/// <summary>
@@ -35,15 +36,9 @@
 		/// <value><c>true</c> if this node is visible; otherwise, <c>false</c>.</value>
 		public bool IsVisible
 		{
-			get
-			{
-				return isVisible;
-			}
+			get => isVisible;
 
-			set
-			{
-				Change(ref isVisible, value, "IsVisible");
-			}
+			set => Change(ref isVisible, value, nameof(IsVisible));
 		}
 
 		[SerializeField]
@@ -55,15 +50,9 @@
 		/// <value><c>true</c> if this node is expanded; otherwise, <c>false</c>.</value>
 		public bool IsExpanded
 		{
-			get
-			{
-				return isExpanded;
-			}
+			get => isExpanded;
 
-			set
-			{
-				Change(ref isExpanded, value, "IsExpanded");
-			}
+			set => Change(ref isExpanded, value, nameof(IsExpanded));
 		}
 
 		[SerializeField]
@@ -75,14 +64,49 @@
 		/// <value>The item.</value>
 		public TItem Item
 		{
-			get
-			{
-				return item;
-			}
+			get => item;
 
 			set
 			{
-				Change(ref item, value, "Item");
+				ItemUnsubscribe(item);
+
+				Change(ref item, value, nameof(Item));
+
+				ItemSubscribe(item);
+			}
+		}
+
+		void ItemUnsubscribe(TItem item)
+		{
+			if (item == null)
+			{
+				return;
+			}
+
+			if (IsItemsObservable)
+			{
+				(item as IObservable).OnChange -= ItemChanged;
+			}
+			else if (IsItemsSupportNotifyPropertyChanged)
+			{
+				(item as INotifyPropertyChanged).PropertyChanged -= ItemPropertyChanged;
+			}
+		}
+
+		void ItemSubscribe(TItem item)
+		{
+			if (item == null)
+			{
+				return;
+			}
+
+			if (IsItemsObservable)
+			{
+				(item as IObservable).OnChange += ItemChanged;
+			}
+			else if (IsItemsSupportNotifyPropertyChanged)
+			{
+				(item as INotifyPropertyChanged).PropertyChanged += ItemPropertyChanged;
 			}
 		}
 
@@ -211,7 +235,7 @@
 
 			set
 			{
-				SetParentValue(value);
+				SetParentNode(value);
 			}
 		}
 
@@ -324,6 +348,26 @@
 		public int Index = -1;
 
 		/// <summary>
+		/// Deattach nested nodes.
+		/// </summary>
+		/// <returns>Deattached nodes.</returns>
+		public ObservableList<TreeNode<TItem>> DeattachNodes()
+		{
+			var result = nodes;
+			nodes = null;
+
+			if (result != null)
+			{
+				foreach (var node in result)
+				{
+					node.parent = null;
+				}
+			}
+
+			return result;
+		}
+
+		/// <summary>
 		/// Determines whether this instance is parent of node the specified node.
 		/// </summary>
 		/// <returns><c>true</c> if this instance is parent of node the specified node; otherwise, <c>false</c>.</returns>
@@ -369,7 +413,7 @@
 			return !IsParentOfNode(newParent);
 		}
 
-		void SetParentValue(TreeNode<TItem> newParent)
+		void SetParentNode(TreeNode<TItem> newParent)
 		{
 			var old_parent = RealParent;
 
@@ -387,7 +431,7 @@
 
 				if (IsParentOfNode(newParent))
 				{
-					throw new ArgumentException("Own child node cannot be parent node.");
+					throw new ArgumentException("Own nested node cannot be parent node.");
 				}
 			}
 
@@ -421,6 +465,26 @@
 		}
 
 		/// <summary>
+		/// TItem is value type.
+		/// </summary>
+		[DomainReloadExclude]
+		private static readonly bool IsValueType;
+
+		[DomainReloadExclude]
+		private static readonly bool IsItemsObservable;
+
+		[DomainReloadExclude]
+		private static readonly bool IsItemsSupportNotifyPropertyChanged;
+
+		static TreeNode()
+		{
+			var type = typeof(TItem);
+			IsValueType = type.IsValueType;
+			IsItemsObservable = !IsValueType && typeof(IObservable).IsAssignableFrom(type);
+			IsItemsSupportNotifyPropertyChanged = !IsValueType && typeof(INotifyPropertyChanged).IsAssignableFrom(type);
+		}
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="TreeNode{TItem}"/> class.
 		/// </summary>
 		/// <param name="nodeItem">Node item.</param>
@@ -434,6 +498,8 @@
 			bool nodeIsVisible = true)
 		{
 			item = nodeItem;
+			ItemSubscribe(item);
+
 			nodes = nodeNodes;
 
 			isExpanded = nodeIsExpanded;
@@ -448,29 +514,11 @@
 		}
 
 		/// <summary>
-		/// TItem is value type.
-		/// </summary>
-		private static readonly bool IsValueType;
-
-		static TreeNode()
-		{
-			IsValueType = typeof(TItem).IsValueType;
-		}
-
-		/// <summary>
 		/// Check if item is null.
 		/// </summary>
 		/// <param name="item">Item.</param>
 		/// <returns>true if item is null; otherwise false.</returns>
-		protected static bool IsNull(TItem item)
-		{
-			if (IsValueType)
-			{
-				return false;
-			}
-
-			return item == null;
-		}
+		protected static bool IsNull(TItem item) => !IsValueType && item == null;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TreeNode{TItem}"/> class.
@@ -483,6 +531,7 @@
 			isVisible = node.IsVisible;
 			isExpanded = node.IsExpanded;
 			item = node.Item;
+			ItemSubscribe(item);
 
 			nodes = new ObservableList<TreeNode<TItem>>();
 			for (int i = 0; i < node.SubNodesCount; i++)
@@ -540,10 +589,11 @@
 			nodes.EndUpdate();
 		}
 
-		void NotifyPropertyChanged()
-		{
-			NotifyPropertyChanged("Nodes");
-		}
+		void NotifyPropertyChanged() => NotifyPropertyChanged(nameof(Nodes));
+
+		void ItemChanged() => NotifyPropertyChanged(nameof(Item));
+
+		void ItemPropertyChanged(object sender, PropertyChangedEventArgs e) => NotifyPropertyChanged(nameof(Item));
 
 		/// <summary>
 		/// Change value.
@@ -552,13 +602,18 @@
 		/// <param name="field">Field value.</param>
 		/// <param name="value">New value.</param>
 		/// <param name="propertyName">Property name.</param>
-		protected void Change<T>(ref T field, T value, string propertyName)
+		/// <returns>true if field was changed; otherwise false.</returns>
+		protected bool Change<T>(ref T field, T value, string propertyName)
 		{
-			if (!EqualityComparer<T>.Default.Equals(field, value))
+			if (EqualityComparer<T>.Default.Equals(field, value))
 			{
-				field = value;
-				NotifyPropertyChanged(propertyName);
+				return false;
 			}
+
+			field = value;
+			NotifyPropertyChanged(propertyName);
+
+			return true;
 		}
 
 		void NotifyPropertyChanged(string propertyName)
@@ -594,25 +649,14 @@
 		/// </summary>
 		/// <param name="other">The object to compare with the current object.</param>
 		/// <returns><c>true</c> if the specified object is equal to the current object; otherwise, <c>false</c>.</returns>
-		public override bool Equals(object other)
-		{
-			if (other is TreeNode<TItem>)
-			{
-				return Equals((TreeNode<TItem>)other);
-			}
-
-			return false;
-		}
+		public override bool Equals(object other) => (other is TreeNode<TItem> node) && Equals(node);
 
 		/// <summary>
 		/// Determines whether the specified object is equal to the current object.
 		/// </summary>
 		/// <param name="other">The object to compare with the current object.</param>
 		/// <returns><c>true</c> if the specified object is equal to the current object; otherwise, <c>false</c>.</returns>
-		public virtual bool Equals(TreeNode<TItem> other)
-		{
-			return ReferenceEquals(this, other);
-		}
+		public virtual bool Equals(TreeNode<TItem> other) => ReferenceEquals(this, other);
 
 		/// <summary>
 		/// Returns true if the nodes items are equal, false otherwise.
@@ -622,9 +666,9 @@
 		/// <returns>true if the objects equal; otherwise, false.</returns>
 		public static bool operator ==(TreeNode<TItem> a, TreeNode<TItem> b)
 		{
-			if (ReferenceEquals(a, null))
+			if (a is null)
 			{
-				return ReferenceEquals(b, null);
+				return b is null;
 			}
 
 			return a.Equals(b);
@@ -636,19 +680,13 @@
 		/// <param name="a">The first object.</param>
 		/// <param name="b">The second object.</param>
 		/// <returns>true if the objects not equal; otherwise, false.</returns>
-		public static bool operator !=(TreeNode<TItem> a, TreeNode<TItem> b)
-		{
-			return !(a == b);
-		}
+		public static bool operator !=(TreeNode<TItem> a, TreeNode<TItem> b) => !(a == b);
 
 		/// <summary>
 		/// Serves as a hash function for a particular type.
 		/// </summary>
 		/// <returns>A hash code for this instance that is suitable for use in hashing algorithms and data structures such as a hash table.</returns>
-		public override int GetHashCode()
-		{
-			return nodes != null ? nodes.GetHashCode() : 0;
-		}
+		public override int GetHashCode() => nodes != null ? nodes.GetHashCode() : 0;
 
 		/// <summary>
 		/// Serialize the specified nodes.

@@ -3,7 +3,7 @@
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
-	using System.Collections.ObjectModel;
+	using UIWidgets.Attributes;
 	using UIWidgets.l10n;
 	using UnityEngine;
 	using UnityEngine.UI;
@@ -11,6 +11,7 @@
 	/// <summary>
 	/// Base class for notifications.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/dialogs/notify.html")]
 	public abstract class NotificationBase : MonoBehaviour, ITemplatable, IHideable, ILocalizationSupport
 	{
 		[SerializeField]
@@ -161,14 +162,14 @@
 		/// <summary>
 		/// Opened base notifications.
 		/// </summary>
-		public static ReadOnlyCollection<NotificationBase> OpenedBaseNotifications
+		public static IReadOnlyList<NotificationBase> OpenedBaseNotifications
 		{
 			get
 			{
 				OpenedBaseNotificationsList.Clear();
 				OpenedBaseNotificationsList.AddRange(openedBaseNotifications);
 
-				return OpenedBaseNotificationsList.AsReadOnly();
+				return OpenedBaseNotificationsList;
 			}
 		}
 
@@ -183,6 +184,20 @@
 		/// The parameter is opened instances count.
 		/// </summary>
 		public static event Action<int> OnBaseInstanceClose;
+
+#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(notificationManager), nameof(openedBaseNotifications), nameof(OpenedBaseNotificationsList), nameof(OnBaseInstanceOpen), nameof(OnBaseInstanceClose), nameof(Replacements))]
+		static void StaticInit()
+		{
+			notificationManager = null;
+			openedBaseNotifications.Clear();
+			OpenedBaseNotificationsList.Clear();
+			OnBaseInstanceOpen = null;
+			OnBaseInstanceClose = null;
+			Replacements.Clear();
+		}
+#endif
 
 		/// <summary>
 		/// Instance opened.
@@ -344,6 +359,7 @@
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
 		[Obsolete("Renamed to AnimationRotateVertical.")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> AnimationRotate = AnimationRotateMethod;
 
 		static IEnumerator AnimationRotateMethod(NotificationBase notification)
@@ -366,6 +382,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> AnimationRotateVertical = AnimationRotateVerticalMethod;
 
 		static IEnumerator AnimationRotateVerticalMethod(NotificationBase notification)
@@ -387,6 +404,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> AnimationRotateHorizontal = AnimationRotateHorizontalMethod;
 
 		static IEnumerator AnimationRotateHorizontalMethod(NotificationBase notification)
@@ -409,6 +427,7 @@
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
 		[Obsolete("Renamed to HideAnimationRotateBase.")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, bool, float, IEnumerator> AnimationRotateBase = AnimationRotateBaseMethod;
 
 		static IEnumerator AnimationRotateBaseMethod(NotificationBase notification, bool isHorizontal, float timeLength)
@@ -433,6 +452,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, bool, float, IEnumerator> HideAnimationRotateBase = HideAnimationRotateBaseMethod;
 
 		static IEnumerator HideAnimationRotateBaseMethod(NotificationBase notification, bool isHorizontal, float duration)
@@ -475,6 +495,7 @@
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
 		[Obsolete("AnimationRotate() now supports UnscaledTime.")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> AnimationRotateUnscaledTime = AnimationRotateUnscaledTimeMethod;
 
 		static IEnumerator AnimationRotateUnscaledTimeMethod(NotificationBase notification)
@@ -502,6 +523,7 @@
 		[Obsolete("Renamed to HideAnimationCollapseBase.")]
 #if CSHARP_7_3_OR_NEWER
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, bool, float, IEnumerator> AnimationCollapseBase = AnimationCollapseBaseMethod;
 
 		static IEnumerator AnimationCollapseBaseMethod(NotificationBase notification, bool isHorizontal, float speed)
@@ -525,6 +547,7 @@
 		/// <returns>Animation coroutine.</returns>
 #if CSHARP_7_3_OR_NEWER
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, bool, float, IEnumerator> HideAnimationCollapseBase = HideAnimationCollapseBaseMethod;
 
 		static IEnumerator HideAnimationCollapseBaseMethod(NotificationBase notification, bool isHorizontal, float speed)
@@ -568,6 +591,7 @@
 		/// <returns>Animation coroutine.</returns>
 		[Obsolete("Renamed to AnimationCollapseVertical.")]
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> AnimationCollapse = AnimationCollapseMethod;
 
 		static IEnumerator AnimationCollapseMethod(NotificationBase notification)
@@ -590,6 +614,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> AnimationCollapseVertical = AnimationCollapseVerticalMethod;
 
 		static IEnumerator AnimationCollapseVerticalMethod(NotificationBase notification)
@@ -611,6 +636,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> AnimationCollapseHorizontal = AnimationCollapseHorizontalMethod;
 
 		static IEnumerator AnimationCollapseHorizontalMethod(NotificationBase notification)
@@ -633,6 +659,7 @@
 		/// <returns>Animation coroutine.</returns>
 		[Obsolete("AnimationCollapse now supports UnscaledTime.")]
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> AnimationCollapseUnscaledTime = AnimationCollapseUnscaledTimeMethod;
 
 		static IEnumerator AnimationCollapseUnscaledTimeMethod(NotificationBase notification)
@@ -659,6 +686,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> AnimationSlideRight = AnimationSlideRightMethod;
 
 		static IEnumerator AnimationSlideRightMethod(NotificationBase notification)
@@ -680,6 +708,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> AnimationSlideLeft = AnimationSlideLeftMethod;
 
 		static IEnumerator AnimationSlideLeftMethod(NotificationBase notification)
@@ -701,6 +730,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> AnimationSlideUp = AnimationSlideUpMethod;
 
 		static IEnumerator AnimationSlideUpMethod(NotificationBase notification)
@@ -722,6 +752,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> AnimationSlideDown = AnimationSlideDownMethod;
 
 		static IEnumerator AnimationSlideDownMethod(NotificationBase notification)
@@ -765,7 +796,7 @@
 		{
 			var replacement = GetReplacement(notification);
 
-			var layout_element = Utilities.GetOrAddComponent<LayoutElement>(notification);
+			var layout_element = Utilities.RequireComponent<LayoutElement>(notification);
 			layout_element.ignoreLayout = true;
 
 			var rect = notification.RectTransform;
@@ -816,6 +847,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> ShowAnimationSlideRight = ShowAnimationSlideRightMethod;
 
 		static IEnumerator ShowAnimationSlideRightMethod(NotificationBase notification)
@@ -837,6 +869,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> ShowAnimationSlideLeft = ShowAnimationSlideLeftMethod;
 
 		static IEnumerator ShowAnimationSlideLeftMethod(NotificationBase notification)
@@ -858,6 +891,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> ShowAnimationSlideUp = ShowAnimationSlideUpMethod;
 
 		static IEnumerator ShowAnimationSlideUpMethod(NotificationBase notification)
@@ -879,6 +913,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> ShowAnimationSlideDown = ShowAnimationSlideDownMethod;
 
 		static IEnumerator ShowAnimationSlideDownMethod(NotificationBase notification)
@@ -907,7 +942,7 @@
 		{
 			var replacement = GetReplacement(notification);
 
-			var layout_element = Utilities.GetOrAddComponent<LayoutElement>(notification);
+			var layout_element = Utilities.RequireComponent<LayoutElement>(notification);
 			layout_element.ignoreLayout = true;
 
 			var rect = notification.RectTransform;
@@ -958,6 +993,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, bool, float, IEnumerator> ShowAnimationExplodeBase = ShowAnimationExplodeBaseMethod;
 
 		static IEnumerator ShowAnimationExplodeBaseMethod(NotificationBase notification, bool isHorizontal, float speed)
@@ -999,6 +1035,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> ShowAnimationExplodeVertical = ShowAnimationExplodeVerticalMethod;
 
 		static IEnumerator ShowAnimationExplodeVerticalMethod(NotificationBase notification)
@@ -1019,6 +1056,8 @@
 		/// Horizontal explode animation to show notification.
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> ShowAnimationExplodeHorizontal = ShowAnimationExplodeHorizontalMethod;
 
 		static IEnumerator ShowAnimationExplodeHorizontalMethod(NotificationBase notification)
@@ -1043,6 +1082,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> ShowAnimationRotateVertical = ShowAnimationRotateVerticalMethod;
 
 		static IEnumerator ShowAnimationRotateVerticalMethod(NotificationBase notification)
@@ -1064,6 +1104,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, IEnumerator> ShowAnimationRotateHorizontal = ShowAnimationRotateHorizontalMethod;
 
 		static IEnumerator ShowAnimationRotateHorizontalMethod(NotificationBase notification)
@@ -1085,6 +1126,7 @@
 		/// </summary>
 		/// <returns>Animation coroutine.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Cached")]
+		[DomainReloadExclude]
 		public static readonly Func<NotificationBase, bool, float, IEnumerator> ShowAnimationRotateBase = ShowAnimationRotateBaseMethod;
 
 		static IEnumerator ShowAnimationRotateBaseMethod(NotificationBase notification, bool isHorizontal, float duration)

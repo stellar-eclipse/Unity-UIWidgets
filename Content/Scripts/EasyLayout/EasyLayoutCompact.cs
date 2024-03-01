@@ -247,7 +247,15 @@
 		/// <returns>Size.</returns>
 		protected override GroupSize CalculateGroupSize(bool isHorizontal, Vector2 spacing, Vector2 padding)
 		{
-			return ElementsGroup.Size(spacing, padding);
+			// compact only if horizontal direction
+			if (isHorizontal)
+			{
+				return ElementsGroup.Size(spacing, padding);
+			}
+			else
+			{
+				return base.CalculateGroupSize(true, spacing, padding);
+			}
 		}
 
 		/// <summary>

@@ -2,6 +2,7 @@
 {
 	using System.Collections;
 	using UIWidgets;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 
 	/// <summary>
@@ -10,9 +11,11 @@
 	[RequireComponent(typeof(ScrollRectEvents))]
 	public class TestScrollRectEvents : MonoBehaviour
 	{
-		static char[] LineEnd = new char[] { '\n' };
+		[DomainReloadExclude]
+		static readonly char[] LineEnd = new char[] { '\n' };
 
-		static char[] Separator = new char[] { '\t' };
+		[DomainReloadExclude]
+		static readonly char[] Separator = new char[] { '\t' };
 
 		/// <summary>
 		/// ListView.

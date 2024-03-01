@@ -1,9 +1,18 @@
-﻿namespace UIWidgets
+namespace UIWidgets
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
+	using UIWidgets.Extensions;
 	using UnityEngine;
 	using UnityEngine.UI;
+#if UIWIDGETS_TMPRO_SUPPORT && UIWIDGETS_TMPRO_4_0_OR_NEWER
+	using FontAsset = UnityEngine.TextCore.Text.FontAsset;
+#elif UIWIDGETS_TMPRO_SUPPORT
+	using FontAsset = TMPro.TMP_FontAsset;
+#else
+	using FontAsset = UnityEngine.ScriptableObject;
+#endif
 
 	/// <summary>
 	/// Converter functions to replace component with another component.
@@ -89,7 +98,7 @@
 		/// </summary>
 		public class SerializedObjectCache
 		{
-			Dictionary<UnityEngine.Object, UnityEditor.SerializedObject> cache = new Dictionary<UnityEngine.Object, UnityEditor.SerializedObject>();
+			readonly Dictionary<UnityEngine.Object, UnityEditor.SerializedObject> cache = new Dictionary<UnityEngine.Object, UnityEditor.SerializedObject>();
 
 			/// <summary>
 			/// Get SerializedObject.
@@ -98,8 +107,7 @@
 			/// <returns>SerializedObject.</returns>
 			public UnityEditor.SerializedObject Get(UnityEngine.Object obj)
 			{
-				UnityEditor.SerializedObject so;
-				if (cache.TryGetValue(obj, out so))
+				if (cache.TryGetValue(obj, out var so))
 				{
 					return so;
 				}
@@ -123,9 +131,13 @@
 		/// Get default TextMeshPro font in the editor mode.
 		/// </summary>
 		/// <returns>TextMeshPro font.</returns>
-		static T EditorTMProFont<T>()
-			where T : UnityEngine.Object
+		public static FontAsset GetTMProFont()
 		{
+			if (WidgetsReferences.Instance.DefaultFont != null)
+			{
+				return WidgetsReferences.Instance.DefaultFont;
+			}
+
 			var paths = new string[]
 			{
 				"Assets/TextMesh Pro/Resources/Fonts & Materials/ARIAL SDF.asset",
@@ -134,7 +146,7 @@
 
 			foreach (var path in paths)
 			{
-				var font = Compatibility.LoadAssetAtPath<T>(path);
+				var font = Compatibility.LoadAssetAtPath<FontAsset>(path);
 				if (font != null)
 				{
 					return font;
@@ -142,10 +154,10 @@
 			}
 
 			// try to find any font
-			var guids = UnityEditor.AssetDatabase.FindAssets("t:" + typeof(T).Name);
+			var guids = UnityEditor.AssetDatabase.FindAssets("t:" + typeof(FontAsset).Name);
 			for (int i = 0; i < guids.Length; i++)
 			{
-				var font = UtilitiesEditor.LoadAssetWithGUID<T>(guids[i]);
+				var font = UtilitiesEditor.LoadAssetWithGUID<FontAsset>(guids[i]);
 				if (font != null)
 				{
 					return font;
@@ -154,15 +166,6 @@
 
 			return null;
 		}
-
-		/// <summary>
-		/// Get TextMeshPro font.
-		/// </summary>
-#if UNITY_4_6 || UNITY_4_7
-		public static Func<TMPro.TextMeshProFont> GetTMProFont = EditorTMProFont<TMPro.TextMeshProFont>;
-#else
-		public static Func<TMPro.TMP_FontAsset> GetTMProFont = EditorTMProFont<TMPro.TMP_FontAsset>;
-#endif
 
 		readonly ReplacementInfo<InputFieldExtended> inputFieldsExtended = new ReplacementInfo<InputFieldExtended>();
 		readonly ReplacementInfo<InputField> inputFields = new ReplacementInfo<InputField>();
@@ -361,16 +364,20 @@
 		/// <returns>true if fonts installed; otherwise false.</returns>
 		protected bool FontsInstalled()
 		{
-			var paths = UnityEditor.AssetDatabase.FindAssets("t:TMPro.TMP_FontAsset");
-			if (paths.Length > 0)
+#if UIWIDGETS_TMPRO_4_0_OR_NEWER
+			var guids = UnityEditor.AssetDatabase.FindAssets("t:UnityEngine.TextCore.Text.FontAsset");
+#else
+			var guids = UnityEditor.AssetDatabase.FindAssets("t:TMPro.TMP_FontAsset");
+#endif
+			if (guids.Length > 0)
 			{
 				return true;
 			}
 
-			UnityEditor.AssetDatabase.LoadAssetAtPath<TMPro.TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset");
-			UnityEditor.AssetDatabase.LoadAssetAtPath<TMPro.TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset");
+			UnityEditor.AssetDatabase.LoadAssetAtPath<FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset");
+			UnityEditor.AssetDatabase.LoadAssetAtPath<FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset");
 
-			var fonts = Resources.FindObjectsOfTypeAll<TMPro.TMP_FontAsset>();
+			var fonts = Resources.FindObjectsOfTypeAll<FontAsset>();
 			if (fonts.Length > 0)
 			{
 				return true;
@@ -465,6 +472,9 @@
 
 			progressInfo = "Converting Texts.";
 			texts.Convert(Replace, ShowProgress, cache);
+
+			var theme_targets = Target.GetComponentsInChildren<UIThemes.ThemeTargetBase>(true);
+			theme_targets.ForEach(x => x.FindTargets());
 
 			if (UseUndo)
 			{

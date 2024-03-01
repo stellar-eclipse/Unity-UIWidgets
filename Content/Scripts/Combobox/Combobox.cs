@@ -388,8 +388,7 @@
 				return;
 			}
 
-			var ev_item = eventData as ListViewItemEventData;
-			if (ev_item != null)
+			if (eventData is ListViewItemEventData ev_item)
 			{
 				if (ev_item.NewSelectedObject != null)
 				{
@@ -399,8 +398,7 @@
 				return;
 			}
 
-			var ev = eventData as PointerEventData;
-			if (ev == null)
+			if (!(eventData is PointerEventData ev))
 			{
 				HideList();
 				return;
@@ -447,7 +445,7 @@
 		/// <param name="go">Go.</param>
 		protected static SelectListener GetDeselectListener(GameObject go)
 		{
-			return Utilities.GetOrAddComponent<SelectListener>(go);
+			return Utilities.RequireComponent<SelectListener>(go);
 		}
 
 		/// <summary>
@@ -570,6 +568,8 @@
 		/// </summary>
 		protected virtual void OnDestroy()
 		{
+			ListViewPosition.ParentDestroyed();
+
 			ListView = null;
 			ToggleButton = null;
 			if (InputAdapter != null)
@@ -611,7 +611,7 @@
 		/// </summary>
 		public virtual void Upgrade()
 		{
-			Utilities.GetOrAddComponent(GetComponent<InputField>(), ref InputAdapter);
+			Utilities.RequireComponent(GetComponent<InputField>(), ref InputAdapter);
 		}
 
 #if UNITY_EDITOR

@@ -15,7 +15,7 @@ namespace UIWidgets.TMProSupport
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(GetComponent<TMP_InputField>(), ref InputAdapter);
+			Utilities.RequireComponent(GetComponent<TMP_InputField>(), ref InputAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

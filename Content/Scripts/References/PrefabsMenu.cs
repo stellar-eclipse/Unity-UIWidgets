@@ -1,11 +1,13 @@
 ﻿namespace UIWidgets
 {
+	using UIWidgets.Attributes;
 	using UIWidgets.Styles;
 	using UnityEngine;
 
 	/// <summary>
 	/// References to the prefabs for the menu.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/project-settings.html")]
 	public class PrefabsMenu : ScriptableObject
 	{
 #if UNITY_EDITOR
@@ -31,6 +33,18 @@
 				instance = value;
 			}
 		}
+
+		#if UNITY_2019_3_OR_NEWER
+		/// <summary>
+		/// Reload support.
+		/// </summary>
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(instance))]
+		static void StaticInit()
+		{
+			instance = null;
+		}
+		#endif
 #endif
 
 		#region Collections
@@ -458,6 +472,65 @@
 		/// </summary>
 		[SerializeField]
 		public GameObject TimeScroller;
+
+		#endregion
+
+		#region DefaultWidgets
+
+		/// <summary>
+		/// Button.
+		/// </summary>
+		[Header("Default Unity Widgets")]
+		[SerializeField]
+		public GameObject Button;
+
+		/// <summary>
+		/// InputField.
+		/// </summary>
+		[SerializeField]
+		public GameObject InputField;
+
+		/// <summary>
+		/// Panel.
+		/// </summary>
+		[SerializeField]
+		public GameObject Panel;
+
+		/// <summary>
+		/// ScrollView.
+		/// </summary>
+		[SerializeField]
+		public GameObject ScrollView;
+
+		/// <summary>
+		/// Scrollbar.
+		/// </summary>
+		[SerializeField]
+		public GameObject Scrollbar;
+
+		/// <summary>
+		/// Slider.
+		/// </summary>
+		[SerializeField]
+		public GameObject Slider;
+
+		/// <summary>
+		/// SliderWithScale.
+		/// </summary>
+		[SerializeField]
+		public GameObject SliderWithScale;
+
+		/// <summary>
+		/// Text.
+		/// </summary>
+		[SerializeField]
+		public GameObject Text;
+
+		/// <summary>
+		/// Toggle.
+		/// </summary>
+		[SerializeField]
+		public GameObject Toggle;
 
 		#endregion
 

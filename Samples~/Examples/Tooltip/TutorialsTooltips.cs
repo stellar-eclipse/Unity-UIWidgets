@@ -38,9 +38,9 @@
 				private set;
 			}
 
-			List<Graphic> graphics = new List<Graphic>();
+			readonly List<Graphic> graphics = new List<Graphic>();
 
-			List<bool> raycastTargets = new List<bool>();
+			readonly List<bool> raycastTargets = new List<bool>();
 
 			/// <summary>
 			/// Init.

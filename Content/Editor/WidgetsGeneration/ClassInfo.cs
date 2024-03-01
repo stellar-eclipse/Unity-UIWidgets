@@ -1,8 +1,9 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 namespace UIWidgets.WidgetGeneration
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UnityEditor;
 	using UnityEngine;
 
@@ -24,7 +25,7 @@ namespace UIWidgets.WidgetGeneration
 		{
 			get
 			{
-				return Fields.Count > 0;
+				return AllFields.Count > 0;
 			}
 		}
 
@@ -177,6 +178,7 @@ namespace UIWidgets.WidgetGeneration
 			}
 		}
 
+		[DomainReloadExclude]
 		static readonly Comparison<ClassField> FieldsComparison = (ClassField x, ClassField y) =>
 		{
 			return -(x.FieldType == typeof(string)).CompareTo(y.FieldType == typeof(string));
@@ -352,6 +354,13 @@ namespace UIWidgets.WidgetGeneration
 			if (type == null)
 			{
 				errors.Add("Type is not specified.");
+				return;
+			}
+
+			var is_mono = typeof(MonoBehaviour).IsAssignableFrom(type);
+			if (is_mono)
+			{
+				errors.Add("Data type should not be inherited from MonoBehaviour.");
 				return;
 			}
 

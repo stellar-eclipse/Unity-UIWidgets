@@ -10,6 +10,7 @@
 	/// Base class for FileListViewPathComponent.
 	/// </summary>
 	[RequireComponent(typeof(Image))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/filelistview.html")]
 	public class FileListViewPathComponentBase : ComponentPool<FileListViewPathComponentBase>, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler
 	{
 		/// <summary>
@@ -44,7 +45,7 @@
 				layout.ChildrenWidth = EasyLayoutNS.ChildrenSize.SetPreferred;
 			}
 
-			var mask = Utilities.GetOrAddComponent<Mask>(this);
+			var mask = Utilities.RequireComponent<Mask>(this);
 			mask.showMaskGraphic = true;
 		}
 

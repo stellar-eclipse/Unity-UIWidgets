@@ -2,9 +2,8 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Collections.ObjectModel;
 	using System.Runtime.CompilerServices;
-	using System.Threading.Tasks;
+	using UIWidgets.Attributes;
 	using UIWidgets.l10n;
 	using UIWidgets.Styles;
 	using UnityEngine;
@@ -13,6 +12,7 @@
 	/// <summary>
 	/// Base class for the Dialogs.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/dialogs/dialog.html")]
 	public abstract class DialogBase : MonoBehaviour, ITemplatable, IStylable, IUpgradeable, IHideable, INotifyCompletion, ILocalizationSupport
 	{
 #pragma warning disable 0649
@@ -38,11 +38,11 @@
 			set
 			{
 				Upgrade();
-				var buttons = new List<Button>(ButtonsTemplates)
+
+				ButtonsTemplates = new List<Button>(ButtonsTemplates)
 				{
 					value,
 				};
-				ButtonsTemplates = buttons.AsReadOnly();
 			}
 		}
 
@@ -62,7 +62,7 @@
 		/// Gets or sets the default buttons.
 		/// </summary>
 		/// <value>The default buttons.</value>
-		public abstract ReadOnlyCollection<Button> ButtonsTemplates
+		public abstract IReadOnlyList<Button> ButtonsTemplates
 		{
 			get;
 			set;
@@ -300,27 +300,25 @@
 
 		/// <summary>
 		/// Opened base dialogs.
-		/// The parameter is opened instances count.
 		/// </summary>
 		protected static HashSet<DialogBase> openedBaseDialogs = new HashSet<DialogBase>();
 
 		/// <summary>
 		/// List of the opened base dialogs.
-		/// The parameter is opened instances count.
 		/// </summary>
 		protected static List<DialogBase> OpenedBaseDialogsList = new List<DialogBase>();
 
 		/// <summary>
 		/// Opened base dialogs.
 		/// </summary>
-		public static ReadOnlyCollection<DialogBase> OpenedBaseDialogs
+		public static IReadOnlyList<DialogBase> OpenedBaseDialogs
 		{
 			get
 			{
 				OpenedBaseDialogsList.Clear();
 				OpenedBaseDialogsList.AddRange(openedBaseDialogs);
 
-				return OpenedBaseDialogsList.AsReadOnly();
+				return OpenedBaseDialogsList;
 			}
 		}
 
@@ -362,6 +360,18 @@
 			isInited = true;
 		}
 
+		#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(openedBaseDialogs), nameof(OpenedBaseDialogsList), nameof(OnBaseInstanceOpen), nameof(OnBaseInstanceClose))]
+		static void StaticInit()
+		{
+			openedBaseDialogs.Clear();
+			OpenedBaseDialogsList.Clear();
+			OnBaseInstanceOpen = null;
+			OnBaseInstanceClose = null;
+		}
+		#endif
+
 		bool localeSubscription;
 
 		/// <summary>
@@ -369,14 +379,16 @@
 		/// </summary>
 		protected virtual void OnEnable()
 		{
-			if (!localeSubscription)
+			if (localeSubscription)
 			{
-				Init();
-
-				localeSubscription = true;
-				Localization.OnLocaleChanged += LocaleChanged;
-				LocaleChanged();
+				return;
 			}
+
+			Init();
+
+			localeSubscription = true;
+			Localization.OnLocaleChanged += LocaleChanged;
+			LocaleChanged();
 		}
 
 		/// <summary>
@@ -406,11 +418,14 @@
 		protected abstract void LocaleChanged();
 
 		/// <summary>
-		/// This function is called when the MonoBehaviour will be destroyed.
+		/// Process the destroy event.
 		/// </summary>
 		protected virtual void OnDestroy()
 		{
+			DialogPosition.ParentDestroyed();
+
 			Localization.OnLocaleChanged -= LocaleChanged;
+			localeSubscription = false;
 		}
 
 		/// <summary>
@@ -916,11 +931,11 @@
 			{
 				if (btn != null)
 				{
-					var info = Utilities.GetOrAddComponent<DialogButtonComponentBase>(btn);
+					var info = Utilities.RequireComponent<DialogButtonComponentBase>(btn);
 					info.Upgrade();
 					if (info.NameAdapter == null)
 					{
-						Utilities.GetOrAddComponent(Compatibility.GetComponentInChildren<Text>(info, true), ref info.NameAdapter);
+						Utilities.RequireComponent(Compatibility.GetComponentInChildren<Text>(info, true), ref info.NameAdapter);
 					}
 				}
 			}
@@ -932,9 +947,9 @@
 
 			if (dialogInfo == null)
 			{
-				dialogInfo = Utilities.GetOrAddComponent<DialogInfoBase>(this);
-				Utilities.GetOrAddComponent(titleText, ref dialogInfo.TitleAdapter);
-				Utilities.GetOrAddComponent(contentText, ref dialogInfo.MessageAdapter);
+				dialogInfo = Utilities.RequireComponent<DialogInfoBase>(this);
+				Utilities.RequireComponent(titleText, ref dialogInfo.TitleAdapter);
+				Utilities.RequireComponent(contentText, ref dialogInfo.MessageAdapter);
 				dialogInfo.Icon = Icon;
 			}
 

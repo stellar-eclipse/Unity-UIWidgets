@@ -2,7 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Collections.ObjectModel;
+	using UIWidgets.Attributes;
 	using UIWidgets.l10n;
 	using UIWidgets.Styles;
 	using UnityEngine;
@@ -47,7 +47,7 @@
 			/// <param name="container">Container.</param>
 			/// <param name="active">List for the active buttons.</param>
 			/// <param name="cache">List for the cached buttons.</param>
-			public ButtonsPool(TDialog owner, ReadOnlyCollection<Button> templates, RectTransform container, List<ButtonInstance> active, List<List<ButtonInstance>> cache)
+			public ButtonsPool(TDialog owner, IReadOnlyList<Button> templates, RectTransform container, List<ButtonInstance> active, List<List<ButtonInstance>> cache)
 				: base(owner, templates, container, active, cache)
 			{
 			}
@@ -73,10 +73,7 @@
 		{
 			get
 			{
-				if (buttonsPool == null)
-				{
-					buttonsPool = new ButtonsPool(this as TDialog, ButtonsTemplates, ButtonsContainer, ButtonsActive, ButtonsCached);
-				}
+				buttonsPool ??= new ButtonsPool(this as TDialog, ButtonsTemplates, ButtonsContainer, ButtonsActive, ButtonsCached);
 
 				return buttonsPool;
 			}
@@ -92,13 +89,7 @@
 		/// <summary>
 		/// Current buttons.
 		/// </summary>
-		public ReadOnlyCollection<ButtonInstance> CurrentButtons
-		{
-			get
-			{
-				return ButtonsActive.AsReadOnly();
-			}
-		}
+		public IReadOnlyList<ButtonInstance> CurrentButtons => ButtonsActive;
 
 		/// <summary>
 		/// The cached buttons.
@@ -108,13 +99,13 @@
 		protected List<List<ButtonInstance>> ButtonsCached = new List<List<ButtonInstance>>();
 
 		/// <inheritdoc/>
-		public override ReadOnlyCollection<Button> ButtonsTemplates
+		public override IReadOnlyList<Button> ButtonsTemplates
 		{
 			get
 			{
 				Upgrade();
 
-				return buttonsTemplates.AsReadOnly();
+				return buttonsTemplates;
 			}
 
 			set
@@ -145,10 +136,7 @@
 		{
 			get
 			{
-				if (templates == null)
-				{
-					templates = new Templates<TDialog>();
-				}
+				templates ??= new Templates<TDialog>();
 
 				return templates;
 			}
@@ -172,27 +160,21 @@
 		/// <summary>
 		/// Opened dialogs.
 		/// </summary>
-		public static ReadOnlyCollection<TDialog> OpenedDialogs
+		public static IReadOnlyList<TDialog> OpenedDialogs
 		{
 			get
 			{
 				OpenedDialogsList.Clear();
 				OpenedDialogsList.AddRange(openedDialogs);
 
-				return OpenedDialogsList.AsReadOnly();
+				return OpenedDialogsList;
 			}
 		}
 
 		/// <summary>
 		/// Inactive dialogs with the same template.
 		/// </summary>
-		public List<TDialog> InactiveDialogs
-		{
-			get
-			{
-				return Templates.CachedInstances(TemplateName);
-			}
-		}
+		public List<TDialog> InactiveDialogs => Templates.CachedInstances(TemplateName);
 
 		/// <summary>
 		/// All dialogs.
@@ -231,6 +213,19 @@
 		/// </summary>
 		public static event Action<int> OnInstanceClose;
 
+#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(openedDialogs), nameof(OpenedDialogsList), nameof(OnInstanceClose), nameof(OnInstanceOpen), nameof(templates))]
+		static void StaticInit()
+		{
+			templates = null;
+			openedDialogs.Clear();
+			OpenedDialogsList.Clear();
+			OnInstanceOpen = null;
+			OnInstanceClose = null;
+		}
+#endif
+
 		/// <summary>
 		/// Get opened dialogs.
 		/// </summary>
@@ -261,6 +256,8 @@
 			{
 				openedDialogs.Add(this as TDialog);
 			}
+
+			base.OnEnable();
 		}
 
 		/// <inheritdoc/>
@@ -275,6 +272,8 @@
 		/// <inheritdoc/>
 		protected override void OnDestroy()
 		{
+			base.OnDestroy();
+
 			Buttons.Disable();
 
 			if (!IsTemplate)
@@ -291,8 +290,6 @@
 			{
 				Templates.Delete(TemplateName);
 			}
-
-			base.OnDestroy();
 		}
 
 		/// <summary>

@@ -24,7 +24,7 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0618
-			Utilities.GetOrAddComponent(Day, ref dayAdapter);
+			Utilities.RequireComponent(Day, ref dayAdapter);
 #pragma warning restore 0618
 		}
 

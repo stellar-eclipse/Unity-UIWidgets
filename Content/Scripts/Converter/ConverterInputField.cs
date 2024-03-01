@@ -1,8 +1,9 @@
-﻿#if UNITY_EDITOR && UIWIDGETS_TMPRO_SUPPORT && (UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER)
+#if UNITY_EDITOR && UIWIDGETS_TMPRO_SUPPORT && (UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER)
 namespace UIWidgets
 {
 	using System.Collections.Generic;
 	using System.Reflection;
+	using UIWidgets.Attributes;
 	using UnityEditor;
 	using UnityEngine;
 	using UnityEngine.UI;
@@ -61,6 +62,9 @@ namespace UIWidgets
 
 			readonly SerializedObjectCache cache;
 
+			readonly bool hasTextArea;
+
+			[DomainReloadExclude]
 			static readonly string[] ValueChangedEvent = new string[]
 			{
 #if UNITY_5_3 || UNITY_5_3_OR_NEWER
@@ -70,6 +74,7 @@ namespace UIWidgets
 #endif
 			};
 
+			[DomainReloadExclude]
 			static readonly string[] EndEditFields = new string[] { "m_OnEndEdit", "m_OnDidEndEdit" };
 
 			/// <summary>
@@ -80,6 +85,9 @@ namespace UIWidgets
 			public ConverterInputField(InputField input, SerializedObjectCache cache)
 			{
 				this.cache = cache;
+
+				var text_parent = input.textComponent.transform.parent;
+				hasTextArea = text_parent.parent == input.transform;
 
 				text = input.textComponent;
 				placeholder = input.placeholder;
@@ -150,7 +158,7 @@ namespace UIWidgets
 					type = type.BaseType;
 					if (type == null)
 					{
-						return default(T);
+						return default;
 					}
 				}
 				while (field == null);
@@ -195,23 +203,35 @@ namespace UIWidgets
 			/// <param name="converter">Converter.</param>
 			public void Set(TMPro.TMP_InputField input, ConverterTMPro converter)
 			{
-				var textarea = converter.CreateGameObject("Text Area");
-				converter.SetParent(textarea.transform, input.transform);
+				RectTransform viewport;
+				Vector2 viewportSizeDelta;
 
-				var viewport = textarea.transform as RectTransform;
-
-				viewport.localRotation = textRectTransform.localRotation;
-				viewport.localPosition = textRectTransform.localPosition;
-				viewport.localScale = textRectTransform.localScale;
-				viewport.anchorMin = textRectTransform.anchorMin;
-				viewport.anchorMax = textRectTransform.anchorMax;
-				viewport.anchoredPosition = textRectTransform.anchoredPosition;
-				viewport.sizeDelta = textRectTransform.sizeDelta;
-				viewport.pivot = textRectTransform.pivot;
-
-				foreach (var child in children)
+				if (hasTextArea)
 				{
-					converter.SetParent(child, textarea.transform);
+					viewport = textRectTransform.parent as RectTransform;
+					viewportSizeDelta = viewport.sizeDelta;
+				}
+				else
+				{
+					var textarea = converter.CreateGameObject("Text Area");
+					converter.SetParent(textarea.transform, input.transform);
+
+					viewport = textarea.transform as RectTransform;
+
+					viewport.localRotation = textRectTransform.localRotation;
+					viewport.localPosition = textRectTransform.localPosition;
+					viewport.localScale = textRectTransform.localScale;
+					viewport.anchorMin = textRectTransform.anchorMin;
+					viewport.anchorMax = textRectTransform.anchorMax;
+					viewport.anchoredPosition = textRectTransform.anchoredPosition;
+					viewport.sizeDelta = textRectTransform.sizeDelta;
+					viewportSizeDelta = textRectTransform.sizeDelta;
+					viewport.pivot = textRectTransform.pivot;
+
+					foreach (var child in children)
+					{
+						converter.SetParent(child, textarea.transform);
+					}
 				}
 
 				input.textViewport = viewport;
@@ -263,6 +283,8 @@ namespace UIWidgets
 
 				input.fontAsset = GetTMProFont();
 
+				viewport.sizeDelta = viewportSizeDelta;
+
 				FieldData.SetEventData(input, ValueChangedEvent, onValueChangedData, cache);
 				FieldData.SetEventData(input, EndEditFields, onEndEditData, cache);
 
@@ -300,82 +322,56 @@ namespace UIWidgets
 
 			static TMPro.TMP_InputField.CharacterValidation Convert(InputField.CharacterValidation validation)
 			{
-				switch (validation)
+				return validation switch
 				{
-					case InputField.CharacterValidation.None:
-						return TMPro.TMP_InputField.CharacterValidation.None;
-					case InputField.CharacterValidation.Integer:
-						return TMPro.TMP_InputField.CharacterValidation.Integer;
-					case InputField.CharacterValidation.Decimal:
-						return TMPro.TMP_InputField.CharacterValidation.Decimal;
-					case InputField.CharacterValidation.Alphanumeric:
-						return TMPro.TMP_InputField.CharacterValidation.Alphanumeric;
-					case InputField.CharacterValidation.Name:
-						return TMPro.TMP_InputField.CharacterValidation.Name;
-					case InputField.CharacterValidation.EmailAddress:
-						return TMPro.TMP_InputField.CharacterValidation.EmailAddress;
-				}
-
-				return TMPro.TMP_InputField.CharacterValidation.None;
+					InputField.CharacterValidation.None => TMPro.TMP_InputField.CharacterValidation.None,
+					InputField.CharacterValidation.Integer => TMPro.TMP_InputField.CharacterValidation.Integer,
+					InputField.CharacterValidation.Decimal => TMPro.TMP_InputField.CharacterValidation.Decimal,
+					InputField.CharacterValidation.Alphanumeric => TMPro.TMP_InputField.CharacterValidation.Alphanumeric,
+					InputField.CharacterValidation.Name => TMPro.TMP_InputField.CharacterValidation.Name,
+					InputField.CharacterValidation.EmailAddress => TMPro.TMP_InputField.CharacterValidation.EmailAddress,
+					_ => TMPro.TMP_InputField.CharacterValidation.None,
+				};
 			}
 
 			static TMPro.TMP_InputField.InputType Convert(InputField.InputType inputType)
 			{
-				switch (inputType)
+				return inputType switch
 				{
-					case InputField.InputType.Standard:
-						return TMPro.TMP_InputField.InputType.Standard;
-					case InputField.InputType.AutoCorrect:
-						return TMPro.TMP_InputField.InputType.AutoCorrect;
-					case InputField.InputType.Password:
-						return TMPro.TMP_InputField.InputType.Password;
-				}
-
-				return TMPro.TMP_InputField.InputType.Standard;
+					InputField.InputType.Standard => TMPro.TMP_InputField.InputType.Standard,
+					InputField.InputType.AutoCorrect => TMPro.TMP_InputField.InputType.AutoCorrect,
+					InputField.InputType.Password => TMPro.TMP_InputField.InputType.Password,
+					_ => TMPro.TMP_InputField.InputType.Standard,
+				};
 			}
 
 			static TMPro.TMP_InputField.LineType Convert(InputField.LineType lineType)
 			{
-				switch (lineType)
+				return lineType switch
 				{
-					case InputField.LineType.SingleLine:
-						return TMPro.TMP_InputField.LineType.SingleLine;
-					case InputField.LineType.MultiLineNewline:
-						return TMPro.TMP_InputField.LineType.MultiLineNewline;
-					case InputField.LineType.MultiLineSubmit:
-						return TMPro.TMP_InputField.LineType.MultiLineSubmit;
-				}
-
-				return TMPro.TMP_InputField.LineType.SingleLine;
+					InputField.LineType.SingleLine => TMPro.TMP_InputField.LineType.SingleLine,
+					InputField.LineType.MultiLineNewline => TMPro.TMP_InputField.LineType.MultiLineNewline,
+					InputField.LineType.MultiLineSubmit => TMPro.TMP_InputField.LineType.MultiLineSubmit,
+					_ => TMPro.TMP_InputField.LineType.SingleLine,
+				};
 			}
 
 			static TMPro.TMP_InputField.ContentType Convert(InputField.ContentType contentType)
 			{
-				switch (contentType)
+				return contentType switch
 				{
-					case InputField.ContentType.Standard:
-						return TMPro.TMP_InputField.ContentType.Standard;
-					case InputField.ContentType.Autocorrected:
-						return TMPro.TMP_InputField.ContentType.Autocorrected;
-					case InputField.ContentType.IntegerNumber:
-						return TMPro.TMP_InputField.ContentType.IntegerNumber;
-					case InputField.ContentType.DecimalNumber:
-						return TMPro.TMP_InputField.ContentType.DecimalNumber;
-					case InputField.ContentType.Alphanumeric:
-						return TMPro.TMP_InputField.ContentType.Alphanumeric;
-					case InputField.ContentType.Name:
-						return TMPro.TMP_InputField.ContentType.Name;
-					case InputField.ContentType.EmailAddress:
-						return TMPro.TMP_InputField.ContentType.EmailAddress;
-					case InputField.ContentType.Password:
-						return TMPro.TMP_InputField.ContentType.Password;
-					case InputField.ContentType.Pin:
-						return TMPro.TMP_InputField.ContentType.Pin;
-					case InputField.ContentType.Custom:
-						return TMPro.TMP_InputField.ContentType.Custom;
-				}
-
-				return TMPro.TMP_InputField.ContentType.Standard;
+					InputField.ContentType.Standard => TMPro.TMP_InputField.ContentType.Standard,
+					InputField.ContentType.Autocorrected => TMPro.TMP_InputField.ContentType.Autocorrected,
+					InputField.ContentType.IntegerNumber => TMPro.TMP_InputField.ContentType.IntegerNumber,
+					InputField.ContentType.DecimalNumber => TMPro.TMP_InputField.ContentType.DecimalNumber,
+					InputField.ContentType.Alphanumeric => TMPro.TMP_InputField.ContentType.Alphanumeric,
+					InputField.ContentType.Name => TMPro.TMP_InputField.ContentType.Name,
+					InputField.ContentType.EmailAddress => TMPro.TMP_InputField.ContentType.EmailAddress,
+					InputField.ContentType.Password => TMPro.TMP_InputField.ContentType.Password,
+					InputField.ContentType.Pin => TMPro.TMP_InputField.ContentType.Pin,
+					InputField.ContentType.Custom => TMPro.TMP_InputField.ContentType.Custom,
+					_ => TMPro.TMP_InputField.ContentType.Standard,
+				};
 			}
 		}
 	}

@@ -151,6 +151,15 @@
 		}
 
 		/// <summary>
+		/// Calculate group size.
+		/// </summary>
+		/// <returns>Size.</returns>
+		protected override GroupSize CalculateGroupSize()
+		{
+			return CalculateGroupSize(true, Spacing, new Vector2(PaddingInner.Horizontal, PaddingInner.Vertical));
+		}
+
+		/// <summary>
 		/// Calculate sizes of the elements.
 		/// </summary>
 		protected override void CalculateSizes()

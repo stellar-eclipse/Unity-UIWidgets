@@ -9,7 +9,7 @@
 	/// <content>
 	/// Base class for the custom ListViews.
 	/// </content>
-	public partial class ListViewCustom<TItemView, TItem> : ListViewCustomBase, IStylable
+	public partial class ListViewCustom<TItemView, TItem> : ListViewCustom<TItem>, IUpdatable, ILateUpdatable, IListViewCallbacks<TItemView>
 		where TItemView : ListViewItem
 	{
 		/// <summary>
@@ -95,28 +95,7 @@
 			/// <inheritdoc/>
 			public override Vector2 GetInstanceFullSize(int index)
 			{
-				return GetInstanceFullSize(Owner.DataSource[index]);
-			}
-
-			/// <summary>
-			/// Get the size of the instance for the specified item.
-			/// </summary>
-			/// <param name="item">Item.</param>
-			/// <returns>The instance size.</returns>
-			protected Vector2 GetInstanceFullSize(TItem item)
-			{
-				return InstanceSizes.Get(item, Owner.DefaultInstanceSize);
-			}
-
-			/// <summary>
-			/// Gets the size of the instance for the specified item.
-			/// </summary>
-			/// <param name="item">Item.</param>
-			/// <returns>The instance size.</returns>
-			protected float GetInstanceSize(TItem item)
-			{
-				var size = GetInstanceFullSize(item);
-				return Owner.IsHorizontal() ? size.x : size.y;
+				return InstanceSizes.Get(Owner.DataSource[index], base.GetInstanceFullSize(index));
 			}
 
 			/// <inheritdoc/>
@@ -137,7 +116,7 @@
 					return;
 				}
 
-				UpdateInstanceSize(instance, GetInstanceFullSize(item));
+				UpdateInstanceSize(instance, GetInstanceFullSize(index));
 			}
 
 			/// <inheritdoc/>
@@ -238,7 +217,8 @@
 			/// <inheritdoc/>
 			public override int GetFirstVisibleIndex(bool strict = false)
 			{
-				var first_visible_index = Mathf.Max(0, GetIndexAtPosition(GetPosition()));
+				var pos = Mathf.Max(0f, GetPosition() - Owner.LayoutBridge.GetMargin());
+				var first_visible_index = Mathf.Max(0, GetIndexAtPosition(pos));
 
 				if (Owner.LoopedListAvailable)
 				{
@@ -256,9 +236,28 @@
 			/// <inheritdoc/>
 			public override int GetLastVisibleIndex(bool strict = false)
 			{
-				var last_visible_index = GetIndexAtPosition(GetPosition() + Owner.Viewport.ScaledAxisSize);
+				var pos = Mathf.Max(0f, GetPosition() - Owner.LayoutBridge.GetMargin());
+				var last_visible_index = GetIndexAtPosition(pos + Owner.Viewport.ScaledAxisSize);
 
 				return strict ? last_visible_index : last_visible_index + 2;
+			}
+
+			/// <inheritdoc/>
+			protected override int GetVisibleItems(int start_index)
+			{
+				var spacing = Owner.IsHorizontal() ? Owner.GetItemSpacingX() : Owner.GetItemSpacingY();
+
+				var size = Owner.IsHorizontal() ? ViewportWidth() : ViewportHeight();
+
+				var index = start_index;
+				var max = Owner.DataSource.Count - 1;
+				while ((size > 0) && (index < max))
+				{
+					index += 1;
+					size -= GetInstanceSize(index) + spacing;
+				}
+
+				return (index + 1 - start_index) * GetItemsPerBlock();
 			}
 
 			/// <summary>
@@ -278,7 +277,7 @@
 				var n = Owner.LoopedListAvailable ? start + count : Mathf.Min(start + count, Owner.DataSource.Count);
 				for (int i = start; i < n; i++)
 				{
-					width += GetInstanceSize(Owner.DataSource[VisibleIndex2ItemIndex(i)]);
+					width += GetInstanceSize(VisibleIndex2ItemIndex(i));
 				}
 
 				width += Owner.LayoutBridge.GetSpacing() * (count - 1);
@@ -293,7 +292,7 @@
 				var size = IsRequiredCenterTheItems() ? CenteredFillerSize() : 0f;
 				for (int i = 0; i < n; i++)
 				{
-					size += GetInstanceSize(Owner.DataSource[i]);
+					size += GetInstanceSize(i);
 				}
 
 				return size + (Owner.LayoutBridge.GetSpacing() * index) + Owner.LayoutBridge.GetMargin();
@@ -323,7 +322,7 @@
 			/// <param name="items">New items.</param>
 			protected virtual void RemoveOldItems(ObservableList<TItem> items)
 			{
-				InstanceSizes.RemoveUnexisting(items);
+				InstanceSizes.RemoveNotExisting(items);
 			}
 
 			/// <inheritdoc/>
@@ -481,21 +480,22 @@
 				// do not save size if instance size is overridden
 				if (!InstanceSizes.HasOverridden(Owner.DataSource[index]))
 				{
-					UpdateItemSize(Owner.DataSource[index], size);
+					UpdateItemSize(index, size);
 				}
 			}
 
 			/// <summary>
 			/// Update saved size of item.
 			/// </summary>
-			/// <param name="item">Item.</param>
+			/// <param name="index">Index.</param>
 			/// <param name="newSize">New size.</param>
 			/// <returns>true if size different; otherwise, false.</returns>
-			protected virtual bool UpdateItemSize(TItem item, Vector2 newSize)
+			protected virtual bool UpdateItemSize(int index, Vector2 newSize)
 			{
+				var item = Owner.DataSource[index];
 				newSize = ValidateSize(newSize);
 
-				var current_size = GetInstanceFullSize(item);
+				var current_size = GetInstanceFullSize(index);
 
 				var is_equals = Owner.IsHorizontal()
 					? Mathf.Approximately(current_size.x, newSize.x)
@@ -517,6 +517,7 @@
 			public override int GetNearestIndex(Vector2 point, NearestType type)
 			{
 				var pos_block = Owner.IsHorizontal() ? point.x : Mathf.Abs(point.y);
+				pos_block -= Owner.LayoutBridge.GetMargin();
 				var index = GetIndexAtPosition(pos_block, type);
 
 				return Mathf.Min(index, Owner.DataSource.Count);
@@ -525,7 +526,8 @@
 			/// <inheritdoc/>
 			public override int GetNearestItemIndex()
 			{
-				return GetIndexAtPosition(GetPosition());
+				var pos = Mathf.Max(0f, GetPosition() - Owner.LayoutBridge.GetMargin());
+				return GetIndexAtPosition(pos);
 			}
 
 			/// <inheritdoc/>
@@ -537,12 +539,12 @@
 				}
 
 				var size = 0f;
-				foreach (var item in Owner.DataSource)
+				for (var i = 0; i < Owner.DataSource.Count; i++)
 				{
-					size += GetInstanceSize(item);
+					size += GetInstanceSize(i);
 				}
 
-				return size + (Owner.DataSource.Count * Owner.LayoutBridge.GetSpacing()) - Owner.LayoutBridge.GetSpacing();
+				return size + (Owner.DataSource.Count * Owner.LayoutBridge.GetSpacing()) - Owner.LayoutBridge.GetSpacing() + Owner.LayoutBridge.GetFullMargin();
 			}
 		}
 	}

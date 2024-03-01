@@ -109,7 +109,11 @@ namespace UIWidgets.TMProSupport
 
 			if (style.ChangeHorizontalOverflow)
 			{
+				#if UNITY_2023_2_OR_NEWER || UIWIDGETS_TMPRO_3_2_OR_NEWER
+				component.textWrappingMode = style.HorizontalOverflow == HorizontalWrapMode.Wrap ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
+				#else
 				component.enableWordWrapping = style.HorizontalOverflow == HorizontalWrapMode.Wrap;
+				#endif
 			}
 
 			if (style.ChangeVerticalOverflow)
@@ -238,7 +242,12 @@ namespace UIWidgets.TMProSupport
 			style.Size = Mathf.RoundToInt(component.fontSize);
 			style.ChangeSize = true;
 
+			#if UNITY_2023_2_OR_NEWER || UIWIDGETS_TMPRO_3_2_OR_NEWER
+			style.HorizontalOverflow = component.textWrappingMode == TextWrappingModes.Normal ? HorizontalWrapMode.Wrap : HorizontalWrapMode.Overflow;
+			#else
 			style.HorizontalOverflow = component.enableWordWrapping ? HorizontalWrapMode.Wrap : HorizontalWrapMode.Overflow;
+			#endif
+
 			style.ChangeHorizontalOverflow = true;
 
 			if (component.overflowMode == TextOverflowModes.Overflow)

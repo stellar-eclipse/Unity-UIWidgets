@@ -6,12 +6,15 @@
 	using System.Runtime.Serialization.Formatters.Binary;
 	using System.Text;
 	using UnityEngine;
-	using UnityEngine.Events;
-	using UnityEngine.EventSystems;
-	using UnityEngine.UI;
 #if UNITY_EDITOR
 	using UnityEditor;
-	using UnityEditor.Events;
+#endif
+#if UIWIDGETS_TMPRO_SUPPORT && UIWIDGETS_TMPRO_4_0_OR_NEWER
+	using FontAsset = UnityEngine.TextCore.Text.FontAsset;
+#elif UIWIDGETS_TMPRO_SUPPORT
+	using FontAsset = TMPro.TMP_FontAsset;
+#else
+	using FontAsset = UnityEngine.ScriptableObject;
 #endif
 
 	/// <summary>
@@ -104,13 +107,11 @@
 		/// <returns>Serialized string.</returns>
 		public static string Serialize(object obj)
 		{
-			var serializer = new BinaryFormatter();
+			var formatter = new BinaryFormatter();
+			using var ms = new MemoryStream();
 
-			using (var ms = new MemoryStream())
-			{
-				serializer.Serialize(ms, obj);
-				return Convert.ToBase64String(ms.ToArray());
-			}
+			formatter.Serialize(ms, obj);
+			return Convert.ToBase64String(ms.ToArray());
 		}
 
 		/// <summary>
@@ -133,6 +134,49 @@
 
 #if UNITY_EDITOR
 		/// <summary>
+		/// Path to the selected asset.
+		/// </summary>
+		/// <returns>Path.</returns>
+		public static string SelectedAssetPath()
+		{
+			var folder = "Assets";
+			if (Selection.activeObject != null)
+			{
+				folder = AssetDatabase.GetAssetPath(Selection.activeObject);
+				if (!Directory.Exists(folder))
+				{
+					folder = Path.GetDirectoryName(folder);
+				}
+			}
+
+			return folder;
+		}
+
+		/// <summary>
+		/// Create ScriptableObject asset.
+		/// </summary>
+		/// <typeparam name="T">Type of ScriptableObject.</typeparam>
+		/// <param name="path">Path.</param>
+		/// <param name="save">Save.</param>
+		/// <returns>ScriptableObject instance.</returns>
+		public static T CreateScriptableObjectAsset<T>(string path, bool save = true)
+			where T : ScriptableObject
+		{
+			var file = AssetDatabase.GenerateUniqueAssetPath(path);
+			var asset = ScriptableObject.CreateInstance<T>();
+
+			AssetDatabase.CreateAsset(asset, file);
+			EditorUtility.SetDirty(asset);
+
+			if (save)
+			{
+				AssetDatabase.SaveAssets();
+			}
+
+			return asset;
+		}
+
+		/// <summary>
 		/// Get default font.
 		/// </summary>
 		/// <returns>Default font.</returns>
@@ -146,17 +190,11 @@
 			return Resources.GetBuiltinResource<Font>(font);
 		}
 
-#if UIWIDGETS_TMPRO_SUPPORT && (UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER)
 		/// <summary>
 		/// Get default TMPro font.
 		/// </summary>
 		/// <returns>Default TMPro font.</returns>
-		public static TMPro.TMP_FontAsset GetDefaultTMProFont()
-#elif UIWIDGETS_TMPRO_SUPPORT
-		public static TMPro.TextMeshProFont GetDefaultTMProFont()
-#else
-		public static ScriptableObject GetDefaultTMProFont()
-#endif
+		public static FontAsset GetDefaultTMProFont()
 		{
 			var paths = new string[]
 			{
@@ -168,14 +206,7 @@
 
 			foreach (var path in paths)
 			{
-#if UIWIDGETS_TMPRO_SUPPORT && (UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER)
-				var font = Resources.Load<TMPro.TMP_FontAsset>(path);
-#elif UIWIDGETS_TMPRO_SUPPORT
-				var font = Resources.Load<TMPro.TextMeshProFont>(path);
-#else
-				var font = Resources.Load<ScriptableObject>(path);
-#endif
-
+				var font = Resources.Load<FontAsset>(path);
 				if (font != null)
 				{
 					return font;
@@ -206,65 +237,15 @@
 		}
 
 		/// <summary>
-		/// Creates the object by path to asset prefab.
-		/// </summary>
-		/// <returns>The created object.</returns>
-		/// <param name="path">Path.</param>
-		static GameObject CreateObject(string path)
-		{
-			var prefab = Compatibility.LoadAssetAtPath<GameObject>(path);
-			if (prefab == null)
-			{
-				throw new ArgumentException(string.Format("Prefab not found at path {0}.", path));
-			}
-
-			return CreateGameObject(prefab);
-		}
-
-		/// <summary>
 		/// Create gameobject.
 		/// </summary>
 		/// <param name="prefab">Prefab.</param>
 		/// <param name="undo">Support editor undo.</param>
 		/// <returns>Created gameobject.</returns>
+		[Obsolete("Replaced with Widgets.CreateGameObject()")]
 		public static GameObject CreateGameObject(GameObject prefab, bool undo = true)
 		{
-			var go = Compatibility.Instantiate(prefab);
-
-			if (undo)
-			{
-				Undo.RegisterCreatedObjectUndo(go, "Create " + prefab.name);
-			}
-
-			var go_parent = Selection.activeTransform;
-			if ((go_parent == null) || (!(go_parent is RectTransform)))
-			{
-				go_parent = GetCanvasTransform();
-			}
-
-			if (go_parent != null)
-			{
-				if (undo)
-				{
-					Undo.SetTransformParent(go.transform, go_parent, "Create " + prefab.name);
-				}
-				else
-				{
-					go.transform.SetParent(go_parent, false);
-				}
-			}
-
-			go.name = prefab.name;
-
-			var rectTransform = go.transform as RectTransform;
-			if (rectTransform != null)
-			{
-				rectTransform.anchoredPosition = new Vector2(0, 0);
-
-				Utilities.FixInstantiated(prefab, go);
-			}
-
-			return go;
+			return null;
 		}
 
 		/// <summary>
@@ -308,26 +289,6 @@
 			}
 
 			return result;
-		}
-
-		/// <summary>
-		/// Creates the object from asset.
-		/// </summary>
-		/// <returns>The object from asset.</returns>
-		/// <param name="key">Search string.</param>
-		static GameObject CreateObjectFromAsset(string key)
-		{
-			var path = GetAssetPath(key);
-			if (string.IsNullOrEmpty(path))
-			{
-				return null;
-			}
-
-			var go = CreateObject(path);
-
-			Selection.activeObject = go;
-
-			return go;
 		}
 
 		/// <summary>
@@ -406,15 +367,10 @@
 		/// </summary>
 		/// <param name="templateLabel">Template label.</param>
 		/// <returns>Widget template.</returns>
+		[Obsolete("Replaced with Widgets.CreateTemplateFromAsset().")]
 		public static GameObject CreateWidgetTemplateFromAsset(string templateLabel)
 		{
-			var path = GetAssetPath(templateLabel + "Prefab");
-			if (string.IsNullOrEmpty(path))
-			{
-				return null;
-			}
-
-			return CreateObject(path);
+			return null;
 		}
 
 		/// <summary>
@@ -424,79 +380,23 @@
 		/// <param name="applyStyle">Apply style to created widget.</param>
 		/// <param name="converter">Converter for the created widget (mostly used to replace Unity Text with TMPro Text).</param>
 		/// <returns>Created GameObject.</returns>
+		[Obsolete("Replaced with Widgets.CreateFromAsset()")]
 		public static GameObject CreateWidgetFromAsset(string widget, bool applyStyle = true, Action<GameObject> converter = null)
 		{
-			var go = CreateObjectFromAsset(widget + "Prefab");
-
-			if (go != null)
-			{
-				if (converter != null)
-				{
-					converter(go);
-				}
-
-				if (applyStyle)
-				{
-					var style = PrefabsMenu.Instance.DefaultStyle;
-					if (style != null)
-					{
-						style.ApplyTo(go);
-					}
-				}
-			}
-
-			Upgrade(go);
-
-			FixDialogCloseButton(go);
-
-			return go;
+			return null;
 		}
 
 		/// <summary>
 		/// Creates the widget from prefab by name.
 		/// </summary>
 		/// <param name="prefab">Widget name.</param>
-		/// <param name="applyStyle">Apply style to created widget.</param>
+		/// <param name="applyStyle">Apply style or attach theme to the created widget.</param>
 		/// <param name="converter">Converter for the created widget (mostly used to replace Unity Text with TMPro Text).</param>
 		/// <returns>Created GameObject.</returns>
+		[Obsolete("Replaced with Widgets.CreateFromPrefab()")]
 		public static GameObject CreateWidgetFromPrefab(GameObject prefab, bool applyStyle = true, Action<GameObject> converter = null)
 		{
-			var go = CreateGameObject(prefab);
-
-			Selection.activeObject = go;
-
-			if (go != null)
-			{
-				if (converter != null)
-				{
-					converter(go);
-				}
-
-				if (applyStyle)
-				{
-					var style = PrefabsMenu.Instance.DefaultStyle;
-					if (style != null)
-					{
-						style.ApplyTo(go);
-					}
-				}
-			}
-
-			Upgrade(go);
-
-			FixDialogCloseButton(go);
-
-			return go;
-		}
-
-		static void Upgrade(GameObject go)
-		{
-			var upgrades = new List<IUpgradeable>();
-			Compatibility.GetComponentsInChildren(go.transform, true, upgrades);
-			for (int i = 0; i < upgrades.Count; i++)
-			{
-				upgrades[i].Upgrade();
-			}
+			return null;
 		}
 
 		/// <summary>
@@ -504,79 +404,19 @@
 		/// </summary>
 		/// <param name="go">GameObject.</param>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0603:Delegate allocation from a method group", Justification = "Required")]
+		[Obsolete("Replaced with Widgets.FixDialogCloseButton()")]
 		public static void FixDialogCloseButton(GameObject go)
 		{
-			var dialogs = go.GetComponentsInChildren<Dialog>(true);
-
-			foreach (var dialog in dialogs)
-			{
-				var button_go = dialog.transform.Find("Header/CloseButton");
-				if (button_go == null)
-				{
-					continue;
-				}
-
-				var button = button_go.GetComponent<Button>();
-				if (button == null)
-				{
-					continue;
-				}
-
-				if (IsEventCallMethod(button.onClick, dialog, "Hide"))
-				{
-					UnityEventTools.RemovePersistentListener(button.onClick, dialog.Hide);
-					UnityEventTools.AddPersistentListener(button.onClick, dialog.Cancel);
-				}
-			}
-		}
-
-		static bool IsEventCallMethod(UnityEvent ev, MonoBehaviour target, string method)
-		{
-			var n = ev.GetPersistentEventCount();
-			for (int i = 0; i < n; i++)
-			{
-				if ((ev.GetPersistentMethodName(i) == method) && (ev.GetPersistentTarget(i) == target))
-				{
-					return true;
-				}
-			}
-
-			return false;
 		}
 
 		/// <summary>
 		/// Gets the canvas transform.
 		/// </summary>
 		/// <returns>The canvas transform.</returns>
+		[Obsolete("Replaced with Widgets.GetCanvasTransform()")]
 		public static Transform GetCanvasTransform()
 		{
-			var canvas = (Selection.activeGameObject != null) ? Selection.activeGameObject.GetComponentInParent<Canvas>() : null;
-			if (canvas == null)
-			{
-				canvas = UnityEngine.Object.FindObjectOfType<Canvas>();
-			}
-
-			if (canvas != null)
-			{
-				return canvas.transform;
-			}
-
-			var canvasGO = new GameObject("Canvas")
-			{
-				layer = LayerMask.NameToLayer("UI"),
-			};
-			canvas = canvasGO.AddComponent<Canvas>();
-			canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-			canvasGO.AddComponent<CanvasScaler>();
-			canvasGO.AddComponent<GraphicRaycaster>();
-			Undo.RegisterCreatedObjectUndo(canvasGO, "Create " + canvasGO.name);
-
-			if (UnityEngine.Object.FindObjectOfType<EventSystem>() == null)
-			{
-				Compatibility.CreateEventSystem();
-			}
-
-			return canvasGO.transform;
+			return null;
 		}
 #endif
 	}

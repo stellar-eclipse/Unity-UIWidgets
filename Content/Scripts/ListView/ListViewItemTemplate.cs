@@ -2,6 +2,8 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
+	using UIWidgets.Pool;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
@@ -32,15 +34,9 @@
 			/// </summary>
 			public TItemView Template
 			{
-				get
-				{
-					return template;
-				}
+				get => template;
 
-				protected set
-				{
-					template = value;
-				}
+				protected set => template = value;
 			}
 
 			[SerializeField]
@@ -51,15 +47,9 @@
 			/// </summary>
 			public InstanceID TemplateID
 			{
-				get
-				{
-					return templateID;
-				}
+				get => templateID;
 
-				protected set
-				{
-					templateID = value;
-				}
+				protected set => templateID = value;
 			}
 
 			[SerializeField]
@@ -74,10 +64,7 @@
 			{
 				get
 				{
-					if (instances == null)
-					{
-						instances = new InstancesCollection<TItemView>(instancesList);
-					}
+					instances ??= new InstancesCollection<TItemView>(instancesList);
 
 					return instances;
 				}
@@ -91,15 +78,9 @@
 			/// </summary>
 			public List<TItemView> Requested
 			{
-				get
-				{
-					return requested;
-				}
+				get => requested;
 
-				protected set
-				{
-					requested = value;
-				}
+				protected set => requested = value;
 			}
 
 			[SerializeField]
@@ -110,15 +91,9 @@
 			/// </summary>
 			public List<TItemView> Cache
 			{
-				get
-				{
-					return cache;
-				}
+				get => cache;
 
-				protected set
-				{
-					cache = value;
-				}
+				protected set => cache = value;
 			}
 
 			/// <summary>
@@ -132,39 +107,29 @@
 			/// </summary>
 			protected Dictionary<InstanceID, IListViewCallbacks<TItemView>> Callbacks = new Dictionary<InstanceID, IListViewCallbacks<TItemView>>();
 
-			private Vector2 size;
+			private Vector2 defaultSize;
 
 			/// <summary>
 			/// Template size.
 			/// </summary>
-			public Vector2 Size
+			public Vector2 DefaultSize
 			{
-				get
-				{
-					return size;
-				}
-			}
+				get => defaultSize;
 
-			/// <summary>
-			/// Layout elements.
-			/// </summary>
-			protected static List<ILayoutElement> LayoutElements = new List<ILayoutElement>();
+				set => defaultSize = value;
+			}
 
 			/// <summary>
 			/// Check if instance is null.
 			/// </summary>
+			[DomainReloadExclude]
 			static readonly Predicate<TItemView> InstanceIsNull = x => x == null;
 
 			/// <summary>
 			/// Compare LayoutElements by layoutPriority.
 			/// </summary>
-			/// <param name="x">First LayoutElement.</param>
-			/// <param name="y">Second LayoutElement.</param>
-			/// <returns>Result of the comparison.</returns>
-			protected static int LayoutElementsComparison(ILayoutElement x, ILayoutElement y)
-			{
-				return -x.layoutPriority.CompareTo(y.layoutPriority);
-			}
+			[DomainReloadExclude]
+			protected static Comparison<ILayoutElement> LayoutElementsComparison = (x, y) => -x.layoutPriority.CompareTo(y.layoutPriority);
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="ListViewItemTemplate{TItemView}"/> class.
@@ -189,7 +154,7 @@
 				};
 
 				result.Template.Init();
-				result.size = result.GetSize();
+				result.defaultSize = result.GetSize();
 
 				return result;
 			}
@@ -253,19 +218,19 @@
 
 				var rt = Template.transform as RectTransform;
 
-				LayoutElements.Clear();
-				Compatibility.GetComponents<ILayoutElement>(Template.gameObject, LayoutElements);
-				LayoutElements.Sort(LayoutElementsComparison);
+				using var _ = ListPool<ILayoutElement>.Get(out var layout_elements);
+				Compatibility.GetComponents(Template.gameObject, layout_elements);
+				layout_elements.Sort(LayoutElementsComparison);
 
 				var size = Vector2.zero;
 
-				size.x = Mathf.Max(Mathf.Max(PreferredWidth(LayoutElements), rt.rect.width), 1f);
+				size.x = Mathf.Max(Mathf.Max(PreferredWidth(layout_elements), rt.rect.width), 1f);
 				if (float.IsNaN(size.x))
 				{
 					size.x = 1f;
 				}
 
-				size.y = Mathf.Max(Mathf.Max(PreferredHeight(LayoutElements), rt.rect.height), 1f);
+				size.y = Mathf.Max(Mathf.Max(PreferredHeight(layout_elements), rt.rect.height), 1f);
 				if (float.IsNaN(size.y))
 				{
 					size.y = 1f;
@@ -418,6 +383,7 @@
 				Requested.Sort(ComponentsComparison);
 			}
 
+			[DomainReloadExclude]
 			static readonly Comparison<TItemView> ComponentsComparison = (x, y) =>
 			{
 				if (x.Index == y.Index)
@@ -614,6 +580,8 @@
 			/// <param name="size">Size.</param>
 			public void SetSize(InstanceID ownerID, Vector2 size)
 			{
+				defaultSize = size;
+
 				SetSize(Template, size);
 
 				var instances = Instances.Of(ownerID);

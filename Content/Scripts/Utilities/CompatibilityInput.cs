@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets
 {
 	using System;
+	using UIWidgets.Attributes;
 	using UIWidgets.Menu;
 	using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
@@ -106,23 +107,16 @@
 #if ENABLE_INPUT_SYSTEM
 		static UnityEngine.TouchPhase ConvertTouchPhase(UnityEngine.InputSystem.TouchPhase phase)
 		{
-			switch (phase)
+			return phase switch
 			{
-				case UnityEngine.InputSystem.TouchPhase.None:
-					return UnityEngine.TouchPhase.Ended;
-				case UnityEngine.InputSystem.TouchPhase.Began:
-					return UnityEngine.TouchPhase.Began;
-				case UnityEngine.InputSystem.TouchPhase.Moved:
-					return UnityEngine.TouchPhase.Moved;
-				case UnityEngine.InputSystem.TouchPhase.Ended:
-					return UnityEngine.TouchPhase.Ended;
-				case UnityEngine.InputSystem.TouchPhase.Canceled:
-					return UnityEngine.TouchPhase.Canceled;
-				case UnityEngine.InputSystem.TouchPhase.Stationary:
-					return UnityEngine.TouchPhase.Stationary;
-			}
-
-			return UnityEngine.TouchPhase.Ended;
+				UnityEngine.InputSystem.TouchPhase.None => UnityEngine.TouchPhase.Ended,
+				UnityEngine.InputSystem.TouchPhase.Began => UnityEngine.TouchPhase.Began,
+				UnityEngine.InputSystem.TouchPhase.Moved => UnityEngine.TouchPhase.Moved,
+				UnityEngine.InputSystem.TouchPhase.Ended => UnityEngine.TouchPhase.Ended,
+				UnityEngine.InputSystem.TouchPhase.Canceled => UnityEngine.TouchPhase.Canceled,
+				UnityEngine.InputSystem.TouchPhase.Stationary => UnityEngine.TouchPhase.Stationary,
+				_ => UnityEngine.TouchPhase.Ended,
+			};
 		}
 
 		static UnityEngine.Touch ConvertTouch(UnityEngine.InputSystem.EnhancedTouch.Touch touch)
@@ -400,7 +394,7 @@
 		/// <summary>
 		/// Keys group for InputSystem.
 		/// </summary>
-		public struct InputSystemKeysGroup : IEquatable<InputSystemKeysGroup>
+		public readonly struct InputSystemKeysGroup : IEquatable<InputSystemKeysGroup>
 		{
 			/// <summary>
 			/// Keys.
@@ -446,34 +440,20 @@
 			/// </summary>
 			/// <param name="obj">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is InputSystemKeysGroup)
-				{
-					return Equals((InputSystemKeysGroup)obj);
-				}
-
-				return false;
-			}
+			public override bool Equals(object obj) => (obj is InputSystemKeysGroup group) && Equals(group);
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
 			/// </summary>
 			/// <param name="other">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public bool Equals(InputSystemKeysGroup other)
-			{
-				return Keys == other.Keys;
-			}
+			public bool Equals(InputSystemKeysGroup other) => Keys == other.Keys;
 
 			/// <summary>
 			/// Hash function.
 			/// </summary>
 			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
-			{
-				return Keys.GetHashCode();
-			}
+			public override int GetHashCode() => Keys.GetHashCode();
 
 			/// <summary>
 			/// Compare specified instances.
@@ -481,10 +461,7 @@
 			/// <param name="a">First instance.</param>
 			/// <param name="b">Second instance.</param>
 			/// <returns>true if the instances are equal; otherwise, false.</returns>
-			public static bool operator ==(InputSystemKeysGroup a, InputSystemKeysGroup b)
-			{
-				return a.Equals(b);
-			}
+			public static bool operator ==(InputSystemKeysGroup a, InputSystemKeysGroup b) => a.Equals(b);
 
 			/// <summary>
 			/// Compare specified instances.
@@ -492,12 +469,10 @@
 			/// <param name="a">First instance.</param>
 			/// <param name="b">Second instance.</param>
 			/// <returns>true if the instances not equal; otherwise, false.</returns>
-			public static bool operator !=(InputSystemKeysGroup a, InputSystemKeysGroup b)
-			{
-				return !a.Equals(b);
-			}
+			public static bool operator !=(InputSystemKeysGroup a, InputSystemKeysGroup b) => !a.Equals(b);
 		}
 
+		[DomainReloadExclude]
 		static readonly InputSystemKeysGroup[] HotKey2InputSystem = new[]
 		{
 			new InputSystemKeysGroup(Key.None),
@@ -703,6 +678,7 @@
 			}
 		}
 
+		[DomainReloadExclude]
 		static readonly LegacyInputKeysGroup[] HotKey2LegacyInput = new[] {
 			new LegacyInputKeysGroup(KeyCode.None),
 

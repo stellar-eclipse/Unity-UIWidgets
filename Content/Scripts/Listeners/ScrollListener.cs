@@ -6,6 +6,7 @@
 	/// <summary>
 	/// ScrollListener.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/listeners/scroll.html")]
 	public class ScrollListener : MonoBehaviour, IScrollHandler
 	{
 		/// <summary>

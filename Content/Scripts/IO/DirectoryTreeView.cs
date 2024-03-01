@@ -3,18 +3,21 @@
 	using System;
 	using System.Collections.Generic;
 	using System.IO;
+	using UIWidgets.Attributes;
 	using UIWidgets.Styles;
 	using UnityEngine;
 
 	/// <summary>
 	/// DirectoryTreeView
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/directorytreeview.html")]
 	public class DirectoryTreeView : TreeViewCustom<DirectoryTreeViewComponent, FileSystemEntry>
 	{
 		/// <summary>
 		/// Path separators.
 		/// </summary>
-		protected static char[] PathSeparators = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
+		[DomainReloadExclude]
+		protected static readonly char[] PathSeparators = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
 
 		/// <summary>
 		/// Root directory, if not specified drives will be used as root.
@@ -333,10 +336,7 @@
 
 				paths.Remove(node.Item.FullName);
 
-				if (node.Nodes == null)
-				{
-					node.Nodes = GetDirectoriesNodes(node.Item.FullName);
-				}
+				node.Nodes ??= GetDirectoriesNodes(node.Item.FullName);
 
 				nodes = node.Nodes;
 			}
@@ -422,10 +422,9 @@
 		protected virtual void FillDrivesList(ObservableList<TreeNode<FileSystemEntry>> list)
 		{
 #if !NETFX_CORE
-			var drives = Directory.GetLogicalDrives();
-			for (int i = 0; i < drives.Length; i++)
+			foreach (var drive in Directory.GetLogicalDrives())
 			{
-				var item = new FileSystemEntry(drives[i], drives[i], false);
+				var item = new FileSystemEntry(drive, drive, false);
 				list.Add(new TreeNode<FileSystemEntry>(item, null));
 			}
 #endif

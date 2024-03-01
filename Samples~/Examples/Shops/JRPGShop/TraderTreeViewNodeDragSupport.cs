@@ -17,7 +17,7 @@
 		/// <param name="eventData">Current event data.</param>
 		public override bool CanDrag(PointerEventData eventData)
 		{
-			return !Node.Item.IsPlaylist;
+			return base.CanDrag(eventData) && !Node.Item.IsPlaylist;
 		}
 	}
 }

@@ -8,7 +8,7 @@
 	/// <summary>
 	/// ListViewIcons.
 	/// </summary>
-	public class ListViewIcons : ListViewCustom<ListViewIconsItemComponent, ListViewIconsItemDescription>
+	public class ListViewIcons : ListViewCustom<ListViewIconsItemComponent, ListViewIconsItemDescription>, ILocalizationSupport
 	{
 		[SerializeField]
 		[Tooltip("If enabled translates items names using Localization.GetTranslation().")]

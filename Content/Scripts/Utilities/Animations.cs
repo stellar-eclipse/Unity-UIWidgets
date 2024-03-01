@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 	using UnityEngine.UI;
 
@@ -243,6 +244,7 @@
 			}
 		}
 
+		[DomainReloadExclude]
 		static readonly AnimationCurve LinearCurve = AnimationCurve.Linear(0f, 1f, 1f, 1f);
 
 		/// <summary>
@@ -271,7 +273,7 @@
 		/// <param name="actionAfter">Action to run after animation.</param>
 		public static IEnumerator Collapse(RectTransform rectTransform, float rate, AnimationCurve curve, bool isHorizontal = false, bool unscaledTime = false, Action actionAfter = null)
 		{
-			var layoutElement = Utilities.GetOrAddComponent<LayoutElement>(rectTransform);
+			var layoutElement = Utilities.RequireComponent<LayoutElement>(rectTransform);
 			var size = isHorizontal
 				? (LayoutUtilities.IsWidthControlled(rectTransform) ? LayoutUtility.GetPreferredWidth(rectTransform) : rectTransform.rect.width)
 				: (LayoutUtilities.IsHeightControlled(rectTransform) ? LayoutUtility.GetPreferredHeight(rectTransform) : rectTransform.rect.height);
@@ -343,7 +345,7 @@
 		/// <param name="actionAfter">Action to run after animation.</param>
 		public static IEnumerator CollapseFlexible(RectTransform rectTransform, float rate, AnimationCurve curve, bool isHorizontal = false, bool unscaledTime = false, Action actionAfter = null)
 		{
-			var layoutElement = Utilities.GetOrAddComponent<LayoutElement>(rectTransform);
+			var layoutElement = Utilities.RequireComponent<LayoutElement>(rectTransform);
 			if (isHorizontal)
 			{
 				layoutElement.preferredWidth = -1f;
@@ -415,7 +417,7 @@
 		/// <param name="actionAfter">Action to run after animation.</param>
 		public static IEnumerator Open(RectTransform rectTransform, float rate, AnimationCurve curve, bool isHorizontal, bool unscaledTime, Action actionAfter = null)
 		{
-			var layoutElement = Utilities.GetOrAddComponent<LayoutElement>(rectTransform);
+			var layoutElement = Utilities.RequireComponent<LayoutElement>(rectTransform);
 			var size = isHorizontal
 				? (LayoutUtilities.IsWidthControlled(rectTransform) ? LayoutUtility.GetPreferredWidth(rectTransform) : rectTransform.rect.width)
 				: (LayoutUtilities.IsHeightControlled(rectTransform) ? LayoutUtility.GetPreferredHeight(rectTransform) : rectTransform.rect.height);
@@ -487,7 +489,7 @@
 		/// <param name="actionAfter">Action to run after animation.</param>
 		public static IEnumerator OpenFlexible(RectTransform rectTransform, float rate, AnimationCurve curve, bool isHorizontal = false, bool unscaledTime = false, Action actionAfter = null)
 		{
-			var layoutElement = Utilities.GetOrAddComponent<LayoutElement>(rectTransform);
+			var layoutElement = Utilities.RequireComponent<LayoutElement>(rectTransform);
 			if (isHorizontal)
 			{
 				layoutElement.preferredWidth = -1f;

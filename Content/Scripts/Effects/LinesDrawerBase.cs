@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 	using UnityEngine.UI;
 
@@ -10,163 +11,67 @@
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
 	[RequireComponent(typeof(Graphic))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/effects/lines-drawer.html")]
 	public abstract class LinesDrawerBase : UVEffect
 	{
 		/// <summary>
 		/// IDs of shader properties.
 		/// </summary>
-		protected struct SnapGridShaderIDs : IEquatable<SnapGridShaderIDs>
+		protected static class ShaderIDs
 		{
 			/// <summary>
 			/// Line color ID.
 			/// </summary>
-			public readonly int LineColor;
+			[DomainReloadExclude]
+			public static readonly int LineColor = Shader.PropertyToID("_LineColor");
 
 			/// <summary>
 			/// Line thickness ID.
 			/// </summary>
-			public readonly int LineThickness;
+			[DomainReloadExclude]
+			public static readonly int LineThickness = Shader.PropertyToID("_LineThickness");
 
 			/// <summary>
 			/// Resolution X ID.
 			/// </summary>
-			public readonly int ResolutionX;
+			[DomainReloadExclude]
+			public static readonly int ResolutionX = Shader.PropertyToID("_ResolutionX");
 
 			/// <summary>
 			/// Resolution Y ID.
 			/// </summary>
-			public readonly int ResolutionY;
+			[DomainReloadExclude]
+			public static readonly int ResolutionY = Shader.PropertyToID("_ResolutionY");
 
 			/// <summary>
 			/// Horizontal lines count ID.
 			/// </summary>
-			public readonly int HorizontalLinesCount;
+			[DomainReloadExclude]
+			public static readonly int HorizontalLinesCount = Shader.PropertyToID("_HLinesCount");
 
 			/// <summary>
 			/// Horizontal lines ID.
 			/// </summary>
-			public readonly int HorizontalLines;
+			[DomainReloadExclude]
+			public static readonly int HorizontalLines = Shader.PropertyToID("_HLines");
 
 			/// <summary>
 			/// Vertical lines count ID.
 			/// </summary>
-			public readonly int VerticalLinesCount;
+			[DomainReloadExclude]
+			public static readonly int VerticalLinesCount = Shader.PropertyToID("_VLinesCount");
 
 			/// <summary>
 			/// Vertical lines ID.
 			/// </summary>
-			public readonly int VerticalLines;
+			[DomainReloadExclude]
+			public static readonly int VerticalLines = Shader.PropertyToID("_VLines");
 
 			/// <summary>
 			/// Transparent ID.
 			/// </summary>
-			public readonly int Transparent;
-
-			private SnapGridShaderIDs(
-				int lineColor,
-				int lineThickness,
-				int resolutionX,
-				int resolutionY,
-				int horizontalLinesCount,
-				int horizontalLines,
-				int verticalLinesCount,
-				int verticalLines,
-				int transparent)
-			{
-				LineColor = lineColor;
-				LineThickness = lineThickness;
-				ResolutionX = resolutionX;
-				ResolutionY = resolutionY;
-				HorizontalLinesCount = horizontalLinesCount;
-				HorizontalLines = horizontalLines;
-				VerticalLinesCount = verticalLinesCount;
-				VerticalLines = verticalLines;
-				Transparent = transparent;
-			}
-
-			/// <summary>
-			/// Get RingShaderIDs instance.
-			/// </summary>
-			public static SnapGridShaderIDs Instance
-			{
-				get
-				{
-					return new SnapGridShaderIDs(
-						Shader.PropertyToID("_LineColor"),
-						Shader.PropertyToID("_LineThickness"),
-						Shader.PropertyToID("_ResolutionX"),
-						Shader.PropertyToID("_ResolutionY"),
-						Shader.PropertyToID("_HLinesCount"),
-						Shader.PropertyToID("_HLines"),
-						Shader.PropertyToID("_VLinesCount"),
-						Shader.PropertyToID("_VLines"),
-						Shader.PropertyToID("_Transparent"));
-				}
-			}
-
-			/// <summary>
-			/// Determines whether the specified object is equal to the current object.
-			/// </summary>
-			/// <param name="obj">The object to compare with the current object.</param>
-			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is SnapGridShaderIDs)
-				{
-					return Equals((SnapGridShaderIDs)obj);
-				}
-
-				return false;
-			}
-
-			/// <summary>
-			/// Determines whether the specified object is equal to the current object.
-			/// </summary>
-			/// <param name="other">The object to compare with the current object.</param>
-			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public bool Equals(SnapGridShaderIDs other)
-			{
-				return LineColor == other.LineColor
-					&& LineThickness == other.LineThickness
-					&& ResolutionX == other.ResolutionX
-					&& ResolutionY == other.ResolutionY
-					&& HorizontalLinesCount == other.HorizontalLinesCount
-					&& HorizontalLines == other.HorizontalLines
-					&& VerticalLinesCount == other.VerticalLinesCount
-					&& VerticalLines == other.VerticalLines
-					&& Transparent == other.Transparent;
-			}
-
-			/// <summary>
-			/// Hash function.
-			/// </summary>
-			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
-			{
-				return LineColor ^ LineThickness ^ ResolutionX ^ ResolutionY ^ HorizontalLinesCount ^ HorizontalLines ^ VerticalLinesCount ^ VerticalLines ^ Transparent;
-			}
-
-			/// <summary>
-			/// Compare specified instances.
-			/// </summary>
-			/// <param name="left">Left instance.</param>
-			/// <param name="right">Right instances.</param>
-			/// <returns>true if the instances are equal; otherwise, false.</returns>
-			public static bool operator ==(SnapGridShaderIDs left, SnapGridShaderIDs right)
-			{
-				return left.Equals(right);
-			}
-
-			/// <summary>
-			/// Compare specified instances.
-			/// </summary>
-			/// <param name="left">Left instance.</param>
-			/// <param name="right">Right instances.</param>
-			/// <returns>true if the instances are now equal; otherwise, false.</returns>
-			public static bool operator !=(SnapGridShaderIDs left, SnapGridShaderIDs right)
-			{
-				return !left.Equals(right);
-			}
+			[DomainReloadExclude]
+			public static readonly int Transparent = Shader.PropertyToID("_Transparent");
 		}
 
 		[SerializeField]
@@ -263,11 +168,6 @@
 		/// Max lines count. Should match with shader setting.
 		/// </summary>
 		protected int MaxLinesCount = 200;
-
-		/// <summary>
-		/// Ring shader ids.
-		/// </summary>
-		protected static SnapGridShaderIDs ShaderIDs = SnapGridShaderIDs.Instance;
 
 		/// <inheritdoc/>
 		protected override void OnEnable()

@@ -86,6 +86,17 @@
 			}
 		}
 
+		/// <summary>
+		/// Instances pool.
+		/// </summary>
+		public ListComponentPool<TItemView> Pool
+		{
+			get
+			{
+				return ComponentsPool;
+			}
+		}
+
 		/// <inheritdoc/>
 		public override int Count
 		{
@@ -100,15 +111,12 @@
 		{
 			get
 			{
-				switch (BasePosition)
+				return BasePosition switch
 				{
-					case Position.Start:
-						return 0;
-					case Position.Center:
-						return ComponentsPool.Count / 2;
-					default:
-						return 0;
-				}
+					Position.Start => 0,
+					Position.Center => ComponentsPool.Count / 2,
+					_ => 0,
+				};
 			}
 		}
 

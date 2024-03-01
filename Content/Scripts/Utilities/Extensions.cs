@@ -3,8 +3,8 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Globalization;
-	using System.Reflection;
 	using System.Text;
+	using UnityEngine;
 
 	/// <summary>
 	/// For each extensions.
@@ -356,6 +356,170 @@
 			list.RemoveAt(n);
 
 			return result;
+		}
+
+		/// <summary>
+		/// Append value.
+		/// </summary>
+		/// <param name="builder">Builder.</param>
+		/// <param name="label">Label.</param>
+		/// <param name="value">Value.</param>
+		/// <returns>Builder instance.</returns>
+		public static StringBuilder AppendValue(this StringBuilder builder, string label, string value)
+		{
+			builder.Append(label);
+			builder.Append(value);
+			builder.AppendLine();
+
+			return builder;
+		}
+
+		/// <summary>
+		/// Append value.
+		/// </summary>
+		/// <param name="builder">Builder.</param>
+		/// <param name="label">Label.</param>
+		/// <param name="value">Value.</param>
+		/// <returns>Builder instance.</returns>
+		public static StringBuilder AppendValue(this StringBuilder builder, string label, bool value)
+		{
+			builder.Append(label);
+			builder.Append(value);
+			builder.AppendLine();
+
+			return builder;
+		}
+
+		/// <summary>
+		/// Append value.
+		/// </summary>
+		/// <param name="builder">Builder.</param>
+		/// <param name="label">Label.</param>
+		/// <param name="value">Value.</param>
+		/// <returns>Builder instance.</returns>
+		public static StringBuilder AppendValue(this StringBuilder builder, string label, int value)
+		{
+			builder.Append(label);
+			builder.Append(value);
+			builder.AppendLine();
+
+			return builder;
+		}
+
+		/// <summary>
+		/// Append value.
+		/// </summary>
+		/// <param name="builder">Builder.</param>
+		/// <param name="label">Label.</param>
+		/// <param name="value">Value.</param>
+		/// <returns>Builder instance.</returns>
+		public static StringBuilder AppendValue(this StringBuilder builder, string label, float value)
+		{
+			builder.Append(label);
+			builder.Append(value);
+			builder.AppendLine();
+
+			return builder;
+		}
+
+		/// <summary>
+		/// Append value.
+		/// </summary>
+		/// <param name="builder">Builder.</param>
+		/// <param name="label">Label.</param>
+		/// <param name="value">Value.</param>
+		/// <returns>Builder instance.</returns>
+		public static StringBuilder AppendValue(this StringBuilder builder, string label, Vector2 value)
+		{
+			return builder.AppendValue(label, value.ToString());
+		}
+
+		/// <summary>
+		/// Append value.
+		/// </summary>
+		/// <param name="builder">Builder.</param>
+		/// <param name="label">Label.</param>
+		/// <param name="value">Value.</param>
+		/// <returns>Builder instance.</returns>
+		public static StringBuilder AppendValue(this StringBuilder builder, string label, Vector3 value)
+		{
+			return builder.AppendValue(label, value.ToString());
+		}
+
+		/// <summary>
+		/// Append value.
+		/// </summary>
+		/// <param name="builder">Builder.</param>
+		/// <param name="label">Label.</param>
+		/// <param name="value">Value.</param>
+		/// <param name="suffix">Suffix.</param>
+		/// <returns>Builder instance.</returns>
+		public static StringBuilder AppendValue(this StringBuilder builder, string label, int value, string suffix)
+		{
+			builder.Append(label);
+			builder.Append(value);
+			builder.Append(suffix);
+			builder.AppendLine();
+
+			return builder;
+		}
+
+		/// <summary>
+		/// Append value.
+		/// </summary>
+		/// <param name="builder">Builder.</param>
+		/// <param name="label">Label.</param>
+		/// <param name="value">Value.</param>
+		/// <param name="suffix1">First suffix.</param>
+		/// <param name="suffix2">Second suffix.</param>
+		/// <returns>Builder instance.</returns>
+		public static StringBuilder AppendValue(this StringBuilder builder, string label, int value, string suffix1, string suffix2)
+		{
+			builder.Append(label);
+			builder.Append(value);
+			builder.Append(suffix1);
+			builder.Append(suffix2);
+			builder.AppendLine();
+
+			return builder;
+		}
+
+		/// <summary>
+		/// Append value.
+		/// </summary>
+		/// <param name="builder">Builder.</param>
+		/// <param name="label">Label.</param>
+		/// <param name="value">Value.</param>
+		/// <param name="suffix1">First suffix.</param>
+		/// <param name="suffix2">Second suffix.</param>
+		/// <returns>Builder instance.</returns>
+		public static StringBuilder AppendValue(this StringBuilder builder, string label, int value, string suffix1, float suffix2)
+		{
+			builder.Append(label);
+			builder.Append(value);
+			builder.Append(suffix1);
+			builder.Append(suffix2);
+			builder.AppendLine();
+
+			return builder;
+		}
+
+		/// <summary>
+		/// Append value.
+		/// </summary>
+		/// <typeparam name="TEnum">Type of enum.</typeparam>
+		/// <param name="builder">Builder.</param>
+		/// <param name="label">Label.</param>
+		/// <param name="value">Value.</param>
+		/// <returns>Builder instance.</returns>
+		public static StringBuilder AppendValueEnum<TEnum>(this StringBuilder builder, string label, TEnum value)
+			#if CSHARP_7_3_OR_NEWER
+			where TEnum : struct, Enum
+			#else
+			where TEnum : struct
+			#endif
+		{
+			return builder.AppendValue(label, EnumHelper<TEnum>.ToString(value));
 		}
 
 #if NETFX_CORE

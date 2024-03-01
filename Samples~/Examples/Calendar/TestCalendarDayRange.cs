@@ -3,6 +3,7 @@
 	using System;
 	using UIWidgets;
 	using UnityEngine;
+	using UnityEngine.Serialization;
 
 	/// <summary>
 	/// Test calendar with dates range.
@@ -15,47 +16,145 @@
 		[SerializeField]
 		public TestDayRangeSource Range;
 
+		[SerializeField]
+		[FormerlySerializedAs("DateStartDefault")]
+		Sprite dateStartDefault;
+
 		/// <summary>
 		/// The default background for start date.
 		/// </summary>
+		public Sprite DateStartDefault
+		{
+			get
+			{
+				return dateStartDefault;
+			}
+
+			set
+			{
+				dateStartDefault = value;
+			}
+		}
+
 		[SerializeField]
-		public Sprite DateStartDefault;
+		[FormerlySerializedAs("DateStartLastDayOfWeek")]
+		Sprite dateStartLastDayOfWeek;
 
 		/// <summary>
 		/// The backdgound for start date if start date is last day of week.
 		/// </summary>
+		public Sprite DateStartLastDayOfWeek
+		{
+			get
+			{
+				return dateStartLastDayOfWeek;
+			}
+
+			set
+			{
+				dateStartLastDayOfWeek = value;
+			}
+		}
+
 		[SerializeField]
-		public Sprite DateStartLastDayOfWeek;
+		[FormerlySerializedAs("DateRangeDefault")]
+		Sprite dateRangeDefault;
 
 		/// <summary>
 		/// The default background for date in range.
 		/// </summary>
+		public Sprite DateRangeDefault
+		{
+			get
+			{
+				return dateRangeDefault;
+			}
+
+			set
+			{
+				dateRangeDefault = value;
+			}
+		}
+
 		[SerializeField]
-		public Sprite DateRangeDefault;
+		[FormerlySerializedAs("DateRangeFirstDayOfWeek")]
+		Sprite dateRangeFirstDayOfWeek;
 
 		/// <summary>
 		/// The default background for date in range if date is first day of week.
 		/// </summary>
+		public Sprite DateRangeFirstDayOfWeek
+		{
+			get
+			{
+				return dateRangeFirstDayOfWeek;
+			}
+
+			set
+			{
+				dateRangeFirstDayOfWeek = value;
+			}
+		}
+
 		[SerializeField]
-		public Sprite DateRangeFirstDayOfWeek;
+		[FormerlySerializedAs("DateRangeLastDayOfWeek")]
+		Sprite dateRangeLastDayOfWeek;
 
 		/// <summary>
 		/// The default background for date in range if date is last day of week.
 		/// </summary>
+		public Sprite DateRangeLastDayOfWeek
+		{
+			get
+			{
+				return dateRangeLastDayOfWeek;
+			}
+
+			set
+			{
+				dateRangeLastDayOfWeek = value;
+			}
+		}
+
 		[SerializeField]
-		public Sprite DateRangeLastDayOfWeek;
+		[FormerlySerializedAs("DateEndDefault")]
+		Sprite dateEndDefault;
 
 		/// <summary>
 		/// The default background for end date.
 		/// </summary>
+		public Sprite DateEndDefault
+		{
+			get
+			{
+				return dateEndDefault;
+			}
+
+			set
+			{
+				dateEndDefault = value;
+			}
+		}
+
 		[SerializeField]
-		public Sprite DateEndDefault;
+		[FormerlySerializedAs("DateEndLastDayOfWeek")]
+		Sprite dateEndLastDayOfWeek;
 
 		/// <summary>
 		/// The backdgound for end date if end date is last day of week.
 		/// </summary>
-		[SerializeField]
-		public Sprite DateEndLastDayOfWeek;
+		public Sprite DateEndLastDayOfWeek
+		{
+			get
+			{
+				return dateEndLastDayOfWeek;
+			}
+
+			set
+			{
+				dateEndLastDayOfWeek = value;
+			}
+		}
 
 		/// <summary>
 		/// Update displayed date.

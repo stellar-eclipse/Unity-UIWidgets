@@ -17,14 +17,14 @@
 		protected Image[] DisableImages = new Image[] { };
 
 		/// <summary>
+		/// Dropped objects.
+		/// </summary>
+		readonly List<GameObject> droppedObjects = new List<GameObject>();
+
+		/// <summary>
 		/// Drop2Terrain.
 		/// </summary>
 		DropGameObject2Terrain drop2Terrain;
-
-		/// <summary>
-		/// Dropped objects.
-		/// </summary>
-		List<GameObject> droppedObjects = new List<GameObject>();
 
 		/// <summary>
 		/// Terrain.

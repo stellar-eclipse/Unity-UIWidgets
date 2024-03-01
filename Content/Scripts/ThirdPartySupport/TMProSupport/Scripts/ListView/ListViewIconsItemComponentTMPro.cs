@@ -7,6 +7,7 @@ namespace UIWidgets.TMProSupport
 	/// <summary>
 	/// ListViewIcons item component.
 	/// </summary>
+	[System.Obsolete("Use ListViewIconsItemComponent with TextAdapter.")]
 	public class ListViewIconsItemComponentTMPro : ListViewIconsItemComponent
 	{
 		/// <summary>
@@ -25,7 +26,7 @@ namespace UIWidgets.TMProSupport
 			base.Upgrade();
 
 #pragma warning disable 0618
-			Utilities.GetOrAddComponent(TextTMPro, ref TextAdapter);
+			Utilities.RequireComponent(TextTMPro, ref TextAdapter);
 #pragma warning restore 0618
 		}
 	}

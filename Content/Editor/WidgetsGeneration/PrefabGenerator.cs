@@ -1,10 +1,14 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 namespace UIWidgets.WidgetGeneration
 {
 	using System;
 	using System.Collections.Generic;
 	using System.IO;
+	using UIThemes;
+	using UIWidgets;
+	using UIWidgets.Pool;
 	using UIWidgets.Styles;
+	using UIWidgets.UIThemesSupport;
 	using UnityEditor;
 	using UnityEditor.Events;
 	using UnityEngine;
@@ -16,6 +20,24 @@ namespace UIWidgets.WidgetGeneration
 	/// </summary>
 	public abstract class PrefabGenerator
 	{
+		/// <summary>
+		/// Label for the first style/theme button.
+		/// </summary>
+		protected readonly string[] StyleButtonLabels = new string[]
+		{
+#if UIWIDGETS_LEGACY_STYLE
+			"Style Default",
+			"Style Blue",
+			"None",
+			"None",
+#else
+			"Theme Blue",
+			"Theme Red",
+			"Theme Dark",
+			"Theme Legacy",
+#endif
+		};
+
 		/// <summary>
 		/// Class info.
 		/// </summary>
@@ -67,11 +89,24 @@ namespace UIWidgets.WidgetGeneration
 		protected int ProgressMax = 0;
 
 		/// <summary>
+		/// Theme.
+		/// </summary>
+		protected Theme Theme;
+
+		/// <summary>
+		/// Theme Variation ID.
+		/// </summary>
+		protected VariationId ThemeVariation;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="PrefabGenerator"/> class.
 		/// </summary>
 		/// <param name="path">Path to save created files.</param>
 		protected PrefabGenerator(string path)
 		{
+			Theme = UIThemes.Editor.ReferencesGUIDs.DefaultTheme;
+			ThemeVariation = Theme.GetVariation("Blue").Id;
+
 			SavePath = path;
 			PrefabSavePath = SavePath + Path.DirectorySeparatorChar + "Prefabs";
 
@@ -101,14 +136,37 @@ namespace UIWidgets.WidgetGeneration
 		}
 
 		/// <summary>
+		/// Instantiate game object.
+		/// </summary>
+		/// <param name="go">Game object.</param>
+		/// <returns>Instance.</returns>
+		public GameObject Instantiate(GameObject go)
+		{
+			return Instantiate(go, WidgetsReferences.Instance.InstantiatePrefabs);
+		}
+
+		/// <summary>
+		/// Instantiate game object.
+		/// </summary>
+		/// <param name="go">Game object.</param>
+		/// <param name="instantiatePrefabs">Instantiate game object as prefab reference or copy of prefab.</param>
+		/// <returns>Instance.</returns>
+		public GameObject Instantiate(GameObject go, bool instantiatePrefabs)
+		{
+			return instantiatePrefabs
+				? PrefabUtility.InstantiatePrefab(go) as GameObject
+				: UnityEngine.Object.Instantiate(go);
+		}
+
+		/// <summary>
 		/// Generate prefabs and test scene.
 		/// </summary>
 		protected void Generate()
 		{
-			var temp_go = new List<GameObject>();
+			using var _ = ListPool<GameObject>.Get(out var temp_go);
 
 			PrefabsMenu = ScriptableObject.CreateInstance<PrefabsMenuGenerated>();
-			var real_menu = UtilitiesEditor.LoadAssetWithGUID<PrefabsMenuGenerated>(Info.PrefabsMenuGUID);
+			var real_menu = UIWidgets.UtilitiesEditor.LoadAssetWithGUID<PrefabsMenuGenerated>(Info.PrefabsMenuGUID);
 
 			try
 			{
@@ -116,18 +174,19 @@ namespace UIWidgets.WidgetGeneration
 
 				ProgressbarUpdate(i);
 
-				foreach (var prefab in PrefabsOrder)
+				foreach (var widget in PrefabsOrder)
 				{
-					var prefab_name = prefab + Info.ShortTypeName;
+					var prefab_name = widget + Info.ShortTypeName;
 
-					if (Info.Prefabs.ContainsKey(prefab) && Info.Prefabs[prefab])
+					if (Info.Prefabs.ContainsKey(widget) && Info.Prefabs[widget])
 					{
-						var go = PrefabGenerators[prefab]();
+						var go = PrefabGenerators[widget]();
 						if (go != null)
 						{
 							go.name = prefab_name;
-							Prefab2Menu(PrefabsMenu, go, prefab);
-							Prefab2Menu(real_menu, Save(go), prefab);
+							var prefab = Save(go);
+							Prefab2Menu(PrefabsMenu, prefab, widget);
+							Prefab2Menu(real_menu, prefab, widget);
 							temp_go.Add(go);
 						}
 					}
@@ -156,8 +215,6 @@ namespace UIWidgets.WidgetGeneration
 				{
 					UnityEngine.Object.DestroyImmediate(go);
 				}
-
-				temp_go.Clear();
 
 				EditorUtility.SetDirty(real_menu);
 			}
@@ -222,8 +279,216 @@ namespace UIWidgets.WidgetGeneration
 		/// <param name="file">File.</param>
 		protected static void Delete(string file)
 		{
-			File.Delete(file);
-			File.Delete(file + ".meta");
+			AssetDatabase.DeleteAsset(file);
+		}
+
+		/// <summary>
+		/// Set label color.
+		/// </summary>
+		/// <param name="label">Label.</param>
+		protected void ThemeLabel(Graphic label)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+			var colors = Theme.Colors;
+			label.color = colors.Get(ThemeVariation, "Text");
+#endif
+		}
+
+		/// <summary>
+		/// Set ListView colors.
+		/// </summary>
+		/// <param name="listView">ListView.</param>
+		protected void ThemeListView(ListViewBase listView)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+			var colors = Theme.Colors;
+			listView.DefaultBackgroundColor = colors.Get(ThemeVariation, "Transparent");
+			listView.DefaultColor = colors.Get(ThemeVariation, "Text");
+			listView.HighlightedBackgroundColor = colors.Get(ThemeVariation, "Background");
+			listView.HighlightedColor = colors.Get(ThemeVariation, "Text Highlight");
+			listView.SelectedBackgroundColor = colors.Get(ThemeVariation, "Secondary");
+			listView.SelectedColor = colors.Get(ThemeVariation, "Text Highlight");
+			listView.DisabledColor = colors.Get(ThemeVariation, "Selectable Disabled");
+			listView.DefaultEvenBackgroundColor = colors.Get(ThemeVariation, "Table/Even Row");
+			listView.DefaultOddBackgroundColor = colors.Get(ThemeVariation, "Table/Odd Row");
+
+			var drop = listView.GetComponentInChildren<ListViewDropIndicator>(true);
+			drop.GetComponent<Image>().color = colors.Get(ThemeVariation, "Dialog, Popup Background");
+
+			var sr = listView.GetScrollRect();
+			sr.viewport.GetComponent<Image>().color = colors.Get(ThemeVariation, "Text");
+			ThemeScrollbar(sr.horizontalScrollbar);
+			ThemeScrollbar(sr.verticalScrollbar);
+#endif
+		}
+
+		/// <summary>
+		/// Set Scrollbar colors.
+		/// </summary>
+		/// <param name="scrollbar">Scrollbar.</param>
+		protected void ThemeScrollbar(Scrollbar scrollbar)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+			if (scrollbar == null)
+			{
+				return;
+			}
+
+			var colors = Theme.Colors;
+			scrollbar.GetComponent<Image>().color = colors.Get(ThemeVariation, "Transparent");
+
+			var handle = scrollbar.handleRect.GetComponent<Image>();
+			handle.color = colors.Get(ThemeVariation, "Secondary");
+#endif
+		}
+
+		/// <summary>
+		/// Set TileView colors.
+		/// </summary>
+		/// <param name="tileView">TileView.</param>
+		protected void ThemeTileView(ListViewBase tileView)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+			ThemeListView(tileView);
+#endif
+		}
+
+		/// <summary>
+		/// Set Table colors.
+		/// </summary>
+		/// <param name="table">Table.</param>
+		protected void ThemeTable(ListViewBase table)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+			ThemeListView(table);
+			table.ColoringStriped = true;
+#endif
+		}
+
+		/// <summary>
+		/// Set TableHeader colors.
+		/// </summary>
+		/// <param name="tableHeader">Table header.</param>
+		protected void ThemeTableHeader(TableHeader tableHeader)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+			var colors = Theme.Colors;
+			tableHeader.GetComponent<Image>().color = colors.Get(ThemeVariation, "Table/Header");
+#endif
+		}
+
+		/// <summary>
+		/// Set TreeView colors.
+		/// </summary>
+		/// <param name="treeView">TreeView.</param>
+		protected void ThemeTreeView(ListViewBase treeView)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+			ThemeListView(treeView);
+#endif
+		}
+
+		/// <summary>
+		/// Set Tooltip colors.
+		/// </summary>
+		/// <param name="go">Tooltip.</param>
+		protected void ThemeTooltip(TooltipBase go)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+#endif
+		}
+
+		/// <summary>
+		/// Set DragInfo colors.
+		/// </summary>
+		/// <param name="go">DragInfo.</param>
+		protected void ThemeDragInfo(GameObject go)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+#endif
+		}
+
+		/// <summary>
+		/// Set ComboboxMultiselect colors.
+		/// </summary>
+		/// <param name="go">ComboboxMultiselect.</param>
+		protected void ThemeComboboxMultiSelect(GameObject go)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+#endif
+		}
+
+		/// <summary>
+		/// Set Combobox colors.
+		/// </summary>
+		/// <param name="go">Combobox.</param>
+		protected void ThemeCombobox(GameObject go)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+#endif
+		}
+
+		/// <summary>
+		/// Set TreeGraph colors.
+		/// </summary>
+		/// <param name="go">TreeGraph.</param>
+		protected void ThemeTreeGraph(GameObject go)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+#endif
+		}
+
+		/// <summary>
+		/// Set PickerListView colors.
+		/// </summary>
+		/// <param name="picker">PickerListView.</param>
+		protected void ThemePickerListView(Picker picker)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+#endif
+		}
+
+		/// <summary>
+		/// Set PickerTreeView colors.
+		/// </summary>
+		/// <param name="picker">PickerTreeView.</param>
+		protected void ThemePickerTreeView(Picker picker)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+#endif
+		}
+
+		/// <summary>
+		/// Set Autocomplete colors.
+		/// </summary>
+		/// <param name="go">Autocomplete.</param>
+		protected void ThemeAutocomplete(GameObject go)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+#endif
+		}
+
+		/// <summary>
+		/// Set AutoCombobox colors.
+		/// </summary>
+		/// <param name="go">AutoCombobox.</param>
+		protected void ThemeAutoCombobox(GameObject go)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+#endif
+		}
+
+		/// <summary>
+		/// Set Button colors.
+		/// </summary>
+		/// <param name="button">Button.</param>
+		/// <param name="label">Button label.</param>
+		protected void ThemeButton(Button button, Graphic label)
+		{
+#if !UIWIDGETS_LEGACY_STYLE
+			var colors = Theme.Colors;
+			label.color = colors.Get(ThemeVariation, "Text");
+#endif
 		}
 
 		/// <summary>
@@ -233,11 +498,13 @@ namespace UIWidgets.WidgetGeneration
 		/// <returns>Prefab.</returns>
 		protected GameObject Save(GameObject go)
 		{
+			#if UIWIDGETS_LEGACY_STYLE
 			var style = UIWidgets.PrefabsMenu.Instance.DefaultStyle;
 			if (style != null)
 			{
 				style.ApplyTo(go);
 			}
+			#endif
 
 			var filename = PrefabSavePath + Path.DirectorySeparatorChar + go.name + ".prefab";
 
@@ -273,7 +540,8 @@ namespace UIWidgets.WidgetGeneration
 		/// <summary>
 		/// Default size of the created gameobjects.
 		/// </summary>
-		protected static Vector2 DefaultSize = new Vector2(100, 20);
+		[UIWidgets.Attributes.DomainReloadExclude]
+		protected static readonly Vector2 DefaultSize = new Vector2(100, 20);
 
 		/// <summary>
 		/// Create gameobject with component of the specified type.
@@ -287,7 +555,6 @@ namespace UIWidgets.WidgetGeneration
 		{
 			var go = new GameObject(name ?? parent.gameObject.name);
 			var rt = go.AddComponent<RectTransform>();
-			rt.sizeDelta = DefaultSize;
 			rt.SetParent(parent, false);
 
 			if (typeof(T) == typeof(TextAdapter))
@@ -300,9 +567,9 @@ namespace UIWidgets.WidgetGeneration
 #endif
 			}
 
-			var result = go.AddComponent<T>();
+			rt.sizeDelta = DefaultSize;
 
-			return result;
+			return go.AddComponent<T>();
 		}
 
 		/// <summary>
@@ -354,10 +621,17 @@ namespace UIWidgets.WidgetGeneration
 		/// <returns>Cell transform.</returns>
 		protected static Transform CreateCell(Transform parent, string name, TextAnchor alignment = TextAnchor.MiddleLeft)
 		{
-			var image = CreateObject<Image>(parent, name);
-			image.color = Color.black;
+			var le = CreateObject<LayoutElement>(parent, name);
+			le.minWidth = 100;
 
-			var lg = Utilities.GetOrAddComponent<HorizontalLayoutGroup>(image.gameObject);
+			var image = UIWidgets.Utilities.RequireComponent<Image>(le.gameObject);
+#if UIWIDGETS_LEGACY_STYLE
+			image.color = Color.black;
+#else
+			image.color = new Color(1f, 1f, 1f, 0f);
+#endif
+
+			var lg = UIWidgets.Utilities.RequireComponent<HorizontalLayoutGroup>(le.gameObject);
 #if UNITY_5_5_OR_NEWER
 			lg.childControlWidth = true;
 			lg.childControlHeight = true;
@@ -368,10 +642,7 @@ namespace UIWidgets.WidgetGeneration
 			lg.padding = new RectOffset(5, 5, 5, 5);
 			lg.spacing = 5;
 
-			var le = Utilities.GetOrAddComponent<LayoutElement>(image.gameObject);
-			le.minWidth = 100;
-
-			return image.transform;
+			return le.transform;
 		}
 
 		/// <summary>
@@ -383,7 +654,7 @@ namespace UIWidgets.WidgetGeneration
 		protected static T AddLayoutGroup<T>(GameObject target)
 			where T : HorizontalOrVerticalLayoutGroup
 		{
-			var lg = Utilities.GetOrAddComponent<T>(target);
+			var lg = UIWidgets.Utilities.RequireComponent<T>(target);
 #if UNITY_5_5_OR_NEWER
 			lg.childControlWidth = true;
 			lg.childControlHeight = true;
@@ -466,6 +737,24 @@ namespace UIWidgets.WidgetGeneration
 		protected static void InitTextComponent(Text unused)
 		{
 			// do nothing
+		}
+
+		/// <summary>
+		/// Update corners.
+		/// </summary>
+		/// <param name="go">Component.</param>
+		protected virtual void UpdateCornersX4(GameObject go)
+		{
+			var corners = go.GetComponent<RoundedCornersX4>();
+			if (corners == null)
+			{
+				return;
+			}
+
+			var r = corners.Radius;
+			r.TopLeft = 0f;
+			r.TopRight = 0f;
+			corners.Radius = r;
 		}
 
 		/// <summary>
@@ -558,12 +847,17 @@ namespace UIWidgets.WidgetGeneration
 		/// <param name="text">Text component.</param>
 		protected static void InitTextComponent(TMPro.TextMeshProUGUI text)
 		{
-#if UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER
+			#if UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER
 			text.overflowMode = TMPro.TextOverflowModes.Truncate;
-#else
+			#else
 			text.OverflowMode = TMPro.TextOverflowModes.Truncate;
-#endif
+			#endif
+
+			#if UNITY_2023_2_OR_NEWER || UIWIDGETS_TMPRO_3_2_OR_NEWER
+			text.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
+			#else
 			text.enableWordWrapping = false;
+			#endif
 			(text.transform as RectTransform).sizeDelta = DefaultSize;
 		}
 
@@ -594,19 +888,14 @@ namespace UIWidgets.WidgetGeneration
 		/// <returns>TMPro font style.</returns>
 		protected static TMPro.FontStyles ConvertStyle(FontStyle style)
 		{
-			switch (style)
+			return style switch
 			{
-				case FontStyle.Normal:
-					return TMPro.FontStyles.Normal;
-				case FontStyle.Bold:
-					return TMPro.FontStyles.Bold;
-				case FontStyle.Italic:
-					return TMPro.FontStyles.Italic;
-				case FontStyle.BoldAndItalic:
-					return TMPro.FontStyles.Bold | TMPro.FontStyles.Italic;
-				default:
-					return TMPro.FontStyles.Normal;
-			}
+				FontStyle.Normal => TMPro.FontStyles.Normal,
+				FontStyle.Bold => TMPro.FontStyles.Bold,
+				FontStyle.Italic => TMPro.FontStyles.Italic,
+				FontStyle.BoldAndItalic => TMPro.FontStyles.Bold | TMPro.FontStyles.Italic,
+				_ => TMPro.FontStyles.Normal,
+			};
 		}
 
 		/// <summary>
@@ -616,35 +905,24 @@ namespace UIWidgets.WidgetGeneration
 		/// <returns>TMPro text alignment.</returns>
 		protected static TMPro.TextAlignmentOptions ConvertAlignment(TextAnchor alignment)
 		{
-			switch (alignment)
+			return alignment switch
 			{
 				// upper
-				case TextAnchor.UpperLeft:
-					return TMPro.TextAlignmentOptions.TopLeft;
-				case TextAnchor.UpperCenter:
-					return TMPro.TextAlignmentOptions.Top;
-				case TextAnchor.UpperRight:
-					return TMPro.TextAlignmentOptions.TopRight;
+				TextAnchor.UpperLeft => TMPro.TextAlignmentOptions.TopLeft,
+				TextAnchor.UpperCenter => TMPro.TextAlignmentOptions.Top,
+				TextAnchor.UpperRight => TMPro.TextAlignmentOptions.TopRight,
 
 				// middle
-				case TextAnchor.MiddleLeft:
-					return TMPro.TextAlignmentOptions.Left;
-				case TextAnchor.MiddleCenter:
-					return TMPro.TextAlignmentOptions.Center;
-				case TextAnchor.MiddleRight:
-					return TMPro.TextAlignmentOptions.Right;
+				TextAnchor.MiddleLeft => TMPro.TextAlignmentOptions.Left,
+				TextAnchor.MiddleCenter => TMPro.TextAlignmentOptions.Center,
+				TextAnchor.MiddleRight => TMPro.TextAlignmentOptions.Right,
 
 				// lower
-				case TextAnchor.LowerLeft:
-					return TMPro.TextAlignmentOptions.BottomLeft;
-				case TextAnchor.LowerCenter:
-					return TMPro.TextAlignmentOptions.Bottom;
-				case TextAnchor.LowerRight:
-					return TMPro.TextAlignmentOptions.BottomRight;
-
-				default:
-					return TMPro.TextAlignmentOptions.TopLeft;
-			}
+				TextAnchor.LowerLeft => TMPro.TextAlignmentOptions.BottomLeft,
+				TextAnchor.LowerCenter => TMPro.TextAlignmentOptions.Bottom,
+				TextAnchor.LowerRight => TMPro.TextAlignmentOptions.BottomRight,
+				_ => TMPro.TextAlignmentOptions.TopLeft,
+			};
 		}
 #endif
 	}

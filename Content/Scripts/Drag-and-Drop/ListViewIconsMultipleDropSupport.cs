@@ -10,6 +10,7 @@
 	/// Drop support of multiple items for the ListViewIcons.
 	/// </summary>
 	[RequireComponent(typeof(ListViewIcons))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/drag-and-drop.html")]
 	public class ListViewIconsMultipleDropSupport : MonoBehaviour, IDropSupport<List<ListViewIconsItemDescription>>
 	{
 		/// <summary>

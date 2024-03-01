@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Pool;
 	using UnityEngine;
 
 	/// <summary>
@@ -14,11 +15,7 @@
 
 		readonly Dictionary<TreeNode<TItem>, Vector2> overriddenSizes = new Dictionary<TreeNode<TItem>, Vector2>();
 
-		readonly List<float> sortedSizes = new List<float>();
-
 		readonly Dictionary<TreeNode<TItem>, bool> keep = new Dictionary<TreeNode<TItem>, bool>();
-
-		readonly List<TreeNode<TItem>> remove = new List<TreeNode<TItem>>();
 
 		/// <summary>
 		/// Count.
@@ -84,25 +81,26 @@
 		/// Remove sizes of items that are not in the specified list.
 		/// </summary>
 		/// <param name="items">Items.</param>
-		public void RemoveUnexisting(ObservableList<ListNode<TItem>> items)
+		public void RemoveNotExisting(ObservableList<ListNode<TItem>> items)
 		{
 			// should not delete because collapsed nodes are not present in list
-			// RemoveUnexisting(sizes, items);
-			// RemoveUnexisting(overriddenSizes, items);
+			// RemoveNotExisting(sizes, items);
+			// RemoveNotExisting(overriddenSizes, items);
 		}
 
 		/// <summary>
 		/// Remove sizes of items that are not in the specified list.
 		/// </summary>
 		/// <param name="isExisting">Function to check is item exists.</param>
-		public void RemoveUnexisting(Func<TreeNode<TItem>, bool> isExisting)
+		public void RemoveNotExisting(Func<TreeNode<TItem>, bool> isExisting)
 		{
-			RemoveUnexisting(sizes, isExisting);
-			RemoveUnexisting(overriddenSizes, isExisting);
+			RemoveNotExisting(sizes, isExisting);
+			RemoveNotExisting(overriddenSizes, isExisting);
 		}
 
-		void RemoveUnexisting(Dictionary<TreeNode<TItem>, Vector2> currentSizes, Func<TreeNode<TItem>, bool> isExisting)
+		void RemoveNotExisting(Dictionary<TreeNode<TItem>, Vector2> currentSizes, Func<TreeNode<TItem>, bool> isExisting)
 		{
+			using var _ = ListPool<TreeNode<TItem>>.Get(out var remove);
 			foreach (var node in currentSizes)
 			{
 				if (!isExisting(node.Key))
@@ -117,7 +115,6 @@
 			}
 
 			keep.Clear();
-			remove.Clear();
 		}
 
 		void RemoveUnexisting(Dictionary<TreeNode<TItem>, Vector2> currentSizes, ObservableList<ListNode<TItem>> items)
@@ -129,6 +126,8 @@
 					keep[item.Node] = true;
 				}
 			}
+
+			using var _ = ListPool<TreeNode<TItem>>.Get(out var remove);
 
 			foreach (var item in currentSizes)
 			{
@@ -144,7 +143,6 @@
 			}
 
 			keep.Clear();
-			remove.Clear();
 		}
 
 		/// <summary>
@@ -156,6 +154,8 @@
 		/// <returns>Maximum items count.</returns>
 		public int Visible(bool horizontal, float visibleArea, float spacing)
 		{
+			using var _ = ListPool<float>.Get(out var sorted_sizes);
+
 			foreach (var info in sizes)
 			{
 				if (!overriddenSizes.TryGetValue(info.Key, out Vector2 size))
@@ -163,12 +163,12 @@
 					size = info.Value;
 				}
 
-				sortedSizes.Add(horizontal ? size.x : size.y);
+				sorted_sizes.Add(horizontal ? size.x : size.y);
 			}
 
-			sortedSizes.Sort();
+			sorted_sizes.Sort();
 			var max = 0;
-			foreach (var s in sortedSizes)
+			foreach (var s in sorted_sizes)
 			{
 				visibleArea -= s;
 
@@ -180,8 +180,6 @@
 				max += 1;
 				visibleArea -= spacing;
 			}
-
-			sortedSizes.Clear();
 
 			return Mathf.Max(1, max);
 		}

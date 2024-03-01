@@ -2,6 +2,7 @@
 {
 	using UIWidgets;
 	using UnityEngine;
+	using UnityEngine.Serialization;
 
 	/// <summary>
 	/// Test Lightbox.
@@ -14,11 +15,25 @@
 		[SerializeField]
 		public Lightbox Lightbox;
 
+		[SerializeField]
+		[FormerlySerializedAs("Image")]
+		Sprite image;
+
 		/// <summary>
 		/// Image to display.
 		/// </summary>
-		[SerializeField]
-		public Sprite Image;
+		public Sprite Image
+		{
+			get
+			{
+				return image;
+			}
+
+			set
+			{
+				image = value;
+			}
+		}
 
 		/// <summary>
 		/// Show lightbox with image.

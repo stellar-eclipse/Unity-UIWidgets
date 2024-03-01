@@ -1,6 +1,8 @@
 ﻿namespace UIWidgets
 {
 	using System;
+	using UIWidgets.Attributes;
+	using UnityEngine;
 
 	/// <summary>
 	/// Updater.
@@ -32,7 +34,8 @@
 		}
 
 		#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
-		[UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(proxy))]
 		static void StaticInit()
 		{
 			if (proxy != null)

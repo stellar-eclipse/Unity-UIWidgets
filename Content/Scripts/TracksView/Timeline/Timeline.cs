@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Pool;
 	using UnityEngine;
 	using UnityEngine.Serialization;
 
@@ -102,11 +103,10 @@
 				return false;
 			}
 
-			GetPossibleIntersections(track.Data, order, target, TempList);
+			using var _ = ListPool<TimelineData>.Get(out var temp);
 
-			var result = ListIntersection(TempList, start, end, order, target);
-
-			TempList.Clear();
+			GetPossibleIntersections(track.Data, order, target, temp);
+			var result = ListIntersection(temp, start, end, order, target);
 
 			return result;
 		}

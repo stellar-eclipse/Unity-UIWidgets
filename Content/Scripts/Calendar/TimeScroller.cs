@@ -10,6 +10,7 @@
 	/// <summary>
 	/// Time ScrollBlock widget for 24 hour format.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/datetime-scroller.html")]
 	public class TimeScroller : TimeBase
 	{
 		/// <summary>
@@ -92,7 +93,19 @@
 		[SerializeField]
 		[EditorConditionBool("hours")]
 		[FormerlySerializedAs("HoursScroller")]
-		protected ScrollBlockBase HoursScrollBlock;
+		[FormerlySerializedAs("HoursScrollBlock")]
+		protected ScrollBlockBase hoursScrollBlock;
+
+		/// <summary>
+		/// ScrollBlock for the hours.
+		/// </summary>
+		public ScrollBlockBase HoursScrollBlock
+		{
+			get
+			{
+				return hoursScrollBlock;
+			}
+		}
 
 		/// <summary>
 		/// Step to change hour.
@@ -145,7 +158,19 @@
 		[SerializeField]
 		[EditorConditionBool("minutes")]
 		[FormerlySerializedAs("MinutesScroller")]
-		protected ScrollBlockBase MinutesScrollBlock;
+		[FormerlySerializedAs("MinutesScrollBlock")]
+		protected ScrollBlockBase minutesScrollBlock;
+
+		/// <summary>
+		/// ScrollBlock for the minutes.
+		/// </summary>
+		public ScrollBlockBase MinutesScrollBlock
+		{
+			get
+			{
+				return minutesScrollBlock;
+			}
+		}
 
 		/// <summary>
 		/// Step to change minutes.
@@ -191,7 +216,19 @@
 		[SerializeField]
 		[EditorConditionBool("seconds")]
 		[FormerlySerializedAs("SecondsScroller")]
-		protected ScrollBlockBase SecondsScrollBlock;
+		[FormerlySerializedAs("SecondsScrollBlock")]
+		protected ScrollBlockBase secondsScrollBlock;
+
+		/// <summary>
+		/// ScrollBlock for the seconds.
+		/// </summary>
+		public ScrollBlockBase SecondsScrollBlock
+		{
+			get
+			{
+				return secondsScrollBlock;
+			}
+		}
 
 		/// <summary>
 		/// Step to change seconds.
@@ -237,7 +274,19 @@
 		[SerializeField]
 		[EditorConditionBool("ampm")]
 		[FormerlySerializedAs("AMPMScroller")]
-		protected ScrollBlockBase AMPMScrollBlock;
+		[FormerlySerializedAs("AMPMScrollBlock")]
+		protected ScrollBlockBase aMPMScrollBlock;
+
+		/// <summary>
+		/// ScrollBlock for the AM-PM.
+		/// </summary>
+		public ScrollBlockBase AMPMScrollBlock
+		{
+			get
+			{
+				return aMPMScrollBlock;
+			}
+		}
 
 		/// <summary>
 		/// Format to display AM-PM.
@@ -558,23 +607,16 @@
 				value -= new TimeSpan(value.Days, 0, 0, 0);
 			}
 
-			switch (precision)
+			return precision switch
 			{
-				case Precision.Days:
-					return value;
-				case Precision.Hours:
-					return value + new TimeSpan(Time.Days - value.Days, Time.Hours - value.Hours, 0, 0);
-				case Precision.Minutes:
-					return value + new TimeSpan(Time.Days - value.Days, Time.Hours - value.Hours, Time.Minutes - value.Minutes, 0);
-				case Precision.Seconds:
-					return value + new TimeSpan(Time.Days - value.Days, Time.Hours - value.Hours, Time.Minutes - value.Minutes, Time.Seconds - value.Seconds);
-				case Precision.Milliseconds:
-					return value + new TimeSpan(Time.Days - value.Days, Time.Hours - value.Hours, Time.Minutes - value.Minutes, Time.Seconds - value.Seconds, Time.Milliseconds - value.Milliseconds);
-				case Precision.Ticks:
-					return Time;
-				default:
-					throw new NotSupportedException(string.Format("Unknown precision: {0}", EnumHelper<Precision>.ToString(precision)));
-			}
+				Precision.Days => value,
+				Precision.Hours => value + new TimeSpan(Time.Days - value.Days, Time.Hours - value.Hours, 0, 0),
+				Precision.Minutes => value + new TimeSpan(Time.Days - value.Days, Time.Hours - value.Hours, Time.Minutes - value.Minutes, 0),
+				Precision.Seconds => value + new TimeSpan(Time.Days - value.Days, Time.Hours - value.Hours, Time.Minutes - value.Minutes, Time.Seconds - value.Seconds),
+				Precision.Milliseconds => value + new TimeSpan(Time.Days - value.Days, Time.Hours - value.Hours, Time.Minutes - value.Minutes, Time.Seconds - value.Seconds, Time.Milliseconds - value.Milliseconds),
+				Precision.Ticks => Time,
+				_ => throw new NotSupportedException(string.Format("Unknown precision: {0}", EnumHelper<Precision>.ToString(precision))),
+			};
 		}
 
 		/// <summary>
@@ -586,23 +628,16 @@
 		/// <returns>true if time equals; otherwise false.</returns>
 		protected static bool TimeEquals(TimeSpan time1, TimeSpan time2, Precision precision)
 		{
-			switch (precision)
+			return precision switch
 			{
-				case Precision.Days:
-					return time1.Days == time2.Days;
-				case Precision.Hours:
-					return (time1.Days == time2.Days) && (time1.Hours == time2.Hours);
-				case Precision.Minutes:
-					return (time1.Days == time2.Days) && (time1.Hours == time2.Hours) && (time1.Minutes == time2.Minutes);
-				case Precision.Seconds:
-					return (time1.Days == time2.Days) && (time1.Hours == time2.Hours) && (time1.Minutes == time2.Minutes) && (time1.Seconds == time2.Seconds);
-				case Precision.Milliseconds:
-					return (time1.Days == time2.Days) && (time1.Hours == time2.Hours) && (time1.Minutes == time2.Minutes) && (time1.Seconds == time2.Seconds) && (time1.Milliseconds == time2.Milliseconds);
-				case Precision.Ticks:
-					return time1 == time2;
-				default:
-					throw new NotSupportedException(string.Format("Unknown precision: {0}", EnumHelper<Precision>.ToString(precision)));
-			}
+				Precision.Days => time1.Days == time2.Days,
+				Precision.Hours => (time1.Days == time2.Days) && (time1.Hours == time2.Hours),
+				Precision.Minutes => (time1.Days == time2.Days) && (time1.Hours == time2.Hours) && (time1.Minutes == time2.Minutes),
+				Precision.Seconds => (time1.Days == time2.Days) && (time1.Hours == time2.Hours) && (time1.Minutes == time2.Minutes) && (time1.Seconds == time2.Seconds),
+				Precision.Milliseconds => (time1.Days == time2.Days) && (time1.Hours == time2.Hours) && (time1.Minutes == time2.Minutes) && (time1.Seconds == time2.Seconds) && (time1.Milliseconds == time2.Milliseconds),
+				Precision.Ticks => time1 == time2,
+				_ => throw new NotSupportedException(string.Format("Unknown precision: {0}", EnumHelper<Precision>.ToString(precision))),
+			};
 		}
 
 		/// <summary>
@@ -806,6 +841,31 @@
 				SetSingleAMPM(SingleAMPM);
 
 				AMPMScrollBlock.Init();
+			}
+		}
+
+		/// <summary>
+		/// Scroll to the specified time.
+		/// </summary>
+		/// <param name="time">Time.</param>
+		/// <param name="curve">Animation curve.</param>
+		public virtual void Scroll(TimeSpan time, AnimationCurve curve = null)
+		{
+			curve ??= AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+			if (Hours && (time.Hours != 0) && (HoursScrollBlock != null))
+			{
+				HoursScrollBlock.Scroll(time.Hours, curve);
+			}
+
+			if (Minutes && (time.Minutes != 0) && (MinutesScrollBlock != null))
+			{
+				MinutesScrollBlock.Scroll(time.Minutes, curve);
+			}
+
+			if (Seconds && (time.Seconds != 0) && (SecondsScrollBlock != null))
+			{
+				SecondsScrollBlock.Scroll(time.Seconds, curve);
 			}
 		}
 

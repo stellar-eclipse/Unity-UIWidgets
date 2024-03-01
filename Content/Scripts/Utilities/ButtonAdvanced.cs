@@ -10,6 +10,7 @@ namespace UIWidgets
 	/// <summary>
 	/// Button advanced. You can add callback on PointerEnter/Exit/Down/Up.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/button-advanced.html")]
 	public class ButtonAdvanced : Button,
 		IPointerDownHandler, IPointerUpHandler,
 		IPointerEnterHandler, IPointerExitHandler

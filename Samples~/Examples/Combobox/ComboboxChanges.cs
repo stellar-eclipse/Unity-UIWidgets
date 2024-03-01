@@ -21,9 +21,9 @@
 		[SerializeField]
 		public ComboboxChangesEvent OnChange = new ComboboxChangesEvent();
 
-		List<int> oldSelected = new List<int>();
+		readonly List<int> oldSelected = new List<int>();
 
-		List<int> newSelected = new List<int>();
+		readonly List<int> newSelected = new List<int>();
 
 		bool isShow;
 

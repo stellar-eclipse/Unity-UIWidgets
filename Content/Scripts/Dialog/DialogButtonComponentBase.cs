@@ -7,6 +7,7 @@
 	/// DialogInfoBase.
 	/// </summary>
 	[RequireComponent(typeof(Button))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/dialogs/dialog.html")]
 	public class DialogButtonComponentBase : MonoBehaviour, IUpgradeable
 	{
 		/// <summary>

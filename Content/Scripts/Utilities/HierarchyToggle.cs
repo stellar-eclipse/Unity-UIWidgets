@@ -1,10 +1,12 @@
 ﻿namespace UIWidgets
 {
+	using System;
 	using UnityEngine;
 
 	/// <summary>
 	/// Move object in hierarchy and keeps original parent, position and relative size.
 	/// </summary>
+	[Obsolete("Replaced with HierarchyPosition helper.")]
 	public class HierarchyToggle : MonoBehaviour
 	{
 		/// <summary>

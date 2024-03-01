@@ -8,6 +8,7 @@
 	/// Text adapter to work with both Unity text and TMPro text.
 	/// </summary>
 	[AddComponentMenu("UI/New UI Widgets/Adapters/Text Adapter")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/third-party-support/tmpro.html")]
 	public class TextAdapter : MonoBehaviour, ITextProxy
 	{
 		ITextProxy proxy;
@@ -95,6 +96,22 @@
 			set
 			{
 				Proxy.fontStyle = value;
+			}
+		}
+
+		/// <summary>
+		/// Text alignment.
+		/// </summary>
+		public TextAnchor alignment
+		{
+			get
+			{
+				return Proxy.alignment;
+			}
+
+			set
+			{
+				Proxy.alignment = value;
 			}
 		}
 
@@ -201,7 +218,7 @@
 			}
 #endif
 
-			Debug.LogWarning("Not found any Text component. Probably TextMeshPro support is disabled.", this);
+			Debug.LogWarning("Not found any Text component. If you are using TextMeshPro then you need to enable TextMeshPro support in Edit / Project Settings / New UI Widgets.", this);
 
 			return new TextNull();
 		}

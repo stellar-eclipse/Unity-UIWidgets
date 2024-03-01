@@ -9,28 +9,32 @@
 	/// </summary>
 	public class ListViewUnderlineSampleComponent : ListViewItem, IViewData<ListViewUnderlineSampleItemDescription>
 	{
-		/// <summary>
-		/// Init graphics foreground.
-		/// </summary>
+		/// <inheritdoc/>
 		protected override void GraphicsForegroundInit()
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[] { UtilitiesUI.GetGraphic(TextAdapter), Underline, };
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
-		/// <summary>
-		/// Init graphics background.
-		/// </summary>
+		/// <inheritdoc/>
 		protected override void GraphicsBackgroundInit()
 		{
 			if (GraphicsBackgroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				graphicsBackground = Compatibility.EmptyArray<Graphic>();
+				#pragma warning restore
 				GraphicsBackgroundVersion = 1;
 			}
+
+			base.GraphicsBackgroundInit();
 		}
 
 		/// <summary>
@@ -73,13 +77,20 @@
 			Icon.enabled = Icon.sprite != null;
 		}
 
-		/// <summary>
-		/// Upgrade this instance.
-		/// </summary>
+		/// <inheritdoc/>
+		public override void SetThemeImagesPropertiesOwner(Component owner)
+		{
+			base.SetThemeImagesPropertiesOwner(owner);
+
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Icon, nameof(Icon.color), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(Sprite), Icon, nameof(Icon.sprite), owner);
+		}
+
+		/// <inheritdoc/>
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Text, ref TextAdapter);
+			Utilities.RequireComponent(Text, ref TextAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

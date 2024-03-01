@@ -7,6 +7,7 @@ namespace UIWidgets.TMProSupport
 	/// <summary>
 	/// FileListViewPath component TMPro.
 	/// </summary>
+	[System.Obsolete("Use FileListViewPathComponent with TextAdapter.")]
 	public class FileListViewPathComponentTMPro : FileListViewPathComponentBase, IUpgradeable
 	{
 		/// <summary>
@@ -23,7 +24,7 @@ namespace UIWidgets.TMProSupport
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Name, ref NameAdapter);
+			Utilities.RequireComponent(Name, ref NameAdapter);
 #pragma warning restore 0612, 0618
 		}
 

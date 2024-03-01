@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets.Menu
 {
 	using System;
+	using System.Collections.Generic;
 	using UIWidgets.l10n;
 	using UIWidgets.Styles;
 	using UnityEngine;
@@ -10,6 +11,7 @@
 	/// <summary>
 	/// Menu item view.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/controls/contextmenu.html")]
 	public class MenuItemView : Selectable, IViewData<MenuItem>, IPointerClickHandler, ISubmitHandler, IStylable, ILocalizationSupport
 	{
 		/// <summary>
@@ -109,6 +111,42 @@
 			}
 		}
 
+		List<IPointerEnterHandler> selectableHelpersEnter;
+
+		List<IPointerExitHandler> selectableHelpersExit;
+
+		/// <summary>
+		/// Selectable helpers on pointer enter.
+		/// </summary>
+		protected List<IPointerEnterHandler> SelectableHelpersEnter
+		{
+			get
+			{
+				if (selectableHelpersEnter == null)
+				{
+					GetSelectableHelpers();
+				}
+
+				return selectableHelpersEnter;
+			}
+		}
+
+		/// <summary>
+		/// Selectable helpers on pointer exit.
+		/// </summary>
+		protected List<IPointerExitHandler> SelectableHelpersExit
+		{
+			get
+			{
+				if (selectableHelpersExit == null)
+				{
+					GetSelectableHelpers();
+				}
+
+				return selectableHelpersExit;
+			}
+		}
+
 		/// <summary>
 		/// Click event.
 		/// </summary>
@@ -159,6 +197,23 @@
 			base.OnDestroy();
 
 			Item = null;
+		}
+
+		/// <summary>
+		/// Get selectable helpers.
+		/// </summary>
+		protected void GetSelectableHelpers()
+		{
+			var sh = GetComponents<SelectableHelper>();
+			var shl = GetComponents<SelectableHelperList>();
+
+			selectableHelpersEnter = new List<IPointerEnterHandler>();
+			selectableHelpersEnter.AddRange(sh);
+			selectableHelpersEnter.AddRange(shl);
+
+			selectableHelpersExit = new List<IPointerExitHandler>();
+			selectableHelpersExit.AddRange(sh);
+			selectableHelpersExit.AddRange(shl);
 		}
 
 		/// <summary>
@@ -255,6 +310,30 @@
 			base.OnPointerEnter(eventData);
 
 			OnEnter.Invoke(Index, true);
+		}
+
+		/// <summary>
+		/// Highlight.
+		/// </summary>
+		public virtual void SelectableHighlight()
+		{
+			base.OnPointerEnter(null);
+			foreach (var s in SelectableHelpersEnter)
+			{
+				s.OnPointerEnter(null);
+			}
+		}
+
+		/// <summary>
+		/// Highlight.
+		/// </summary>
+		public virtual void SelectableDefault()
+		{
+			base.OnPointerExit(null);
+			foreach (var s in SelectableHelpersExit)
+			{
+				s.OnPointerExit(null);
+			}
 		}
 
 		/// <summary>

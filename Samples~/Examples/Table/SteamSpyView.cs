@@ -43,7 +43,7 @@
 	/// <summary>
 	/// SteamSpyView.
 	/// </summary>
-	public class SteamSpyView : TileViewCustomSize<SteamSpyComponent, SteamSpyItem>
+	public class SteamSpyView : ListViewCustom<SteamSpyComponent, SteamSpyItem>
 	{
 		bool isSteamSpyViewInited;
 

@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
 	using UnityEngine.Serialization;
@@ -13,125 +14,59 @@
 	[RequireComponent(typeof(RectTransform))]
 	[RequireComponent(typeof(Graphic))]
 	[AddComponentMenu("UI/New UI Widgets/Effects/Ripple Effect")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/effects/ripple.html")]
 	public class RippleEffect : UVEffect, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler, IMaterialModifier, IMeshModifier
 	{
 		/// <summary>
+		/// Max ripples count.
+		/// </summary>
+		protected const int MaxRipples = 10;
+
+		/// <summary>
+		/// Float values per ripple.
+		/// </summary>
+		protected const int FloatPerRipple = 3;
+
+		/// <summary>
 		/// IDs of ripple shader properties.
 		/// </summary>
-		protected struct RippleShaderIDs : IEquatable<RippleShaderIDs>
+		protected static class ShaderIDs
 		{
 			/// <summary>
 			/// Start color ID.
 			/// </summary>
-			public readonly int StartColor;
+			[DomainReloadExclude]
+			public static readonly int StartColor = Shader.PropertyToID("_RippleStartColor");
 
 			/// <summary>
 			/// End color ID.
 			/// </summary>
-			public readonly int EndColor;
+			[DomainReloadExclude]
+			public static readonly int EndColor = Shader.PropertyToID("_RippleEndColor");
 
 			/// <summary>
 			/// Speed ID.
 			/// </summary>
-			public readonly int Speed;
+			[DomainReloadExclude]
+			public static readonly int Speed = Shader.PropertyToID("_RippleSpeed");
 
 			/// <summary>
 			/// Max size ID.
 			/// </summary>
-			public readonly int MaxSize;
+			[DomainReloadExclude]
+			public static readonly int MaxSize = Shader.PropertyToID("_RippleMaxSize");
 
 			/// <summary>
 			/// Count ID.
 			/// </summary>
-			public readonly int Count;
+			[DomainReloadExclude]
+			public static readonly int Count = Shader.PropertyToID("_RippleCount");
 
 			/// <summary>
 			/// Ripple ID.
 			/// </summary>
-			public readonly int Ripple;
-
-			private RippleShaderIDs(int startColor, int endColor, int speed, int maxSize, int count, int ripple)
-			{
-				StartColor = startColor;
-				EndColor = endColor;
-				Speed = speed;
-				MaxSize = maxSize;
-				Count = count;
-				Ripple = ripple;
-			}
-
-			/// <summary>
-			/// Get RippleShaderIDs instance.
-			/// </summary>
-			public static RippleShaderIDs Instance
-			{
-				get
-				{
-					return new RippleShaderIDs(
-						Shader.PropertyToID("_RippleStartColor"),
-						Shader.PropertyToID("_RippleEndColor"),
-						Shader.PropertyToID("_RippleSpeed"),
-						Shader.PropertyToID("_RippleMaxSize"),
-						Shader.PropertyToID("_RippleCount"),
-						Shader.PropertyToID("_Ripple"));
-				}
-			}
-
-			/// <summary>
-			/// Determines whether the specified object is equal to the current object.
-			/// </summary>
-			/// <param name="obj">The object to compare with the current object.</param>
-			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is RippleShaderIDs)
-				{
-					return Equals((RippleShaderIDs)obj);
-				}
-
-				return false;
-			}
-
-			/// <summary>
-			/// Determines whether the specified object is equal to the current object.
-			/// </summary>
-			/// <param name="other">The object to compare with the current object.</param>
-			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public bool Equals(RippleShaderIDs other)
-			{
-				return StartColor == other.StartColor && EndColor == other.EndColor && Speed == other.Speed && MaxSize == other.MaxSize && Count == other.Count && Ripple == other.Ripple;
-			}
-
-			/// <summary>
-			/// Hash function.
-			/// </summary>
-			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
-			{
-				return StartColor ^ EndColor ^ Speed ^ MaxSize ^ Count ^ Ripple;
-			}
-
-			/// <summary>
-			/// Compare specified instances.
-			/// </summary>
-			/// <param name="left">Left instance.</param>
-			/// <param name="right">Right instances.</param>
-			/// <returns>true if the instances are equal; otherwise, false.</returns>
-			public static bool operator ==(RippleShaderIDs left, RippleShaderIDs right)
-			{
-				return left.Equals(right);
-			}
-
-			/// <summary>
-			/// Compare specified instances.
-			/// </summary>
-			/// <param name="left">Left instance.</param>
-			/// <param name="right">Right instances.</param>
-			/// <returns>true if the instances are now equal; otherwise, false.</returns>
-			public static bool operator !=(RippleShaderIDs left, RippleShaderIDs right)
-			{
-				return !left.Equals(right);
-			}
+			[DomainReloadExclude]
+			public static readonly int Ripple = Shader.PropertyToID("_Ripple");
 		}
 
 		[SerializeField]
@@ -223,21 +158,6 @@
 		protected List<float> RipplesData;
 
 		/// <summary>
-		/// Max ripples count.
-		/// </summary>
-		protected static int MaxRipples = 10;
-
-		/// <summary>
-		/// Float values per ripple.
-		/// </summary>
-		protected static int FloatPerRipple = 3;
-
-		/// <summary>
-		/// Ripple shader ids.
-		/// </summary>
-		protected static RippleShaderIDs ShaderIDs = RippleShaderIDs.Instance;
-
-		/// <summary>
 		/// Remove oldest and dead ripples.
 		/// </summary>
 		protected void CleanRipples()
@@ -273,8 +193,7 @@
 
 			var pivot = RectTransform.pivot;
 
-			Vector2 current_point;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out current_point);
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out var current_point);
 			current_point.x += size.x * pivot.x;
 			current_point.y -= size.y * (1f - pivot.y);
 
@@ -324,10 +243,7 @@
 		protected override void InitMaterial()
 		{
 			var n = MaxRipples * FloatPerRipple;
-			if (RipplesData == null)
-			{
-				RipplesData = new List<float>(n);
-			}
+			RipplesData ??= new List<float>(n);
 
 			for (int i = RipplesData.Count; i < n; i++)
 			{

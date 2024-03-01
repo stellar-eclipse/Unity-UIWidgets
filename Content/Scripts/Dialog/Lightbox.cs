@@ -11,6 +11,7 @@
 	[RequireComponent(typeof(RectTransform))]
 	[DisallowMultipleComponent]
 	[AddComponentMenu("UI/New UI Widgets/Lightbox")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/lightbox.html")]
 	public class Lightbox : MonoBehaviour
 	{
 		/// <summary>
@@ -78,6 +79,14 @@
 
 			ModalHelper.Close(ref ModalKey);
 			Position.Restore();
+		}
+
+		/// <summary>
+		/// Process the destroy event.
+		/// </summary>
+		protected virtual void OnDestroy()
+		{
+			Position.ParentDestroyed();
 		}
 	}
 }

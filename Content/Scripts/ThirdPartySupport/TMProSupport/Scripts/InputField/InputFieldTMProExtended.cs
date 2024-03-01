@@ -1,4 +1,4 @@
-#if UIWIDGETS_TMPRO_SUPPORT && (UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER)
+﻿#if UIWIDGETS_TMPRO_SUPPORT && (UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER)
 namespace UIWidgets
 {
 	using TMPro;
@@ -10,6 +10,7 @@ namespace UIWidgets
 	/// <summary>
 	/// InputField with exposed functions to validate input.
 	/// </summary>
+	[HelpURL("https://docs.unity3d.com/Packages/com.unity.textmeshpro@3.0/api/TMPro.TMP_InputField.html")]
 	public class InputFieldTMProExtended : TMP_InputField, IInputFieldExtended
 	{
 		/// <summary>
@@ -58,23 +59,14 @@ namespace UIWidgets
 		/// The Unity Event to call when editing has ended.
 		/// </summary>
 		/// <value>The OnEndEdit.</value>
-		UnityEvent<string> IInputFieldProxy.onEndEdit
-		{
-			get
-			{
-				return onEndEdit;
-			}
-		}
+		UnityEvent<string> IInputFieldProxy.onEndEdit => onEndEdit;
 
 		/// <summary>
 		/// Current value.
 		/// </summary>
 		public string Value
 		{
-			get
-			{
-				return text;
-			}
+			get => text;
 
 			set
 			{
@@ -125,21 +117,12 @@ namespace UIWidgets
 		/// </summary>
 		Graphic IInputFieldProxy.textComponent
 		{
-			get
-			{
-				return textComponent;
-			}
+			get => textComponent;
 
-			set
-			{
-				textComponent = value as TMP_Text;
-			}
+			set => textComponent = value as TMP_Text;
 		}
 
-		static char NoValidation(string text, int charIndex, char addedChar)
-		{
-			return addedChar;
-		}
+		static char NoValidation(string text, int charIndex, char addedChar) => addedChar;
 
 		static void DoNothing(string value)
 		{
@@ -152,20 +135,9 @@ namespace UIWidgets
 		{
 			base.Start();
 
-			if (Validation == null)
-			{
-				Validation = NoValidation;
-			}
-
-			if (ValueChanged == null)
-			{
-				ValueChanged = DoNothing;
-			}
-
-			if (ValueEndEdit == null)
-			{
-				ValueEndEdit = DoNothing;
-			}
+			Validation ??= NoValidation;
+			ValueChanged ??= DoNothing;
+			ValueEndEdit ??= DoNothing;
 
 			onValidateInput = ProcessValidation;
 
@@ -173,38 +145,23 @@ namespace UIWidgets
 			onEndEdit.AddListener(ProcessValueEndEdit);
 		}
 
-		char ProcessValidation(string validateText, int charIndex, char addedChar)
-		{
-			return Validation(validateText, charIndex, addedChar);
-		}
+		char ProcessValidation(string validateText, int charIndex, char addedChar) => Validation(validateText, charIndex, addedChar);
 
-		void ProcessValueChanged(string text)
-		{
-			ValueChanged(text);
-		}
+		void ProcessValueChanged(string text) => ValueChanged(text);
 
-		void ProcessValueEndEdit(string text)
-		{
-			ValueEndEdit(text);
-		}
+		void ProcessValueEndEdit(string text) => ValueEndEdit(text);
 
 		/// <summary>
 		/// Determines whether InputField instance is null.
 		/// </summary>
 		/// <returns><c>true</c> if InputField instance is null; otherwise, <c>false</c>.</returns>
-		public bool IsNull()
-		{
-			return this != null;
-		}
+		public bool IsNull() => this != null;
 
 		/// <summary>
 		/// Determines whether this lineType is LineType.MultiLineNewline.
 		/// </summary>
 		/// <returns><c>true</c> if lineType is LineType.MultiLineNewline; otherwise, <c>false</c>.</returns>
-		public bool IsMultiLineNewline()
-		{
-			return lineType == LineType.MultiLineNewline;
-		}
+		public bool IsMultiLineNewline() => lineType == LineType.MultiLineNewline;
 
 		/// <summary>
 		/// Set focus to InputField.

@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets.Examples.Shops
 {
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 
 	/// <summary>
@@ -8,6 +9,7 @@
 	/// </summary>
 	public static class Prices
 	{
+		[DomainReloadExclude]
 		static readonly Dictionary<string, int> BasePrices = new Dictionary<string, int>()
 		{
 			{ "Stick", 5 },

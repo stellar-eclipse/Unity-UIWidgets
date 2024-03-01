@@ -2,6 +2,8 @@
 {
 	using System;
 	using System.Globalization;
+	using UIWidgets.Attributes;
+	using UnityEngine;
 
 	/// <summary>
 	/// Compare functions.
@@ -23,6 +25,20 @@
 		/// </summary>
 		public static CompareOptions OptionsCaseIgnore = CompareOptions.IgnoreCase;
 
+#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+		/// <summary>
+		/// Reload support.
+		/// </summary>
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(Culture), nameof(OptionsCaseSensitive), nameof(OptionsCaseIgnore))]
+		static void StaticInit()
+		{
+			Culture = CultureInfo.InvariantCulture;
+			OptionsCaseSensitive = CompareOptions.None;
+			OptionsCaseIgnore = CompareOptions.IgnoreCase;
+		}
+#endif
+
 		/// <summary>
 		/// Determines whether the beginning of Target matches the Substring.
 		/// </summary>
@@ -32,6 +48,19 @@
 		/// <returns>true if beginning of value matches the Target; otherwise, false.</returns>
 		public static bool StartsWith(string target, string substring, bool caseSensitive = true)
 		{
+#if UNITY_WEBGL
+			if (!caseSensitive)
+			{
+				target = target.ToLower(Culture);
+				substring = substring.ToLower(Culture);
+			}
+
+			if (string.IsNullOrEmpty(substring))
+			{
+				return true;
+			}
+#endif
+
 			var compare = Culture.CompareInfo;
 			var options = caseSensitive ? OptionsCaseSensitive : OptionsCaseIgnore;
 
@@ -47,6 +76,19 @@
 		/// <returns>true if the Target occurs within specified Substring; otherwise, false.</returns>
 		public static bool Contains(string target, string substring, bool caseSensitive = true)
 		{
+#if UNITY_WEBGL
+			if (!caseSensitive)
+			{
+				target = target.ToLower();
+				substring = substring.ToLower();
+			}
+
+			if (string.IsNullOrEmpty(substring))
+			{
+				return true;
+			}
+#endif
+
 			var compare = Culture.CompareInfo;
 			var options = caseSensitive ? OptionsCaseSensitive : OptionsCaseIgnore;
 

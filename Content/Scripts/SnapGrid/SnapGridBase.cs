@@ -1,6 +1,7 @@
 namespace UIWidgets
 {
 	using System.Collections.Generic;
+	using UIWidgets.Pool;
 	using UnityEngine;
 	using UnityEngine.Events;
 	using UnityEngine.Serialization;
@@ -372,8 +373,6 @@ namespace UIWidgets
 			}
 		}
 
-		List<Point> tempPoints = new List<Point>(4);
-
 		/// <summary>
 		/// Snap target.
 		/// </summary>
@@ -382,15 +381,14 @@ namespace UIWidgets
 		/// <returns>Distance to the nearest line or lines.</returns>
 		public virtual Result Snap(RectTransform target, Vector2 snapDistance)
 		{
-			tempPoints.Add(new Point(target, this, true, true));
-			tempPoints.Add(new Point(target, this, true, false));
-			tempPoints.Add(new Point(target, this, false, true));
-			tempPoints.Add(new Point(target, this, false, false));
+			using var _ = ListPool<Point>.Get(out var temp);
 
-			var result = Snap(tempPoints, snapDistance);
-			tempPoints.Clear();
+			temp.Add(new Point(target, this, true, true));
+			temp.Add(new Point(target, this, true, false));
+			temp.Add(new Point(target, this, false, true));
+			temp.Add(new Point(target, this, false, false));
 
-			return result;
+			return Snap(temp, snapDistance);
 		}
 
 		/// <summary>
@@ -400,14 +398,14 @@ namespace UIWidgets
 		/// <param name="distance">Distance.</param>
 		public virtual void Snap(RectTransform target, ref Distance distance)
 		{
-			tempPoints.Add(new Point(target, this, true, true));
-			tempPoints.Add(new Point(target, this, true, false));
-			tempPoints.Add(new Point(target, this, false, true));
-			tempPoints.Add(new Point(target, this, false, false));
+			using var _ = ListPool<Point>.Get(out var temp);
 
-			Snap(tempPoints, ref distance);
+			temp.Add(new Point(target, this, true, true));
+			temp.Add(new Point(target, this, true, false));
+			temp.Add(new Point(target, this, false, true));
+			temp.Add(new Point(target, this, false, false));
 
-			tempPoints.Clear();
+			Snap(temp, ref distance);
 		}
 
 		/// <summary>
@@ -421,12 +419,12 @@ namespace UIWidgets
 		{
 			if (snapGrids == null)
 			{
-				return default(Result);
+				return default;
 			}
 
 			if (snapGrids.Count == 0)
 			{
-				return default(Result);
+				return default;
 			}
 
 			var distance = new Distance(float.MaxValue);

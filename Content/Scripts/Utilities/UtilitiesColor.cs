@@ -1,6 +1,7 @@
 ﻿namespace UIWidgets
 {
 	using System.Globalization;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 
 	/// <summary>
@@ -39,7 +40,8 @@
 			return byte.TryParse(hex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
 		}
 
-		static char[] HexTrimChars = new char[] { '#', ';' };
+		[DomainReloadExclude]
+		static readonly char[] HexTrimChars = new char[] { '#', ';' };
 
 		/// <summary>
 		/// Converts the string representation of a color to its Color equivalent. A return value indicates whether the conversion succeeded or failed.

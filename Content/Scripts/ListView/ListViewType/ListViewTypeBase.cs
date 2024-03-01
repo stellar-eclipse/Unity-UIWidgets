@@ -3,6 +3,8 @@
 	using System;
 	using System.Collections.Generic;
 	using EasyLayoutNS;
+	using UIWidgets.Attributes;
+	using UIWidgets.Extensions;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
@@ -11,7 +13,7 @@
 	/// <content>
 	/// Base class for the custom ListViews.
 	/// </content>
-	public partial class ListViewCustom<TItemView, TItem> : ListViewCustomBase, IStylable
+	public partial class ListViewCustom<TItemView, TItem> : ListViewCustom<TItem>, IUpdatable, ILateUpdatable, IListViewCallbacks<TItemView>
 		where TItemView : ListViewItem
 	{
 		/// <summary>
@@ -37,69 +39,43 @@
 				/// <summary>
 				/// Last visible index.
 				/// </summary>
-				public int LastVisible
-				{
-					get
-					{
-						return FirstVisible + Items;
-					}
-				}
+				public readonly int LastVisible => FirstVisible + Items;
 
 				/// <summary>
 				/// Determines whether the specified object is equal to the current object.
 				/// </summary>
 				/// <param name="obj">The object to compare with the current object.</param>
 				/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-				public override bool Equals(object obj)
-				{
-					if (obj is Visibility)
-					{
-						return Equals((Visibility)obj);
-					}
-
-					return false;
-				}
+				public readonly override bool Equals(object obj) => (obj is Visibility visibility) && Equals(visibility);
 
 				/// <summary>
 				/// Determines whether the specified object is equal to the current object.
 				/// </summary>
 				/// <param name="other">The object to compare with the current object.</param>
 				/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-				public bool Equals(Visibility other)
-				{
-					return FirstVisible == other.FirstVisible && Items == other.Items;
-				}
+				public readonly bool Equals(Visibility other) => FirstVisible == other.FirstVisible && Items == other.Items;
 
 				/// <summary>
 				/// Hash function.
 				/// </summary>
 				/// <returns>A hash code for the current object.</returns>
-				public override int GetHashCode()
-				{
-					return FirstVisible ^ Items;
-				}
+				public readonly override int GetHashCode() => FirstVisible ^ Items;
 
 				/// <summary>
 				/// Compare specified visibility data.
 				/// </summary>
-				/// <param name="obj1">First data.</param>
-				/// <param name="obj2">Second data.</param>
+				/// <param name="a">First data.</param>
+				/// <param name="b">Second data.</param>
 				/// <returns>true if the data are equal; otherwise, false.</returns>
-				public static bool operator ==(Visibility obj1, Visibility obj2)
-				{
-					return obj1.Equals(obj2);
-				}
+				public static bool operator ==(Visibility a, Visibility b) => a.Equals(b);
 
 				/// <summary>
 				/// Compare specified visibility data.
 				/// </summary>
-				/// <param name="obj1">First data.</param>
-				/// <param name="obj2">Second data.</param>
+				/// <param name="a">First data.</param>
+				/// <param name="b">Second data.</param>
 				/// <returns>true if the data not equal; otherwise, false.</returns>
-				public static bool operator !=(Visibility obj1, Visibility obj2)
-				{
-					return !obj1.Equals(obj2);
-				}
+				public static bool operator !=(Visibility a, Visibility b) => !a.Equals(b);
 			}
 
 			/// <summary>
@@ -378,13 +354,8 @@
 			/// <summary>
 			/// Compare LayoutElements by layoutPriority.
 			/// </summary>
-			/// <param name="x">First LayoutElement.</param>
-			/// <param name="y">Second LayoutElement.</param>
-			/// <returns>Result of the comparison.</returns>
-			protected static int LayoutElementsComparison(ILayoutElement x, ILayoutElement y)
-			{
-				return -x.layoutPriority.CompareTo(y.layoutPriority);
-			}
+			[DomainReloadExclude]
+			protected static Comparison<ILayoutElement> LayoutElementsComparison = (x, y) => -x.layoutPriority.CompareTo(y.layoutPriority);
 
 			/// <summary>
 			/// Calculates the size of the item.
@@ -571,8 +542,10 @@
 				Owner.SetData(template.Template, item);
 
 				LayoutRebuilder.ForceRebuildLayoutImmediate(Owner.Container);
+				var size = ValidateSize(template.Template.RectTransform.rect.size);
+				template.Template.MovedToCache();
 
-				return ValidateSize(template.Template.RectTransform.rect.size);
+				return size;
 			}
 
 			/// <summary>
@@ -633,7 +606,13 @@
 			/// <returns>The instance size.</returns>
 			public virtual Vector2 GetInstanceFullSize(int index)
 			{
-				return Owner.DefaultInstanceSize;
+				var template = Owner.ComponentsPool.GetTemplate(index);
+				if (Owner.OverriddenTemplateSizes.TryGetValue(template.TemplateID, out var size))
+				{
+					return size;
+				}
+
+				return template.DefaultSize;
 			}
 
 			/// <summary>
@@ -857,6 +836,34 @@
 			}
 
 			/// <summary>
+			/// Get viewport width.
+			/// </summary>
+			/// <returns>Width.</returns>
+			protected virtual float ViewportWidth()
+			{
+				return Owner.Viewport.Size.x + Owner.GetItemSpacingX();
+			}
+
+			/// <summary>
+			/// Get viewport height.
+			/// </summary>
+			/// <returns>Height.</returns>
+			protected virtual float ViewportHeight()
+			{
+				return Owner.Viewport.Size.y + Owner.GetItemSpacingY();
+			}
+
+			/// <summary>
+			/// Get visible items count starting from specified index.
+			/// </summary>
+			/// <param name="start_index">Start index.</param>
+			/// <returns>Visible items count.</returns>
+			protected virtual int GetVisibleItems(int start_index)
+			{
+				return Mathf.Min(MaxVisibleItems, Owner.DataSource.Count);
+			}
+
+			/// <summary>
 			/// Get visibility data.
 			/// </summary>
 			/// <returns>Visibility data.</returns>
@@ -867,12 +874,13 @@
 				if (Owner.LoopedListAvailable)
 				{
 					visible.FirstVisible = GetFirstVisibleIndex();
-					visible.Items = Mathf.Min(MaxVisibleItems, Owner.DataSource.Count);
+					visible.Items = GetVisibleItems(visible.FirstVisible);
 				}
 				else if (Owner.Virtualization && IsVirtualizationSupported() && (Owner.DataSource.Count > 0))
 				{
 					visible.FirstVisible = GetFirstVisibleIndex();
-					visible.Items = Mathf.Min(MaxVisibleItems, Owner.DataSource.Count);
+					visible.Items = GetVisibleItems(visible.FirstVisible);
+
 					if ((visible.FirstVisible + visible.Items) > Owner.DataSource.Count)
 					{
 						visible.Items = Owner.DataSource.Count - visible.FirstVisible;
@@ -948,51 +956,20 @@
 			/// <param name="builder">String builder.</param>
 			public virtual void GetDebugInfo(System.Text.StringBuilder builder)
 			{
-				builder.Append("IsTileView: ");
-				builder.Append(IsTileView);
-				builder.AppendLine();
-
-				builder.Append("Max Visible Items: ");
-				builder.Append(MaxVisibleItems);
-				builder.AppendLine();
+				builder.AppendValue("IsTileView: ", IsTileView);
+				builder.AppendValue("Max Visible Items: ", MaxVisibleItems);
 
 				builder.AppendLine("Visibility");
 
-				builder.Append("Visibility.FirstVisible: ");
-				builder.Append(Visible.FirstVisible);
-				builder.AppendLine();
-
-				builder.Append("Visibility.LastVisible: ");
-				builder.Append(Visible.LastVisible);
-				builder.AppendLine();
-
-				builder.Append("Visibility.Items: ");
-				builder.Append(Visible.Items);
-				builder.AppendLine();
-
-				builder.Append("First Visible Index: ");
-				builder.Append(GetFirstVisibleIndex());
-				builder.AppendLine();
-
-				builder.Append("Last Visible Index: ");
-				builder.Append(GetLastVisibleIndex());
-				builder.AppendLine();
-
-				builder.Append("List Size: ");
-				builder.Append(ListSize());
-				builder.AppendLine();
-
-				builder.Append("Items Per Block: ");
-				builder.Append(GetItemsPerBlock());
-				builder.AppendLine();
-
-				builder.Append("Top Filler: ");
-				builder.Append(TopFillerSize());
-				builder.AppendLine();
-
-				builder.Append("Bottom Filler: ");
-				builder.Append(BottomFillerSize());
-				builder.AppendLine();
+				builder.AppendValue("Visibility.FirstVisible: ", Visible.FirstVisible);
+				builder.AppendValue("Visibility.LastVisible: ", Visible.LastVisible);
+				builder.AppendValue("Visibility.Items: ", Visible.Items);
+				builder.AppendValue("First Visible Index: ", GetFirstVisibleIndex());
+				builder.AppendValue("Last Visible Index: ", GetLastVisibleIndex());
+				builder.AppendValue("List Size: ", ListSize());
+				builder.AppendValue("Items Per Block: ", GetItemsPerBlock());
+				builder.AppendValue("Top Filler: ", TopFillerSize());
+				builder.AppendValue("Bottom Filler: ", BottomFillerSize());
 
 				builder.AppendLine("Items");
 				for (int index = 0; index < Owner.DataSource.Count; index++)

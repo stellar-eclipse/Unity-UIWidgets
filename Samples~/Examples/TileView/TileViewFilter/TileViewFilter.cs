@@ -15,18 +15,12 @@ namespace UIWidgets.Examples
 		[SerializeField]
 		protected ListViewString TileView;
 
-		ObservableList<string> dataSource = new ObservableList<string>();
+		readonly ObservableList<string> dataSource = new ObservableList<string>();
 
 		/// <summary>
 		/// DataSource.
 		/// </summary>
-		public ObservableList<string> DataSource
-		{
-			get
-			{
-				return dataSource;
-			}
-		}
+		public ObservableList<string> DataSource => dataSource;
 
 		InputFieldAdapter inputField;
 

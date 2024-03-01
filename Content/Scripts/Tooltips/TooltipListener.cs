@@ -1,17 +1,19 @@
 namespace UIWidgets
 {
-    using System.Collections;
-    using System.Collections.Generic;
-    using UnityEngine;
-    using UnityEngine.EventSystems;
+	using System.Collections;
+	using System.Collections.Generic;
+	using UIWidgets.Attributes;
+	using UnityEngine;
+	using UnityEngine.EventSystems;
 
 	/// <summary>
 	/// Tooltip listener.
 	/// </summary>
-    public class TooltipListener : MonoBehaviour,
-        IPointerEnterHandler, IPointerExitHandler,
-        ISelectHandler, IDeselectHandler
-    {
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/misc/tooltip.html")]
+	public class TooltipListener : MonoBehaviour,
+		IPointerEnterHandler, IPointerExitHandler,
+		ISelectHandler, IDeselectHandler
+	{
 		/// <summary>
 		/// Info.
 		/// </summary>
@@ -27,7 +29,7 @@ namespace UIWidgets
 			/// </summary>
 			public IEnumerator Coroutine;
 
-			static Stack<TooltipInfo> Cache = new Stack<TooltipInfo>();
+			static readonly Stack<TooltipInfo> Cache = new Stack<TooltipInfo>();
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="TooltipInfo"/> class.
@@ -69,6 +71,7 @@ namespace UIWidgets
 
 			#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
 			[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+			[DomainReload(nameof(Cache))]
 			static void StaticInit()
 			{
 				Cache.Clear();
@@ -212,6 +215,11 @@ namespace UIWidgets
 		{
 			foreach (var info in Tooltips)
 			{
+				if (info.Coroutine != null)
+				{
+					continue;
+				}
+
 				info.Coroutine = Show(info);
 				StartCoroutine(info.Coroutine);
 			}

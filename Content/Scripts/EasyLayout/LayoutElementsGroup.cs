@@ -8,15 +8,15 @@
 	/// </summary>
 	public class LayoutElementsGroup
 	{
+		readonly List<LayoutElementInfo> rowElements = new List<LayoutElementInfo>();
+
+		readonly List<LayoutElementInfo> columnElements = new List<LayoutElementInfo>();
+
 		List<LayoutElementInfo> elements;
 
 		int rows;
 
 		int columns;
-
-		List<LayoutElementInfo> rowElements = new List<LayoutElementInfo>();
-
-		List<LayoutElementInfo> columnElements = new List<LayoutElementInfo>();
 
 		/// <summary>
 		/// Elements.

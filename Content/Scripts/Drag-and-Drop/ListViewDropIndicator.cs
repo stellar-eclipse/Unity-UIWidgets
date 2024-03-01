@@ -23,7 +23,7 @@
 			}
 
 			var size = listView.IsHorizontal() ? listView.GetDefaultItemHeight() : listView.GetDefaultItemWidth();
-			var p = listView.GetItemPosition(index);
+			var p = listView.GetItemPosition(index, false);
 			var pos = listView.IsHorizontal() ? new Vector2(p, 0f) : new Vector2(0f, -p);
 
 			var rectTransform = transform as RectTransform;

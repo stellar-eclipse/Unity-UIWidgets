@@ -6,6 +6,7 @@
 	/// <summary>
 	/// ScrollRectFooter.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/scrollrect/scrollrect-footer.html")]
 	public class ScrollRectFooter : ScrollRectBlock
 	{
 		/// <summary>

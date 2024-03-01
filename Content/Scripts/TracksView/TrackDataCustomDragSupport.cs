@@ -95,15 +95,9 @@
 		/// <inheritdoc/>
 		protected override void InitDrag(PointerEventData eventData)
 		{
-			Vector2 point;
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(transform as RectTransform, eventData.position, eventData.pressEventCamera, out point))
-			{
-				DragPositionPadding = 0f;
-			}
-			else
-			{
-				DragPositionPadding = point.x;
-			}
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(transform as RectTransform, eventData.position, eventData.pressEventCamera, out var point);
+
+			DragPositionPadding = point.x;
 
 			var component = GetComponent<TDataView>();
 			Data = component.Data;

@@ -1,4 +1,4 @@
-﻿namespace UIWidgets.Tests
+﻿namespace UIWidgets.Examples
 {
 	using System;
 	using System.Collections;

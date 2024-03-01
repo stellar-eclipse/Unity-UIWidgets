@@ -11,6 +11,7 @@
 	/// </summary>
 	[RequireComponent(typeof(LayoutGroup))]
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/controls/contextmenu.html")]
 	public partial class ContextMenuView : MonoBehaviour, IStylable
 	{
 		/// <summary>

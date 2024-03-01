@@ -8,6 +8,7 @@
 	/// <summary>
 	/// ProgressbarIndeterminate.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/misc/progressbar-indeterminate.html")]
 	public class ProgressbarIndeterminate : MonoBehaviour, IStylable
 	{
 		/// <summary>
@@ -47,6 +48,57 @@
 		/// </summary>
 		[SerializeField]
 		public bool UnscaledTime = false;
+
+		[SerializeField]
+		bool correctUVRect = true;
+
+		/// <summary>
+		/// Correct UV rect of the Bar.
+		/// </summary>
+		public bool CorrectUVRect
+		{
+			get
+			{
+				return correctUVRect;
+			}
+
+			set
+			{
+				correctUVRect = value;
+				if (correctUVRect)
+				{
+					UpdateUVRect();
+				}
+			}
+		}
+
+		/// <summary>
+		/// Process the start event.
+		/// </summary>
+		protected virtual void Start()
+		{
+			UpdateUVRect();
+		}
+
+		/// <summary>
+		/// Update UV rect.
+		/// </summary>
+		protected virtual void UpdateUVRect()
+		{
+			if ((Bar == null) || (Bar.texture == null))
+			{
+				return;
+			}
+
+			var t_width = Bar.texture.width;
+			var t_height = Bar.texture.height;
+
+			var rt_size = Bar.GetComponent<RectTransform>().rect.size;
+			var rect = Bar.uvRect;
+			rect.width = rt_size.x / t_width;
+			rect.height = rt_size.y / t_height;
+			Bar.uvRect = rect;
+		}
 
 		/// <summary>
 		/// Gets a value indicating whether this instance is animation run.
@@ -132,5 +184,18 @@
 			return true;
 		}
 		#endregion
+
+#if UNITY_EDITOR
+		/// <summary>
+		/// Process the validate event.
+		/// </summary>
+		protected virtual void OnValidate()
+		{
+			if (correctUVRect)
+			{
+				UpdateUVRect();
+			}
+		}
+#endif
 	}
 }

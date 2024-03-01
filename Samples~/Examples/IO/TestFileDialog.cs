@@ -79,7 +79,7 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Info, ref InfoAdapter);
+			Utilities.RequireComponent(Info, ref InfoAdapter);
 #pragma warning restore 0612, 0618
 		}
 

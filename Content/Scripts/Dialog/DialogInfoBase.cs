@@ -10,6 +10,7 @@
 	/// <summary>
 	/// DialogInfoBase.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/dialogs/dialog.html")]
 	public class DialogInfoBase : MonoBehaviour
 	{
 		[SerializeField]

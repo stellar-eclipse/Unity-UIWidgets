@@ -7,6 +7,7 @@ namespace UIWidgets.TMProSupport
 	/// <summary>
 	/// ListViewInt component.
 	/// </summary>
+	[System.Obsolete("Use ListViewIntComponent with TextAdapter.")]
 	public class ListViewIntComponentTMPro : ListViewIntComponentBase
 	{
 		/// <summary>
@@ -23,7 +24,7 @@ namespace UIWidgets.TMProSupport
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Number, ref NumberAdapter);
+			Utilities.RequireComponent(Number, ref NumberAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

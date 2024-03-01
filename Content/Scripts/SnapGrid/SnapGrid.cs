@@ -7,6 +7,7 @@ namespace UIWidgets
 	/// <summary>
 	/// Snap grid.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/snapgrid/snapgrid.html")]
 	public class SnapGrid : SnapGridBase
 	{
 		/// <summary>

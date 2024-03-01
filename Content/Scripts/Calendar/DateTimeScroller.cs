@@ -41,7 +41,19 @@
 		[SerializeField]
 		[EditorConditionBool("hours")]
 		[FormerlySerializedAs("HoursScroller")]
-		protected ScrollBlockBase HoursScrollBlock;
+		[FormerlySerializedAs("HoursScrollBlock")]
+		protected ScrollBlockBase hoursScrollBlock;
+
+		/// <summary>
+		/// ScrollBlock for the hours.
+		/// </summary>
+		public ScrollBlockBase HoursScrollBlock
+		{
+			get
+			{
+				return hoursScrollBlock;
+			}
+		}
 
 		/// <summary>
 		/// Step to change hour.
@@ -94,7 +106,19 @@
 		[SerializeField]
 		[EditorConditionBool("minutes")]
 		[FormerlySerializedAs("MinutesScroller")]
-		protected ScrollBlockBase MinutesScrollBlock;
+		[FormerlySerializedAs("MinutesScrollBlock")]
+		protected ScrollBlockBase minutesScrollBlock;
+
+		/// <summary>
+		/// ScrollBlock for the minutes.
+		/// </summary>
+		public ScrollBlockBase MinutesScrollBlock
+		{
+			get
+			{
+				return minutesScrollBlock;
+			}
+		}
 
 		/// <summary>
 		/// Step to change minutes.
@@ -140,7 +164,19 @@
 		[SerializeField]
 		[EditorConditionBool("seconds")]
 		[FormerlySerializedAs("SecondsScroller")]
-		protected ScrollBlockBase SecondsScrollBlock;
+		[FormerlySerializedAs("SecondsScrollBlock")]
+		protected ScrollBlockBase secondsScrollBlock;
+
+		/// <summary>
+		/// ScrollBlock for the seconds.
+		/// </summary>
+		public ScrollBlockBase SecondsScrollBlock
+		{
+			get
+			{
+				return secondsScrollBlock;
+			}
+		}
 
 		/// <summary>
 		/// Step to change seconds.

@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 	using UnityEngine.UI;
 
@@ -29,11 +30,11 @@
 		/// <returns>Component.</returns>
 		/// <param name="obj">Object.</param>
 		/// <typeparam name="T">Component type.</typeparam>
-		[Obsolete("Replaced with Utilities.GetOrAddComponent<T>().")]
+		[Obsolete("Replaced with Utilities.RequireComponent<T>().")]
 		public static T GetOrAddComponent<T>(Component obj)
 			where T : Component
 		{
-			return Utilities.GetOrAddComponent<T>(obj);
+			return Utilities.RequireComponent<T>(obj);
 		}
 
 		/// <summary>
@@ -42,11 +43,11 @@
 		/// <returns>Component.</returns>
 		/// <param name="obj">Object.</param>
 		/// <typeparam name="T">Component type.</typeparam>
-		[Obsolete("Replaced with Utilities.GetOrAddComponent<T>().")]
+		[Obsolete("Replaced with Utilities.RequireComponent<T>().")]
 		public static T GetOrAddComponent<T>(GameObject obj)
 			where T : Component
 		{
-			return Utilities.GetOrAddComponent<T>(obj);
+			return Utilities.RequireComponent<T>(obj);
 		}
 
 		/// <summary>
@@ -55,11 +56,11 @@
 		/// <param name="source">Source component.</param>
 		/// <param name="target">Target component.</param>
 		/// <typeparam name="T">Component type.</typeparam>
-		[Obsolete("Replaced with Utilities.GetOrAddComponent<T>().")]
+		[Obsolete("Replaced with Utilities.RequireComponent<T>().")]
 		public static void GetOrAddComponent<T>(Component source, ref T target)
 			where T : Component
 		{
-			Utilities.GetOrAddComponent<T>(source, ref target);
+			Utilities.RequireComponent<T>(source, ref target);
 		}
 
 		/// <summary>
@@ -248,6 +249,7 @@
 		/// Can be replaced with custom function.
 		/// </summary>
 		[Obsolete("Replaced with UtilitiesTime.GetTime().")]
+		[DomainReloadExclude]
 		public static readonly Func<bool, float> GetTime = UtilitiesTime.DefaultGetTime;
 
 		/// <summary>
@@ -255,6 +257,7 @@
 		/// Can be replaced with custom function.
 		/// </summary>
 		[Obsolete("Replaced with UtilitiesTime.GetTime(true)")]
+		[DomainReloadExclude]
 		public static readonly Func<float> GetUnscaledTime = UtilitiesTime.DefaultGetUnscaledTime;
 
 		/// <summary>
@@ -262,6 +265,7 @@
 		/// Can be replaced with custom function.
 		/// </summary>
 		[Obsolete("Replaced with UtilitiesTime.GetDeltaTime().")]
+		[DomainReloadExclude]
 		public static readonly Func<bool, float> GetDeltaTime = UtilitiesTime.DefaultGetDeltaTime;
 
 		/// <summary>
@@ -399,10 +403,10 @@
 		/// <param name="prefab">Prefab.</param>
 		/// <param name="undo">Support editor undo.</param>
 		/// <returns>Created gameobject.</returns>
-		[Obsolete("Replaced with UtilitiesEditor.CreateGameObject().")]
+		[Obsolete("Replaced with Widgets.CreateGameObject().")]
 		public static GameObject CreateGameObject(GameObject prefab, bool undo = true)
 		{
-			return UtilitiesEditor.CreateGameObject(prefab, undo);
+			return null;
 		}
 
 		/// <summary>
@@ -492,10 +496,10 @@
 		/// </summary>
 		/// <param name="templateLabel">Template label.</param>
 		/// <returns>Widget template.</returns>
-		[Obsolete("Replaced with UtilitiesEditor.CreateWidgetTemplateFromAsset().")]
+		[Obsolete("Replaced with Widgets.CreateTemplateFromAsset().")]
 		public static GameObject CreateWidgetTemplateFromAsset(string templateLabel)
 		{
-			return UtilitiesEditor.CreateWidgetTemplateFromAsset(templateLabel);
+			return null;
 		}
 
 		/// <summary>
@@ -505,10 +509,10 @@
 		/// <param name="applyStyle">Apply style to created widget.</param>
 		/// <param name="converter">Converter for the created widget (mostly used to replace Unity Text with TMPro Text).</param>
 		/// <returns>Created GameObject.</returns>
-		[Obsolete("Replaced with UtilitiesEditor.CreateWidgetFromAsset().")]
+		[Obsolete("Replaced with Widgets.CreateFromAsset().")]
 		public static GameObject CreateWidgetFromAsset(string widget, bool applyStyle = true, Action<GameObject> converter = null)
 		{
-			return UtilitiesEditor.CreateWidgetFromAsset(widget, applyStyle, converter);
+			return null;
 		}
 
 		/// <summary>
@@ -518,30 +522,29 @@
 		/// <param name="applyStyle">Apply style to created widget.</param>
 		/// <param name="converter">Converter for the created widget (mostly used to replace Unity Text with TMPro Text).</param>
 		/// <returns>Created GameObject.</returns>
-		[Obsolete("Replaced with UtilitiesEditor.CreateWidgetFromPrefab().")]
+		[Obsolete("Replaced with Widgets.CreateFromPrefab().")]
 		public static GameObject CreateWidgetFromPrefab(GameObject prefab, bool applyStyle = true, Action<GameObject> converter = null)
 		{
-			return UtilitiesEditor.CreateWidgetFromPrefab(prefab, applyStyle, converter);
+			return null;
 		}
 
 		/// <summary>
 		/// Replace Close button callback on Cancel instead of the Hide for the Dialog components in the specified GameObject.
 		/// </summary>
 		/// <param name="go">GameObject.</param>
-		[Obsolete("Replaced with UtilitiesEditor.FixDialogCloseButton().")]
+		[Obsolete("Replaced with Widgets.FixDialogCloseButton().")]
 		public static void FixDialogCloseButton(GameObject go)
 		{
-			UtilitiesEditor.FixDialogCloseButton(go);
 		}
 
 		/// <summary>
 		/// Gets the canvas transform.
 		/// </summary>
 		/// <returns>The canvas transform.</returns>
-		[Obsolete("Replaced with UtilitiesEditor.GetCanvasTransform().")]
+		[Obsolete("Replaced with Widgets.GetCanvasTransform().")]
 		public static Transform GetCanvasTransform()
 		{
-			return UtilitiesEditor.GetCanvasTransform();
+			return null;
 		}
 
 		/// <summary>

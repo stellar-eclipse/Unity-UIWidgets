@@ -3,11 +3,11 @@ namespace UIWidgets.TMProSupport
 {
 	using TMPro;
 	using UnityEngine;
-	using UnityEngine.UI;
 
 	/// <summary>
 	/// List view item component.
 	/// </summary>
+	[System.Obsolete("Use ListViewStringComponent with TextAdapter.")]
 	public class ListViewStringComponentTMPro : ListViewStringComponent
 	{
 		/// <summary>
@@ -26,7 +26,7 @@ namespace UIWidgets.TMProSupport
 			base.Upgrade();
 
 #pragma warning disable 0618
-			Utilities.GetOrAddComponent(TextTMPro, ref TextAdapter);
+			Utilities.RequireComponent(TextTMPro, ref TextAdapter);
 #pragma warning restore 0618
 		}
 	}

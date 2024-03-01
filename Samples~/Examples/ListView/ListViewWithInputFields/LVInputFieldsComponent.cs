@@ -134,8 +134,8 @@
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Input1, ref Input1Adapter);
-			Utilities.GetOrAddComponent(Input2, ref Input2Adapter);
+			Utilities.RequireComponent(Input1, ref Input1Adapter);
+			Utilities.RequireComponent(Input2, ref Input2Adapter);
 #pragma warning restore 0612, 0618
 		}
 	}

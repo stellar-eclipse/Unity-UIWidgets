@@ -2,9 +2,8 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Collections.ObjectModel;
 	using System.Runtime.CompilerServices;
-	using System.Threading.Tasks;
+	using UIWidgets.Attributes;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.UI;
@@ -12,6 +11,7 @@
 	/// <summary>
 	/// Popup.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/dialogs/popup.html")]
 	public class Popup : MonoBehaviour, ITemplatable, IStylable, IUpgradeable, INotifyCompletion
 	{
 		[SerializeField]
@@ -141,10 +141,7 @@
 		{
 			get
 			{
-				if (templates == null)
-				{
-					templates = new Templates<Popup>();
-				}
+				templates ??= new Templates<Popup>();
 
 				return templates;
 			}
@@ -208,14 +205,14 @@
 		/// <summary>
 		/// Opened popups.
 		/// </summary>
-		public static ReadOnlyCollection<Popup> OpenedPopups
+		public static IReadOnlyList<Popup> OpenedPopups
 		{
 			get
 			{
 				OpenedPopupsList.Clear();
 				OpenedPopupsList.AddRange(openedPopups);
 
-				return OpenedPopupsList.AsReadOnly();
+				return OpenedPopupsList;
 			}
 		}
 
@@ -315,11 +312,26 @@
 			isInited = true;
 		}
 
+#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		[DomainReload(nameof(openedPopups), nameof(OpenedPopupsList), nameof(OnBaseInstanceOpen), nameof(OnBaseInstanceClose), nameof(templates))]
+		static void StaticInit()
+		{
+			openedPopups.Clear();
+			OpenedPopupsList.Clear();
+			OnBaseInstanceOpen = null;
+			OnBaseInstanceClose = null;
+			templates = null;
+		}
+#endif
+
 		/// <summary>
 		/// This function is called when the MonoBehaviour will be destroyed.
 		/// </summary>
 		protected virtual void OnDestroy()
 		{
+			Position.ParentDestroyed();
+
 			if (!IsTemplate)
 			{
 				if (gameObject.activeSelf)
@@ -654,8 +666,8 @@
 			if (info == null)
 			{
 				info = gameObject.AddComponent<DialogInfoBase>();
-				Utilities.GetOrAddComponent(titleText, ref info.TitleAdapter);
-				Utilities.GetOrAddComponent(contentText, ref info.MessageAdapter);
+				Utilities.RequireComponent(titleText, ref info.TitleAdapter);
+				Utilities.RequireComponent(contentText, ref info.MessageAdapter);
 				info.Icon = Icon;
 			}
 

@@ -65,6 +65,16 @@
 		}
 
 		/// <summary>
+		/// Text alignment.
+		/// </summary>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Compatibility with Unity.Text.")]
+		TextAnchor alignment
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
 		/// Bold.
 		/// </summary>
 		bool Bold

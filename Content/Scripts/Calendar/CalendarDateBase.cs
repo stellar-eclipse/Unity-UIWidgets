@@ -2,15 +2,18 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using UIThemes;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
+	using UnityEngine.Serialization;
 	using UnityEngine.UI;
 
 	/// <summary>
 	/// Base class for Calendar date.
 	/// </summary>
-	public class CalendarDateBase : UIBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler, IUpgradeable
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/calendar.html")]
+	public class CalendarDateBase : UIBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler, IUpgradeable, ITargetOwner
 	{
 		#region Interactable
 		[SerializeField]
@@ -153,53 +156,194 @@
 		[SerializeField]
 		protected Image DayImage;
 
+		[SerializeField]
+		[FormerlySerializedAs("SelectedDayBackground")]
+		Sprite selectedDayBackground;
+
 		/// <summary>
 		/// Selected date background.
 		/// </summary>
+		public Sprite SelectedDayBackground
+		{
+			get
+			{
+				return selectedDayBackground;
+			}
+
+			set
+			{
+				selectedDayBackground = value;
+				UpdateView();
+			}
+		}
+
 		[SerializeField]
-		public Sprite SelectedDayBackground;
+		[FormerlySerializedAs("SelectedDay")]
+		Color selectedDay = Color.white;
 
 		/// <summary>
 		/// Selected date color.
 		/// </summary>
+		public Color SelectedDay
+		{
+			get
+			{
+				return selectedDay;
+			}
+
+			set
+			{
+				selectedDay = value;
+				UpdateView();
+			}
+		}
+
 		[SerializeField]
-		public Color SelectedDay = Color.white;
+		[FormerlySerializedAs("SelectedDayBold")]
+		bool selectedDayBold = false;
+
+		/// <summary>
+		/// Make selected day bold.
+		/// </summary>
+		public bool SelectedDayBold
+		{
+			get
+			{
+				return selectedDayBold;
+			}
+
+			set
+			{
+				selectedDayBold = value;
+				UpdateView();
+			}
+		}
+
+		[SerializeField]
+		[FormerlySerializedAs("DefaultDayBackground")]
+		Sprite defaultDayBackground;
 
 		/// <summary>
 		/// Default date background.
 		/// </summary>
+		public Sprite DefaultDayBackground
+		{
+			get
+			{
+				return defaultDayBackground;
+			}
+
+			set
+			{
+				defaultDayBackground = value;
+				UpdateView();
+			}
+		}
+
 		[SerializeField]
-		public Sprite DefaultDayBackground;
+		[FormerlySerializedAs("CurrentMonth")]
+		Color currentMonth = Color.white;
 
 		/// <summary>
 		/// Color for date in current month.
 		/// </summary>
+		public Color CurrentMonth
+		{
+			get
+			{
+				return currentMonth;
+			}
+
+			set
+			{
+				currentMonth = value;
+				UpdateView();
+			}
+		}
+
 		[SerializeField]
-		public Color CurrentMonth = Color.white;
+		[FormerlySerializedAs("Weekend")]
+		Color weekend = Color.red;
 
 		/// <summary>
 		/// Weekend date color.
 		/// </summary>
+		public Color Weekend
+		{
+			get
+			{
+				return weekend;
+			}
+
+			set
+			{
+				weekend = value;
+				UpdateView();
+			}
+		}
+
 		[SerializeField]
-		public Color Weekend = Color.red;
+		[FormerlySerializedAs("OtherMonth")]
+		Color otherMonth = Color.gray;
 
 		/// <summary>
 		/// Color for date not in current month.
 		/// </summary>
+		public Color OtherMonth
+		{
+			get
+			{
+				return otherMonth;
+			}
+
+			set
+			{
+				otherMonth = value;
+				UpdateView();
+			}
+		}
+
 		[SerializeField]
-		public Color OtherMonth = Color.gray;
+		[FormerlySerializedAs("OtherMonthWeekend")]
+		Color otherMonthWeekend = Color.gray * Color.red;
 
 		/// <summary>
 		/// Color for weekend date not in current month.
 		/// </summary>
+		public Color OtherMonthWeekend
+		{
+			get
+			{
+				return otherMonthWeekend;
+			}
+
+			set
+			{
+				otherMonthWeekend = value;
+				UpdateView();
+			}
+		}
+
 		[SerializeField]
-		public Color OtherMonthWeekend = Color.gray * Color.red;
+		[FormerlySerializedAs("OutOfRangeDate")]
+		Color outOfRangeDate = Color.gray * Color.gray;
 
 		/// <summary>
 		/// Color for date out of Calendar.DateMin..Calendar.DateMax range.
 		/// </summary>
-		[SerializeField]
-		public Color OutOfRangeDate = Color.gray * Color.gray;
+		public Color OutOfRangeDate
+		{
+			get
+			{
+				return outOfRangeDate;
+			}
+
+			set
+			{
+				outOfRangeDate = value;
+				UpdateView();
+			}
+		}
 
 		/// <summary>
 		/// Current date to display.
@@ -220,6 +364,23 @@
 		int version;
 
 		/// <summary>
+		/// Process the start event.
+		/// </summary>
+		protected override void Start()
+		{
+			base.Start();
+			SetTargetOwner();
+		}
+
+		/// <summary>
+		/// Set theme target owner.
+		/// </summary>
+		public virtual void SetTargetOwner()
+		{
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), DayAdapter.Graphic, nameof(DayAdapter.Graphic.color), this);
+		}
+
+		/// <summary>
 		/// Set current date.
 		/// </summary>
 		/// <param name="currentDate">Current date.</param>
@@ -235,15 +396,35 @@
 		/// </summary>
 		public virtual void DateChanged()
 		{
+			if (Calendar == null)
+			{
+				return;
+			}
+
 			DayAdapter.text = CurrentDate.ToString("dd", Calendar.Culture);
+
+			UpdateView();
+		}
+
+		/// <summary>
+		/// Update view.
+		/// </summary>
+		protected virtual void UpdateView()
+		{
+			if (Calendar == null)
+			{
+				return;
+			}
 
 			if (Calendar.IsSameDay(Calendar.Date, CurrentDate))
 			{
+				DayAdapter.Bold = SelectedDayBold;
 				DayAdapter.color = SelectedDay;
 				DayImage.sprite = SelectedDayBackground;
 			}
 			else
 			{
+				DayAdapter.Bold = false;
 				DayImage.sprite = DefaultDayBackground;
 
 				if (Calendar.IsSameMonth(Calendar.DateDisplay, CurrentDate))
@@ -343,7 +524,7 @@
 
 			if (Calendar != null)
 			{
-				DateChanged();
+				UpdateView();
 			}
 		}
 

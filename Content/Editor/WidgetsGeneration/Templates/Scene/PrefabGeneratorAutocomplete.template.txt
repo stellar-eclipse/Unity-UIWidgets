@@ -6,7 +6,7 @@ namespace {0:WidgetsNamespace}
 		void GenerateSceneAutocomplete({0:TestClass} target, UIWidgets.WidgetGeneration.SceneGeneratorHelper helper)
 		{{
 			var autocomplete_prefab = PrefabsMenu.Autocomplete;
-			var autocomplete = UnityEngine.Object.Instantiate(autocomplete_prefab) as UnityEngine.GameObject;
+			var autocomplete = Instantiate(autocomplete_prefab);
 			autocomplete.name = autocomplete_prefab.name;
 			autocomplete.transform.SetParent(helper.AutocompleteParent, false);
 			target.Autocomplete = autocomplete.transform.Find("Autocomplete").GetComponent<{0:AutocompleteClass}>();
@@ -23,7 +23,7 @@ namespace {0:WidgetsNamespace}
 		/// <returns>Autocomplete.</returns>
 		protected override UnityEngine.GameObject GenerateAutocomplete()
 		{{
-			var go = UIWidgets.UtilitiesEditor.CreateGameObject(UIWidgets.PrefabsTemplates.Instance.Autocomplete);
+			var go = UIWidgets.Widgets.CreateGameObject(UIWidgets.PrefabsTemplates.Instance.Autocomplete);
 			go.name = "Autocomplete" + Info.ShortTypeName;
 
 			var helper = go.GetComponent<UIWidgets.WidgetGeneration.AutocompleteGeneratorHelper>();
@@ -36,6 +36,8 @@ namespace {0:WidgetsNamespace}
 
 			UnityEngine.Object.DestroyImmediate(helper);
 
+			ThemeAutocomplete(go);
+
 			return go;
 		}}
 
@@ -44,16 +46,16 @@ namespace {0:WidgetsNamespace}
 			var rt_input = helper.InputText.transform as UnityEngine.RectTransform;
 			var sd_input = rt_input.sizeDelta;
 			var input_text = helper.InputText.AddComponent<{0:AutocompleteText}>();
-			rt_input.sizeDelta = sd_input;
 			InitTextComponent(input_text);
+			rt_input.sizeDelta = sd_input;
 			input_text.fontSize = 14;{0:!IfTMProText@
 			input_text.supportRichText = false;}
 
-			var rt_placeholder = helper.InputText.transform as UnityEngine.RectTransform;
+			var rt_placeholder = helper.Placeholder.transform as UnityEngine.RectTransform;
 			var sd_placeholder = rt_placeholder.sizeDelta;
 			var placeholder = helper.Placeholder.AddComponent<{0:AutocompleteText}>();
-			rt_placeholder.sizeDelta = sd_placeholder;
 			InitTextComponent(placeholder);
+			rt_placeholder.sizeDelta = sd_placeholder;
 			placeholder.fontSize = 14;
 			placeholder.text = "Enter text...";
 
@@ -71,25 +73,26 @@ namespace {0:WidgetsNamespace}
 		void GenerateAutocompleteListView({0:AutocompleteClass} target, UIWidgets.WidgetGeneration.AutocompleteGeneratorHelper helper)
 		{{
 			var lv_prefab = PrefabsMenu.ListView;
-			var lv_display = UnityEngine.Object.Instantiate(lv_prefab) as UnityEngine.GameObject;
+			var lv_display = Instantiate(lv_prefab);
 			lv_display.name = "Display" + lv_prefab.name;
+			UpdateCornersX4(lv_display);
 
 			var rt_display = lv_display.transform as UnityEngine.RectTransform;
 			rt_display.SetParent(helper.Main.transform, false);
 			rt_display.anchorMin = new UnityEngine.Vector2(0f, 1f);
 			rt_display.anchorMax = new UnityEngine.Vector2(0f, 1f);
 			rt_display.anchoredPosition = new UnityEngine.Vector2(0f, -30f);
-			rt_display.sizeDelta = new UnityEngine.Vector2(340f, 164f);
+			rt_display.sizeDelta = new UnityEngine.Vector2(280f, 164f);
 			rt_display.pivot = new UnityEngine.Vector2(0, 1f);
 
-			var lv_target = UnityEngine.Object.Instantiate(lv_prefab) as UnityEngine.GameObject;
+			var lv_target = Instantiate(lv_prefab);
 			lv_target.name = "Target" + lv_prefab.name;
 
 			var rt_target = lv_target.transform as UnityEngine.RectTransform;
 			rt_target.SetParent(helper.Main.transform, false);
 			rt_target.anchorMin = new UnityEngine.Vector2(0f, 1f);
 			rt_target.anchorMax = new UnityEngine.Vector2(0f, 1f);
-			rt_target.anchoredPosition = new UnityEngine.Vector2(350f, 0f);
+			rt_target.anchoredPosition = new UnityEngine.Vector2(290f, 0f);
 			rt_target.sizeDelta = new UnityEngine.Vector2(240f, 195f);
 			rt_target.pivot = new UnityEngine.Vector2(0, 1f);
 
@@ -100,7 +103,7 @@ namespace {0:WidgetsNamespace}
 		void GenerateSceneAutoCombobox({0:TestClass} target, UIWidgets.WidgetGeneration.SceneGeneratorHelper helper)
 		{{
 			var autocombobox_prefab = PrefabsMenu.AutoCombobox;
-			var autocombobox = UnityEngine.Object.Instantiate(autocombobox_prefab) as UnityEngine.GameObject;
+			var autocombobox = Instantiate(autocombobox_prefab);
 			autocombobox.name = autocombobox_prefab.name;
 			autocombobox.transform.SetParent(helper.AutocompleteParent, false);
 			target.AutoCombobox = autocombobox.GetComponent<{0:AutoComboboxClass}>();
@@ -119,13 +122,13 @@ namespace {0:WidgetsNamespace}
 		/// <returns>AutoCombobox.</returns>
 		protected override UnityEngine.GameObject GenerateAutoCombobox()
 		{{
-			var cb_go = UnityEngine.Object.Instantiate(PrefabsMenu.Combobox) as UnityEngine.GameObject;
+			var cb_go = Instantiate(PrefabsMenu.Combobox);
 			cb_go.name = "AutoCombobox" + Info.ShortTypeName;
 			var cb = cb_go.GetComponentInChildren<{0:ComboboxClass}>();
 			var cb_rt = cb_go.transform as UnityEngine.RectTransform;
 			cb_rt.sizeDelta = new UnityEngine.Vector2(340f, 42f);
 
-			var ac_go = UnityEngine.Object.Instantiate(PrefabsMenu.Autocomplete.transform.GetChild(0).gameObject) as UnityEngine.GameObject;
+			var ac_go = Instantiate(PrefabsMenu.Autocomplete.transform.GetChild(0).gameObject, false);
 			ac_go.name = PrefabsMenu.Autocomplete.name;
 			ac_go.transform.SetParent(cb.Current.transform.parent, false);
 			var ac = ac_go.GetComponent<{0:AutocompleteClass}>();
@@ -139,7 +142,15 @@ namespace {0:WidgetsNamespace}
 			var target = cb_go.AddComponent<{0:AutoComboboxClass}>();
 			target.Autocomplete = ac;
 			target.Combobox = cb;
+
+			var button_rt = cb.ToggleButton.transform as UnityEngine.RectTransform;
+			button_rt.anchorMin = new UnityEngine.Vector2(1f, 0f);
+			button_rt.pivot = new UnityEngine.Vector2(1f, 1f);
+			button_rt.sizeDelta = new UnityEngine.Vector2(30f, 0f);
+
 			UnityEngine.Object.DestroyImmediate(ac.TargetListView.gameObject);
+
+			ThemeAutoCombobox(cb_go);
 
 			return cb_go;
 		}}

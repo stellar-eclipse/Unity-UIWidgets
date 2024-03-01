@@ -36,6 +36,22 @@ namespace UIWidgets.WidgetGeneration
 
 		readonly GUIStyle styleHeader = new GUIStyle();
 
+		readonly GUILayoutOption[] scrollOptions = new GUILayoutOption[] { GUILayout.Height(150) };
+
+		readonly GUILayoutOption[] errorOptions = new GUILayoutOption[] { GUILayout.ExpandHeight(true), GUILayout.MaxHeight(150) };
+
+		readonly GUIContent toggleLabel = new GUIContent(string.Empty, "Use in widgets");
+
+		readonly GUILayoutOption[] toggleHeaderOptions = new GUILayoutOption[] { GUILayout.ExpandWidth(false), GUILayout.Width(30) };
+
+		readonly GUILayoutOption[] toggleOptions = new GUILayoutOption[] { GUILayout.ExpandWidth(false), GUILayout.Width(20) };
+
+		readonly GUILayoutOption[] fieldOptions = new GUILayoutOption[] { GUILayout.ExpandWidth(false), GUILayout.Width(200) };
+
+		readonly GUILayoutOption[] autocompleteOptions = new GUILayoutOption[] { GUILayout.Width(150) };
+
+		readonly GUILayoutOption[] autocompleteButtonOptions = new GUILayoutOption[] { GUILayout.Width(40) };
+
 		MonoScript previousScript;
 
 		MonoScript currentScript;
@@ -47,22 +63,6 @@ namespace UIWidgets.WidgetGeneration
 		Vector2 scrollPosition;
 
 		ClassInfo info;
-
-		GUILayoutOption[] scrollOptions = new GUILayoutOption[] { GUILayout.Height(150) };
-
-		GUILayoutOption[] errorOptions = new GUILayoutOption[] { GUILayout.ExpandHeight(true), GUILayout.MaxHeight(150) };
-
-		GUIContent toggleLabel = new GUIContent(string.Empty, "Use in widgets");
-
-		GUILayoutOption[] toggleHeaderOptions = new GUILayoutOption[] { GUILayout.ExpandWidth(false), GUILayout.Width(30) };
-
-		GUILayoutOption[] toggleOptions = new GUILayoutOption[] { GUILayout.ExpandWidth(false), GUILayout.Width(20) };
-
-		GUILayoutOption[] fieldOptions = new GUILayoutOption[] { GUILayout.ExpandWidth(false), GUILayout.Width(200) };
-
-		GUILayoutOption[] autocompleteOptions = new GUILayoutOption[] { GUILayout.Width(150) };
-
-		GUILayoutOption[] autocompleteButtonOptions = new GUILayoutOption[] { GUILayout.Width(40) };
 
 		/// <summary>
 		/// Set styles.
@@ -120,6 +120,12 @@ namespace UIWidgets.WidgetGeneration
 				GUILayout.Label("<b>Warning:</b>", styleLabel);
 				GUILayout.Label("Class is derived from Unity.Object.\nUsing it as a data class can be a bad practice and lead to future problems.", styleLabel);
 				button_label = "Continue Generation";
+			}
+
+			if (info.Fields.Count == 0)
+			{
+				GUILayout.Label("<b>Cannot generate widgets since all fields deselected.</b>", styleLabel);
+				return;
 			}
 
 			if (GUILayout.Button(button_label))

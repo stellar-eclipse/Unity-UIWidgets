@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.IO;
+	using UIWidgets.Attributes;
 	using UIWidgets.Styles;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
@@ -10,12 +11,14 @@
 	/// <summary>
 	/// FileView.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/filelistview.html")]
 	public class FileListView : TileViewCustomSize<FileListViewComponentBase, FileSystemEntry>
 	{
 		/// <summary>
 		/// Pattern separators.
 		/// </summary>
-		protected static char[] PatternSeparators = new char[] { ';' };
+		[DomainReloadExclude]
+		protected static readonly char[] PatternSeparators = new char[] { ';' };
 
 		/// <summary>
 		/// Current directory.

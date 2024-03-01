@@ -1,18 +1,18 @@
 namespace UIWidgets
 {
 	using System;
-	using System.Collections.Generic;
-	using UIWidgets.l10n;
+	using UnityEngine;
 
 	/// <summary>
 	/// ListViewEnum.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/listview-enum.html")]
 	public class ListViewEnum : ListViewCustom<ListViewEnumComponent, ListViewEnum.Item>
 	{
 		/// <summary>
 		/// Item.
 		/// </summary>
-		public struct Item
+		public readonly struct Item
 		{
 			/// <summary>
 			/// Value.

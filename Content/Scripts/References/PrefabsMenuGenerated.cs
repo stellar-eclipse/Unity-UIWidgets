@@ -5,6 +5,7 @@
 	/// <summary>
 	/// References to the generated prefabs.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/generator.html")]
 	public class PrefabsMenuGenerated : ScriptableObject
 	{
 		/// <summary>

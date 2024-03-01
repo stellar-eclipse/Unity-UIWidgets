@@ -1,8 +1,9 @@
-﻿#if UNITY_EDITOR && UIWIDGETS_TMPRO_SUPPORT
+#if UNITY_EDITOR && UIWIDGETS_TMPRO_SUPPORT
 namespace UIWidgets
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Pool;
 	using UnityEditor;
 	using UnityEngine;
 
@@ -21,17 +22,17 @@ namespace UIWidgets
 			/// <summary>
 			/// Property with reference to the deleted component.
 			/// </summary>
-			public struct PropertyReference
+			public readonly struct PropertyReference
 			{
 				/// <summary>
 				/// Target.
 				/// </summary>
-				Component Target;
+				readonly Component Target;
 
 				/// <summary>
 				/// Property path.
 				/// </summary>
-				string PropertyPath;
+				readonly string PropertyPath;
 
 				/// <summary>
 				/// Initializes a new instance of the <see cref="PropertyReference"/> struct.
@@ -49,7 +50,7 @@ namespace UIWidgets
 				/// </summary>
 				/// <param name="newReference">New reference.</param>
 				/// <param name="cache">Cache.</param>
-				public void Set(Component newReference, SerializedObjectCache cache)
+				public readonly void Set(Component newReference, SerializedObjectCache cache)
 				{
 					var so = cache.Get(Target);
 					so.FindProperty(PropertyPath).objectReferenceValue = newReference;
@@ -127,13 +128,14 @@ namespace UIWidgets
 			public void FindReferences<TSecondary>(SerializedObjectCache cache)
 				where TSecondary : Component
 			{
-				var required = new List<Component>();
+				using var _ = ListPool<Component>.Get(out var required);
+				using var __ = ListPool<Component>.Get(out var go_components);
 
 				var types_equal = typeof(T) == typeof(TSecondary);
-				var go_components = new List<Component>();
+
 				foreach (var go in GameObjectsWithReferences)
 				{
-					go.GetComponents<Component>(go_components);
+					go.GetComponents(go_components);
 
 					GetMatchedComponents<T, T>(go_components, Deleted, required);
 					if ((required.Count > 0) && FindTypeRequiredUsage<T>(go_components))
@@ -232,8 +234,7 @@ namespace UIWidgets
 					var attrs = component.GetType().GetCustomAttributes(typeof(RequireComponent), true);
 					foreach (var attr in attrs)
 					{
-						var r = attr as RequireComponent;
-						if (r != null)
+						if (attr is RequireComponent r)
 						{
 							if (IsSimilarTypes(type, r.m_Type0))
 							{

@@ -72,8 +72,8 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Username, ref UsernameAdapter);
-			Utilities.GetOrAddComponent(Password, ref PasswordAdapter);
+			Utilities.RequireComponent(Username, ref UsernameAdapter);
+			Utilities.RequireComponent(Password, ref PasswordAdapter);
 #pragma warning restore 0612, 0618
 		}
 

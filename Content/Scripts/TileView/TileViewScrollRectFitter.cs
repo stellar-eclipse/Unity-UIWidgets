@@ -6,6 +6,7 @@
 	/// TileView ScrollRect fitter. Resize ScrollRect to fit whole number of items.
 	/// </summary>
 	[RequireComponent(typeof(ListViewBase))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/collections/tileview-scrollrectfitter.html")]
 	public class TileViewScrollRectFitter : MonoBehaviour
 	{
 		ListViewBase tileView;
@@ -63,7 +64,7 @@
 
 			if (scrollRect != null)
 			{
-				ResizeListener = Utilities.GetOrAddComponent<ResizeListener>(scrollRect);
+				ResizeListener = Utilities.RequireComponent<ResizeListener>(scrollRect);
 
 				BaseSizeDelta = (scrollRect.transform as RectTransform).sizeDelta;
 

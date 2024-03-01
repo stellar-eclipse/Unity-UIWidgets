@@ -44,11 +44,15 @@
 			var roots = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
 			foreach (var go in roots)
 			{
-				var item = new TreeViewItem(go.name);
-				item.Tag = go;
+				var item = new TreeViewItem(go.name)
+				{
+					Tag = go,
+				};
 
-				var node = new TreeNode<TreeViewItem>(item);
-				node.Nodes = Hierarchy2Data(go.transform);
+				var node = new TreeNode<TreeViewItem>(item)
+				{
+					Nodes = Hierarchy2Data(go.transform),
+				};
 
 				nodes.Add(node);
 			}
@@ -63,11 +67,15 @@
 			for (int i = 0; i < source.childCount; i++)
 			{
 				var child = source.GetChild(i);
-				var item = new TreeViewItem(child.name);
-				item.Tag = child.gameObject;
+				var item = new TreeViewItem(child.name)
+				{
+					Tag = child.gameObject,
+				};
 
-				var node = new TreeNode<TreeViewItem>(item);
-				node.Nodes = Hierarchy2Data(child);
+				var node = new TreeNode<TreeViewItem>(item)
+				{
+					Nodes = Hierarchy2Data(child),
+				};
 
 				nodes.Add(node);
 			}

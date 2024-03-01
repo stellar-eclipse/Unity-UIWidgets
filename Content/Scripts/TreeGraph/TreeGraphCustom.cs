@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.ComponentModel;
+	using UIThemes;
 	using UIWidgets.Attributes;
 	using UIWidgets.Extensions;
 	using UIWidgets.l10n;
@@ -42,7 +43,8 @@
 	/// <typeparam name="TItem">Item type.</typeparam>
 	/// <typeparam name="TItemView">Component type.</typeparam>
 	[DataBindSupport]
-	public class TreeGraphCustom<TItem, TItemView> : MonoBehaviour, IStylable, IUpdatable
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/collections/treegraph.html")]
+	public class TreeGraphCustom<TItem, TItemView> : MonoBehaviour, IStylable, IUpdatable, ITargetOwner
 		where TItemView : TreeGraphComponent<TItem>
 	{
 		/// <summary>
@@ -204,7 +206,7 @@
 					nodes.OnChangeMono.RemoveListener(NodesChanged);
 
 #pragma warning disable 0219
-					var temp = new TreeNode<TItem>(default(TItem))
+					var temp = new TreeNode<TItem>(default)
 					{
 						Nodes = nodes,
 					};
@@ -266,6 +268,7 @@
 					if (isInited)
 					{
 						defaultItem.gameObject.SetActive(false);
+						defaultItem.SetThemeImagesPropertiesOwner(this);
 
 						var rt = defaultItem.transform as RectTransform;
 						rt.anchorMin = Vector2.zero;
@@ -460,6 +463,7 @@
 
 			ChangeContainer(container);
 
+			DefaultItem.SetThemeImagesPropertiesOwner(this);
 			var rt = DefaultItem.transform as RectTransform;
 			rt.anchorMin = Vector2.zero;
 			rt.anchorMax = Vector2.zero;
@@ -467,9 +471,30 @@
 
 			DefaultItem.gameObject.SetActive(false);
 
-			ComponentSize = GetComponentSize(defaultItem);
+			ComponentSize = GetComponentSize(DefaultItem);
 
 			Refresh();
+		}
+
+		/// <summary>
+		/// Set target owner.
+		/// </summary>
+		public virtual void SetTargetOwner()
+		{
+			DefaultItem.SetThemePropertyOwner(this);
+
+			if (isInited)
+			{
+				foreach (var instance in InstancesList)
+				{
+					instance.View.SetThemePropertyOwner(this);
+				}
+
+				foreach (var instance in Cache)
+				{
+					instance.View.SetThemePropertyOwner(this);
+				}
+			}
 		}
 
 		bool localeSubscription;
@@ -524,10 +549,10 @@
 
 			if (container != null)
 			{
-				var resize_listener = Utilities.GetOrAddComponent<ResizeListener>(container);
+				var resize_listener = Utilities.RequireComponent<ResizeListener>(container);
 				resize_listener.OnResizeNextFrame.AddListener(SizeChanged);
 
-				ContainerLayoutElement = Utilities.GetOrAddComponent<LayoutElement>(container);
+				ContainerLayoutElement = Utilities.RequireComponent<LayoutElement>(container);
 			}
 		}
 
@@ -648,23 +673,14 @@
 		protected virtual Vector2 GetStartPosition()
 		{
 			var size = Container.rect.size;
-			switch (Direction)
+			return Direction switch
 			{
-				case TreeGraphDirections.TopToBottom:
-					return new Vector2(0, -size.y + (ComponentSize.y / 2f));
-				case TreeGraphDirections.BottomToTop:
-					return new Vector2(0, -ComponentSize.y / 2f);
-				case TreeGraphDirections.LeftToRight:
-					return new Vector2(ComponentSize.x / 2f, -size.y);
-				case TreeGraphDirections.RightToLeft:
-					return new Vector2(size.x - (ComponentSize.x / 2f), -size.y);
-				default:
-#if NETFX_CORE
-					throw new ArgumentException("Unsupported direction: " + Direction);
-#else
-					throw new InvalidEnumArgumentException(string.Format("Unsupported direction: {0}", EnumHelper<TreeGraphDirections>.ToString(Direction)));
-#endif
-			}
+				TreeGraphDirections.TopToBottom => new Vector2(0, -size.y + (ComponentSize.y / 2f)),
+				TreeGraphDirections.BottomToTop => new Vector2(0, -ComponentSize.y / 2f),
+				TreeGraphDirections.LeftToRight => new Vector2(ComponentSize.x / 2f, -size.y),
+				TreeGraphDirections.RightToLeft => new Vector2(size.x - (ComponentSize.x / 2f), -size.y),
+				_ => throw new NotSupportedException(string.Format("Unsupported direction: {0}", EnumHelper<TreeGraphDirections>.ToString(Direction))),
+			};
 		}
 
 		/// <summary>
@@ -688,23 +704,15 @@
 		protected virtual Vector2 GetNextLevelPosition(Vector2 position)
 		{
 			var delta = IsHorizontal() ? ComponentSize.x + spacing.x : ComponentSize.y + spacing.y;
-			switch (Direction)
+
+			return Direction switch
 			{
-				case TreeGraphDirections.TopToBottom:
-					return new Vector2(position.x, position.y + delta);
-				case TreeGraphDirections.BottomToTop:
-					return new Vector2(position.x, position.y - delta);
-				case TreeGraphDirections.LeftToRight:
-					return new Vector2(position.x + delta, position.y);
-				case TreeGraphDirections.RightToLeft:
-					return new Vector2(position.x - delta, position.y);
-				default:
-#if NETFX_CORE
-					throw new ArgumentException("Unsupported direction: " + Direction);
-#else
-					throw new InvalidEnumArgumentException(string.Format("Unsupported direction: {0}", EnumHelper<TreeGraphDirections>.ToString(Direction)));
-#endif
-			}
+				TreeGraphDirections.TopToBottom => new Vector2(position.x, position.y + delta),
+				TreeGraphDirections.BottomToTop => new Vector2(position.x, position.y - delta),
+				TreeGraphDirections.LeftToRight => new Vector2(position.x + delta, position.y),
+				TreeGraphDirections.RightToLeft => new Vector2(position.x - delta, position.y),
+				_ => throw new NotSupportedException(string.Format("Unsupported direction: {0}", EnumHelper<TreeGraphDirections>.ToString(Direction))),
+			};
 		}
 
 		/// <summary>
@@ -784,11 +792,7 @@
 						end = ConnectorPosition.Right;
 						break;
 					default:
-#if NETFX_CORE
-						throw new ArgumentException(string.Format("Unsupported direction: {0}", Direction.ToString()));
-#else
-						throw new InvalidEnumArgumentException(string.Format("Unsupported direction: {0}", EnumHelper<TreeGraphDirections>.ToString(Direction)));
-#endif
+						throw new NotSupportedException(string.Format("Unsupported direction: {0}", EnumHelper<TreeGraphDirections>.ToString(Direction)));
 				}
 
 				var line = new ConnectorLine()
@@ -851,9 +855,10 @@
 			}
 			else
 			{
-				var component = Compatibility.Instantiate(defaultItem);
+				var component = Compatibility.Instantiate(DefaultItem);
 				component.transform.SetParent(container, false);
 				Utilities.FixInstantiated(defaultItem, component);
+				component.SetThemeImagesPropertiesOwner(this);
 
 				instance = new Instance();
 				instance.SetView(component);
@@ -1035,6 +1040,19 @@
 			nodes = null;
 		}
 
+		#if UNITY_EDITOR
+		/// <summary>
+		/// Validate this instance.
+		/// </summary>
+		protected virtual void OnValidate()
+		{
+			if (DefaultItem != null)
+			{
+				DefaultItem.SetThemeImagesPropertiesOwner(this);
+			}
+		}
+		#endif
+
 		#region IStylable implementation
 
 		/// <summary>
@@ -1044,9 +1062,9 @@
 		/// <param name="style">Style data.</param>
 		public virtual bool SetStyle(Style style)
 		{
-			if (defaultItem != null)
+			if (DefaultItem != null)
 			{
-				defaultItem.SetStyle(style.Collections.DefaultItemBackground, style.Collections.DefaultItemText, style);
+				DefaultItem.SetStyle(style.Collections.DefaultItemBackground, style.Collections.DefaultItemText, style);
 			}
 
 			if (InstancesList != null)
@@ -1075,9 +1093,9 @@
 		/// <param name="style">Style data.</param>
 		public virtual bool GetStyle(Style style)
 		{
-			if (defaultItem != null)
+			if (DefaultItem != null)
 			{
-				defaultItem.GetStyle(style.Collections.DefaultItemBackground, style.Collections.DefaultItemText, style);
+				DefaultItem.GetStyle(style.Collections.DefaultItemBackground, style.Collections.DefaultItemText, style);
 			}
 
 			return true;

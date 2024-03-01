@@ -8,6 +8,7 @@
 	/// <summary>
 	/// ScrollRectPage.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/controls/paginator.html")]
 	public class ScrollRectPage : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler, ISubmitHandler
 	{
 		/// <summary>
@@ -15,6 +16,24 @@
 		/// </summary>
 		[HideInInspector]
 		public int Page;
+
+		RectTransform rectTransform;
+
+		/// <summary>
+		/// RectTransform.
+		/// </summary>
+		public RectTransform RectTransform
+		{
+			get
+			{
+				if (rectTransform == null)
+				{
+					rectTransform = transform as RectTransform;
+				}
+
+				return rectTransform;
+			}
+		}
 
 		/// <summary>
 		/// OnPageSelect event.

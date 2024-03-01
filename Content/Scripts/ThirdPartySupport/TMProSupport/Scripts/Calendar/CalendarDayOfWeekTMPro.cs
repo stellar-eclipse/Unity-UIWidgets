@@ -9,6 +9,7 @@ namespace UIWidgets.TMProSupport
 	/// CalendarDayOfWeek TMPro.
 	/// Display day of week.
 	/// </summary>
+	[Obsolete("Use CalendarDayOfWeek with TextAdapter.")]
 	public class CalendarDayOfWeekTMPro : CalendarDayOfWeekBase, IUpgradeable
 	{
 		/// <summary>
@@ -25,7 +26,7 @@ namespace UIWidgets.TMProSupport
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0618
-			Utilities.GetOrAddComponent(Day, ref dayAdapter);
+			Utilities.RequireComponent(Day, ref dayAdapter);
 #pragma warning restore 0618
 		}
 

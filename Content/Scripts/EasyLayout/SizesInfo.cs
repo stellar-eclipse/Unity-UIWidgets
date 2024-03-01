@@ -41,22 +41,14 @@
 		/// </summary>
 		/// <param name="obj">The System.Object to compare with the current size.</param>
 		/// <returns><c>true</c> if the specified System.Object is equal to the current size; otherwise, <c>false</c>.</returns>
-		public override bool Equals(object obj)
-		{
-			if (!(obj is SizesInfo))
-			{
-				return false;
-			}
-
-			return Equals((SizesInfo)obj);
-		}
+		public readonly override bool Equals(object obj) => (obj is SizesInfo info) && Equals(info);
 
 		/// <summary>
 		/// Determines whether the specified size is equal to the current size.
 		/// </summary>
 		/// <param name="other">The size to compare with the current size.</param>
 		/// <returns><c>true</c> if the specified size is equal to the current size; otherwise, <c>false</c>.</returns>
-		public bool Equals(SizesInfo other)
+		public readonly bool Equals(SizesInfo other)
 		{
 			if (TotalMin != other.TotalMin)
 			{

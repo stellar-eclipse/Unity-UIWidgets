@@ -10,6 +10,7 @@
 	[AddComponentMenu("UI/New UI Widgets/Interactions/Bring To Front")]
 	[RequireComponent(typeof(RectTransform))]
 	[DisallowMultipleComponent]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/bring-to-front.html")]
 	public class BringToFront : MonoBehaviour, IPointerDownHandler
 	{
 		/// <summary>

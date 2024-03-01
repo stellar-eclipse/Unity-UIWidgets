@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.IO;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
 	using UnityEngine.Networking;
@@ -17,6 +18,54 @@
 	public static class Compatibility
 	{
 #if UNITY_EDITOR
+		[DomainReloadExclude]
+		static readonly char[] ScriptingSymbolSeparator = new char[] { ';' };
+
+		/// <summary>
+		/// Get scripting define symbols.
+		/// </summary>
+		/// <param name="targetGroup">Target group.</param>
+		/// <returns>Scripting define symbols.</returns>
+		public static HashSet<string> GetScriptingDefineSymbols(BuildTargetGroup targetGroup)
+		{
+			#if UNITY_2023_1_OR_NEWER
+			var build_target = UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(targetGroup);
+			var symbols = PlayerSettings.GetScriptingDefineSymbols(build_target);
+			#else
+			var symbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup);
+			#endif
+
+			var result = new HashSet<string>();
+			foreach (var symbol in symbols.Split(ScriptingSymbolSeparator))
+			{
+				if (symbol.Length > 0)
+				{
+					result.Add(symbol);
+				}
+			}
+
+			return result;
+		}
+
+		/// <summary>
+		/// Set scripting define symbols.
+		/// </summary>
+		/// <param name="targetGroup">Target group.</param>
+		/// <param name="symbols">Symbols.</param>
+		public static void SetScriptingDefineSymbols(BuildTargetGroup targetGroup, HashSet<string> symbols)
+		{
+			var arr = new string[symbols.Count];
+			symbols.CopyTo(arr);
+			var str = string.Join(ScriptingSymbolSeparator[0].ToString(), arr);
+
+			#if UNITY_2023_1_OR_NEWER
+			var build_target = UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(targetGroup);
+			PlayerSettings.SetScriptingDefineSymbols(build_target, str);
+			#else
+			PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, str);
+			#endif
+		}
+
 		/// <summary>
 		/// Upgrade the specified target.
 		/// </summary>
@@ -112,8 +161,7 @@
 		public static GameObject CreatePrefab(string assetPath, GameObject instanceRoot)
 		{
 #if UNITY_2018_3_OR_NEWER
-			bool success;
-			var prefab = PrefabUtility.SaveAsPrefabAsset(instanceRoot, assetPath, out success);
+			var prefab = PrefabUtility.SaveAsPrefabAsset(instanceRoot, assetPath, out var success);
 			if (!success)
 			{
 				Debug.LogError("Prefab was not saved: " + instanceRoot.name);
@@ -245,6 +293,7 @@
 		/// Get TextMeshPro version.
 		/// </summary>
 		/// <returns>TextMeshPro version.</returns>
+		[Obsolete]
 		public static string GetTMProVersion()
 		{
 			Dictionary<string, string> guid2version = new Dictionary<string, string>()
@@ -577,8 +626,15 @@
 		public static List<GameObject> GetRootGameObjects()
 		{
 #if UNITY_5_3 || UNITY_5_3_OR_NEWER
-			var gos = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
-			return new List<GameObject>(gos);
+			var result = new List<GameObject>();
+
+			for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+			{
+				var scene = UnityEngine.SceneManagement.SceneManager.GetSceneAt(i);
+				result.AddRange(scene.GetRootGameObjects());
+			}
+
+			return result;
 #else
 			var gos = new List<GameObject>();
 
@@ -630,6 +686,24 @@
 #endif
 
 			return false;
+		}
+
+		/// <summary>
+		/// Find first object of the specified type.
+		/// </summary>
+		/// <typeparam name="T">Type.</typeparam>
+		/// <param name="includeInactive">Include inactive.</param>
+		/// <returns>First object.</returns>
+		public static T FindFirstObjectOfType<T>(bool includeInactive = true)
+			 where T : UnityEngine.Object
+		{
+#if UNITY_2023_1_OR_NEWER
+			return UnityEngine.Object.FindFirstObjectByType<T>(includeInactive ? FindObjectsInactive.Include : FindObjectsInactive.Exclude);
+#elif UNITY_2020_3_OR_NEWER
+			return UnityEngine.Object.FindObjectOfType<T>(includeInactive);
+#else
+			return UnityEngine.Object.FindObjectOfType<T>();
+#endif
 		}
 
 #if CSHARP_7_3_OR_NEWER

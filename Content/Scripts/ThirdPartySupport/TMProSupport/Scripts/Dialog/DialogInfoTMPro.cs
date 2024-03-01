@@ -9,6 +9,7 @@ namespace UIWidgets.TMProSupport
 	/// <summary>
 	/// Dialog info.
 	/// </summary>
+	[Obsolete("Use DialogInfo with TextAdapter.")]
 	public class DialogInfoTMPro : DialogInfoBase, IUpgradeable
 	{
 		/// <summary>
@@ -33,8 +34,8 @@ namespace UIWidgets.TMProSupport
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Title, ref TitleAdapter);
-			Utilities.GetOrAddComponent(Message, ref MessageAdapter);
+			Utilities.RequireComponent(Title, ref TitleAdapter);
+			Utilities.RequireComponent(Message, ref MessageAdapter);
 #pragma warning restore 0612, 0618
 		}
 

@@ -6,6 +6,7 @@
 	/// <summary>
 	/// Sidebar handle.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/controls/sidebar.html")]
 	public class SidebarHandle : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
 	{
 		/// <summary>

@@ -59,7 +59,7 @@
 		public virtual void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Label, ref LabelAdapter);
+			Utilities.RequireComponent(Label, ref LabelAdapter);
 #pragma warning restore 0612, 0618
 		}
 

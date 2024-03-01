@@ -76,10 +76,7 @@
 		/// </summary>
 		public virtual void ReloadHierarchy()
 		{
-			if (Nodes == null)
-			{
-				Nodes = new ObservableList<TreeNode<GameObject>>();
-			}
+			Nodes ??= new ObservableList<TreeNode<GameObject>>();
 
 			if (RootGameObject == null)
 			{

@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using UIWidgets.Attributes;
 	using UIWidgets.Styles;
 	using UnityEditor;
 	using UnityEngine;
@@ -40,6 +41,7 @@
 		/// <summary>
 		/// The properties.
 		/// </summary>
+		[DomainReloadExclude]
 		protected static List<string> Properties = new List<string>()
 		{
 			"Font",
@@ -58,6 +60,7 @@
 		/// <summary>
 		/// The properties with header.
 		/// </summary>
+		[DomainReloadExclude]
 		protected static List<string> WithHeader = new List<string>()
 		{
 			"Font",

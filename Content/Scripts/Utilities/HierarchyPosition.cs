@@ -36,6 +36,8 @@
 			private set;
 		}
 
+		bool parentDestroyed;
+
 		private HierarchyPosition(Transform target, Transform parent, int siblingIndex, bool worldPositionStays)
 		{
 			Target = target;
@@ -43,6 +45,7 @@
 			SiblingIndex = siblingIndex;
 			WorldPositionStays = worldPositionStays;
 			Changed = true;
+			parentDestroyed = false;
 		}
 
 		/// <summary>
@@ -55,9 +58,33 @@
 				return;
 			}
 
-			Target.SetParent(Parent);
-			Target.SetSiblingIndex(SiblingIndex);
+			// can be null if destroyed
+			if (Parent == null)
+			{
+				return;
+			}
+
+			// can be null if destroyed
+			if (Target == null)
+			{
+				return;
+			}
+
+			if (!parentDestroyed)
+			{
+				Target.SetParent(Parent);
+				Target.SetSiblingIndex(SiblingIndex);
+			}
+
 			Changed = false;
+		}
+
+		/// <summary>
+		/// Mark parent as destroyed.
+		/// </summary>
+		public void ParentDestroyed()
+		{
+			parentDestroyed = true;
 		}
 
 		/// <summary>

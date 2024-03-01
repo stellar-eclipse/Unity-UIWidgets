@@ -8,6 +8,7 @@
 	/// <summary>
 	/// Tab component.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/containers/tabs.html")]
 	public class TabButtonComponentBase : MonoBehaviour, IUpgradeable, ISelectHandler
 	{
 		[SerializeField]

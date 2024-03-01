@@ -5,6 +5,7 @@
 	/// <summary>
 	/// ScrollRectHeader.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/scrollrect/scrollrect-header.html")]
 	public class ScrollRectHeader : ScrollRectBlock
 	{
 		/// <inheritdoc/>

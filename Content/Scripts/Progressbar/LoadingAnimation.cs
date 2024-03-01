@@ -6,6 +6,7 @@
 	/// <summary>
 	/// Loading animation.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/misc/loading-animation.html")]
 	public class LoadingAnimation : MonoBehaviour, IUpdatable
 	{
 		/// <summary>
@@ -25,7 +26,7 @@
 		/// Value max.
 		/// </summary>
 		[SerializeField]
-		[Range(0, 360)]
+		[Range(1, 360)]
 		public int ValueMax = 330;
 
 		/// <summary>

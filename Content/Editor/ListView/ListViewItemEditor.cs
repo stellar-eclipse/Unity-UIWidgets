@@ -35,7 +35,7 @@ namespace UIWidgets
 		/// </summary>
 		protected List<string> Events = new List<string>();
 
-		GUILayoutOption[] toggleOptions = new GUILayoutOption[] { GUILayout.ExpandWidth(true) };
+		readonly GUILayoutOption[] toggleOptions = new GUILayoutOption[] { GUILayout.ExpandWidth(true) };
 
 		/// <summary>
 		/// Init.
@@ -133,8 +133,9 @@ namespace UIWidgets
 			"Indentation",
 			"OnNodeExpand",
 			"AnimateArrow",
-			"NodeOpened",
-			"NodeClosed",
+			"ArrowAnimationLength",
+			"nodeOpened",
+			"nodeClosed",
 			"PaddingPerLevel",
 			"SetNativeSize",
 		};
@@ -168,11 +169,12 @@ namespace UIWidgets
 				if (SerializedProperties["OnNodeExpand"].enumValueIndex == 0)
 				{
 					EditorGUILayout.PropertyField(SerializedProperties["AnimateArrow"], true);
+					EditorGUILayout.PropertyField(SerializedProperties["ArrowAnimationLength"], true);
 				}
 				else
 				{
-					EditorGUILayout.PropertyField(SerializedProperties["NodeOpened"], true);
-					EditorGUILayout.PropertyField(SerializedProperties["NodeClosed"], true);
+					EditorGUILayout.PropertyField(SerializedProperties["nodeOpened"], true);
+					EditorGUILayout.PropertyField(SerializedProperties["nodeClosed"], true);
 				}
 
 				EditorGUI.indentLevel--;

@@ -11,6 +11,7 @@
 	/// <typeparam name="TTreeView">Type of the TreeView.</typeparam>
 	/// <typeparam name="TTreeViewComponent">Type of the TreeView component.</typeparam>
 	/// <typeparam name="TTreeViewItem">Type of the TreeView item.</typeparam>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/interactions/drag-and-drop.html")]
 	public class TreeViewCustomNodeDropSupport<TTreeView, TTreeViewComponent, TTreeViewItem> : MonoBehaviourConditional, IDropSupport<TreeNode<TTreeViewItem>>, IDropSupport<TTreeViewItem>
 		where TTreeView : TreeViewCustom<TTreeViewComponent, TTreeViewItem>
 		where TTreeViewComponent : TreeViewComponentBase<TTreeViewItem>
@@ -138,11 +139,7 @@
 				return DropPosition;
 			}
 
-			Vector2 point;
-			if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out point))
-			{
-				return TreeNodeDropType.Child;
-			}
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(RectTransform, eventData.position, eventData.pressEventCamera, out var point);
 
 			var height = RectTransform.rect.height;
 			var position = (height * (1f - RectTransform.pivot.y)) - point.y;
@@ -358,11 +355,7 @@
 			switch (type)
 			{
 				case TreeNodeDropType.Child:
-					if (current.Nodes == null)
-					{
-						current.Nodes = new ObservableList<TreeNode<TTreeViewItem>>();
-					}
-
+					current.Nodes ??= new ObservableList<TreeNode<TTreeViewItem>>();
 					current.Nodes.Add(node);
 					break;
 				case TreeNodeDropType.Before:
@@ -395,15 +388,12 @@
 		/// <returns>Index.</returns>
 		protected int DropIndicatorIndex(TreeNodeDropType dropType)
 		{
-			switch (dropType)
+			return dropType switch
 			{
-				case TreeNodeDropType.Before:
-					return Source.Index;
-				case TreeNodeDropType.After:
-					return Source.Index + 1;
-			}
-
-			return -1;
+				TreeNodeDropType.Before => Source.Index,
+				TreeNodeDropType.After => Source.Index + 1,
+				_ => -1,
+			};
 		}
 
 		/// <summary>

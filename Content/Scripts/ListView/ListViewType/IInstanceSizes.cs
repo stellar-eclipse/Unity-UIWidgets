@@ -53,7 +53,7 @@
 		/// Remove sizes of items that are not in the specified list.
 		/// </summary>
 		/// <param name="items">Items.</param>
-		void RemoveUnexisting(ObservableList<TItem> items);
+		void RemoveNotExisting(ObservableList<TItem> items);
 
 		/// <summary>
 		/// Get items count that fits into specified area.

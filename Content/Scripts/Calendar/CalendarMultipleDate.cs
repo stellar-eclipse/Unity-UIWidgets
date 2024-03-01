@@ -1,14 +1,19 @@
 ﻿namespace UIWidgets
 {
+	using System;
+	using UnityEngine;
+
 	/// <summary>
 	/// CalendarMultipleDate.
 	/// Display date.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/calendar-multiple-date.html")]
 	public class CalendarMultipleDate : CalendarDate
 	{
 		/// <summary>
 		/// CalendarMultipleDates.
 		/// </summary>
+		[SerializeField]
 		public CalendarMultipleDates Dates;
 
 		/// <summary>

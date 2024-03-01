@@ -6,6 +6,7 @@
 	/// <summary>
 	/// Color picker Hex block base class.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/colorpicker.html")]
 	public class ColorPickerHexBlockBase : MonoBehaviour, IUpgradeable
 	{
 		/// <summary>
@@ -161,8 +162,7 @@
 		/// <param name="input">Input.</param>
 		protected virtual void InputChanged(string input)
 		{
-			Color color;
-			if (ColorUtility.TryParseHtmlString(input, out color))
+			if (ColorUtility.TryParseHtmlString(input, out var color))
 			{
 				Color32 color32 = color;
 				if (!WithAlpha)

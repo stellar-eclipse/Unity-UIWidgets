@@ -8,6 +8,7 @@ namespace UIWidgets.TMProSupport
 	/// <summary>
 	/// Progressbar with TextMeshPro support.
 	/// </summary>
+	[System.Obsolete("Use Progressbar with TextAdapter.")]
 	public class ProgressbarTMPro : Progressbar
 	{
 		/// <summary>
@@ -32,8 +33,8 @@ namespace UIWidgets.TMProSupport
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(EmptyBarTextTMPro, ref EmptyBarTextAdapter);
-			Utilities.GetOrAddComponent(FullBarTextTMPro, ref FullBarTextAdapter);
+			Utilities.RequireComponent(EmptyBarTextTMPro, ref EmptyBarTextAdapter);
+			Utilities.RequireComponent(FullBarTextTMPro, ref FullBarTextAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

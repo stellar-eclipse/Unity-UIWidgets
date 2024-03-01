@@ -15,6 +15,7 @@ namespace UIWidgets.TMProSupport
 	/// <typeparam name="TValue">Type of value.</typeparam>
 	/// <typeparam name="TListViewComponent">Type of ListView.DefaultItem.</typeparam>
 	/// <typeparam name="TListView">Type of ListView.</typeparam>
+	[System.Obsolete("Use AutocompleteCustom with TextAdapter.")]
 	public abstract class AutocompleteCustomTMPro<TValue, TListViewComponent, TListView> : AutocompleteCustom<TValue, TListViewComponent, TListView>
 		where TListView : ListViewCustom<TListViewComponent, TValue>
 		where TListViewComponent : ListViewItem
@@ -52,7 +53,7 @@ namespace UIWidgets.TMProSupport
 		public override void Upgrade()
 		{
 #pragma warning disable 0618
-			Utilities.GetOrAddComponent(InputFieldTMPro, ref inputFieldAdapter);
+			Utilities.RequireComponent(InputFieldTMPro, ref inputFieldAdapter);
 #pragma warning restore 0618
 		}
 	}

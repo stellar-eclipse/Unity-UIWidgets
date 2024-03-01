@@ -10,15 +10,14 @@
 		/// <inheritdoc/>
 		protected override void UpdateView()
 		{
-			var item = Item as TreeViewSampleItemContinent;
-			if (item == null)
+			if (Item is TreeViewSampleItemContinent item)
 			{
-				Icon.sprite = null;
-				TextAdapter.text = string.Empty;
+				TextAdapter.text = string.Format("{0} (Countries: {1})", item.Name, item.Countries.ToString());
 			}
 			else
 			{
-				TextAdapter.text = string.Format("{0} (Countries: {1})", item.Name, item.Countries.ToString());
+				Icon.sprite = null;
+				TextAdapter.text = string.Empty;
 			}
 		}
 	}

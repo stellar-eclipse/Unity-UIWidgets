@@ -7,6 +7,7 @@
 	/// Slide up. Helper component for Notify.
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/dialogs/notify.html")]
 	public class SlideUp : MonoBehaviour
 	{
 		/// <summary>
@@ -48,7 +49,7 @@
 		/// </summary>
 		protected virtual void OnDisable()
 		{
-			Notify.FreeSlide(rect);
+			NotificationBase.FreeSlide(rect);
 		}
 
 		/// <summary>

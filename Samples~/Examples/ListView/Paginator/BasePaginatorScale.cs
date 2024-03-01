@@ -62,10 +62,7 @@
 
 			isInited = true;
 
-			if (CustomSetInstanceState == null)
-			{
-				CustomSetInstanceState = DefaultSetInstanceState;
-			}
+			CustomSetInstanceState ??= DefaultSetInstanceState;
 
 			Paginator.OnMovement.AddListener(UpdateState);
 			Paginator.Init();

@@ -109,19 +109,47 @@
 			DataSourceExt[index].Interactable = !DataSourceExt[index].Interactable;
 		}
 
+		[SerializeField]
+		[FormerlySerializedAs("DisabledColor")]
+		[FormerlySerializedAs("ItemDisabledColor")]
+		Color itemDisabledColor = Color.gray;
+
 		/// <summary>
 		/// The color of the disabled item.
 		/// </summary>
+		public Color ItemDisabledColor
+		{
+			get
+			{
+				return itemDisabledColor;
+			}
+
+			set
+			{
+				itemDisabledColor = value;
+			}
+		}
+
 		[SerializeField]
-		[FormerlySerializedAs("DisabledColor")]
-		public Color ItemDisabledColor = Color.gray;
+		[FormerlySerializedAs("DisabledBackgroundColor")]
+		[FormerlySerializedAs("ItemDisabledBackgroundColor")]
+		Color itemDisabledBackgroundColor = Color.gray;
 
 		/// <summary>
 		/// The background color of the disabled item.
 		/// </summary>
-		[SerializeField]
-		[FormerlySerializedAs("DisabledBackgroundColor")]
-		public Color ItemDisabledBackgroundColor = Color.gray;
+		public Color ItemDisabledBackgroundColor
+		{
+			get
+			{
+				return itemDisabledBackgroundColor;
+			}
+
+			set
+			{
+				itemDisabledBackgroundColor = value;
+			}
+		}
 
 		/// <summary>
 		/// Determines whether if item with specified index can be selected.
@@ -156,7 +184,7 @@
 				return;
 			}
 
-			if (DataSource[component.Index].Interactable)
+			if (isListViewCustomInited && DataSource[component.Index].Interactable)
 			{
 				base.HighlightColoring(component);
 			}
@@ -177,7 +205,7 @@
 				return;
 			}
 
-			if (DataSource[component.Index].Interactable)
+			if (isListViewCustomInited && DataSource[component.Index].Interactable)
 			{
 				base.SelectColoring(component);
 			}
@@ -198,7 +226,7 @@
 				return;
 			}
 
-			if (DataSource[component.Index].Interactable)
+			if (isListViewCustomInited && DataSource[component.Index].Interactable)
 			{
 				base.DefaultColoring(component);
 			}

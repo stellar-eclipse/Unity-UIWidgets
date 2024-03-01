@@ -59,13 +59,13 @@
 			}
 
 			listIndex = minIndex;
-			current = default(TItemView);
+			current = default;
 		}
 
 		/// <summary>
 		/// Releases all resources used by the <see cref="PoolEnumerator{TItemView}" />.
 		/// </summary>
-		public void Dispose()
+		public readonly void Dispose()
 		{
 		}
 
@@ -115,7 +115,7 @@
 				}
 			}
 
-			current = default(TItemView);
+			current = default;
 
 			return false;
 		}
@@ -124,13 +124,7 @@
 		/// Gets the element at the current position of the enumerator.
 		/// </summary>
 		/// <returns>The element in the components pool at the current position of the enumerator.</returns>
-		public TItemView Current
-		{
-			get
-			{
-				return current;
-			}
-		}
+		public readonly TItemView Current => current;
 
 		/// <summary>
 		/// Gets the element at the current position of the enumerator.
@@ -138,7 +132,7 @@
 		/// <returns>The element in the components pool at the current position of the enumerator.</returns>
 		/// <exception cref="InvalidOperationException">The enumerator is positioned before the first element of the collection or after the last element. </exception>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "HAA0601:Value type to reference type conversion causing boxing allocation", Justification = "Required.")]
-		object IEnumerator.Current
+		readonly object IEnumerator.Current
 		{
 			get
 			{
@@ -158,14 +152,14 @@
 		{
 			enumerator = (minIndex == -1) ? cache.GetEnumerator() : instances.GetEnumerator();
 			listIndex = minIndex;
-			current = default(TItemView);
+			current = default;
 		}
 
 		/// <summary>
 		/// Returns an enumerator that iterates through the components pool />.
 		/// </summary>
 		/// <returns>A <see cref="PoolEnumerator{TItemView}" /> for the components pool.</returns>
-		public PoolEnumerator<TItemView> GetEnumerator()
+		public readonly PoolEnumerator<TItemView> GetEnumerator()
 		{
 			return this;
 		}

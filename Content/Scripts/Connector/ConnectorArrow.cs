@@ -1,8 +1,11 @@
 ﻿namespace UIWidgets
 {
+	using System;
+
 	/// <summary>
 	/// Connector arrow.
 	/// </summary>
+	[Flags]
 	public enum ConnectorArrow
 	{
 		/// <summary>
@@ -10,8 +13,14 @@
 		/// </summary>
 		None = 0,
 
-		// Forward = 1,
-		// Backward = 2,
-		// Bidirectional = 3,
+		/// <summary>
+		/// Forward.
+		/// </summary>
+		Forward = 1,
+
+		/// <summary>
+		/// Backward.
+		/// </summary>
+		Backward = 2,
 	}
 }

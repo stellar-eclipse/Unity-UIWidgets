@@ -8,6 +8,7 @@
 	/// InputField adapter to work with both Unity text and TMPro text.
 	/// </summary>
 	[AddComponentMenu("UI/New UI Widgets/Adapters/Input Field Adapter")]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/third-party-support/tmpro.html")]
 	public class InputFieldAdapter : MonoBehaviour, IInputFieldProxy
 	{
 		IInputFieldProxy proxy;
@@ -204,7 +205,7 @@
 			}
 #endif
 
-			Debug.LogWarning("Not found any InputField component.", this);
+			Debug.LogWarning("Not found any InputField component. If you are using TextMeshPro then you need to enable TextMeshPro support in Edit / Project Settings / New UI Widgets.", this);
 
 			return new InputFieldNull();
 		}

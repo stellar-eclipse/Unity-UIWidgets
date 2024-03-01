@@ -6,6 +6,7 @@
 	/// Distance line.
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/distance-lines.html")]
 	public class DistanceLine : MonoBehaviour
 	{
 		/// <summary>

@@ -58,34 +58,20 @@
 			/// </summary>
 			/// <param name="obj">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public override bool Equals(object obj)
-			{
-				if (obj is Border)
-				{
-					return Equals((Border)obj);
-				}
-
-				return false;
-			}
+			public readonly override bool Equals(object obj) => (obj is Border border) && Equals(border);
 
 			/// <summary>
 			/// Determines whether the specified object is equal to the current object.
 			/// </summary>
 			/// <param name="other">The object to compare with the current object.</param>
 			/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-			public bool Equals(Border other)
-			{
-				return (Left == other.Left) && (Right == other.Right) && (Top == other.Top) && (Bottom == other.Bottom);
-			}
+			public readonly bool Equals(Border other) => (Left == other.Left) && (Right == other.Right) && (Top == other.Top) && (Bottom == other.Bottom);
 
 			/// <summary>
 			/// Hash function.
 			/// </summary>
 			/// <returns>A hash code for the current object.</returns>
-			public override int GetHashCode()
-			{
-				return Left.GetHashCode() ^ Right.GetHashCode() ^ Top.GetHashCode() ^ Bottom.GetHashCode();
-			}
+			public override int GetHashCode() => Left.GetHashCode() ^ Right.GetHashCode() ^ Top.GetHashCode() ^ Bottom.GetHashCode();
 
 			/// <summary>
 			/// Compare specified instances.
@@ -93,10 +79,7 @@
 			/// <param name="a">First instance.</param>
 			/// <param name="b">Second instance.</param>
 			/// <returns>true if the instances are equal; otherwise, false.</returns>
-			public static bool operator ==(Border a, Border b)
-			{
-				return a.Equals(b);
-			}
+			public static bool operator ==(Border a, Border b) => a.Equals(b);
 
 			/// <summary>
 			/// Compare specified instances.
@@ -104,10 +87,7 @@
 			/// <param name="a">First instance.</param>
 			/// <param name="b">Second instance.</param>
 			/// <returns>true if the instances not equal; otherwise, false.</returns>
-			public static bool operator !=(Border a, Border b)
-			{
-				return !a.Equals(b);
-			}
+			public static bool operator !=(Border a, Border b) => !a.Equals(b);
 		}
 	}
 }

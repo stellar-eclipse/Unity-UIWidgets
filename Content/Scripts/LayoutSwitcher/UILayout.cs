@@ -84,21 +84,22 @@
 				return null;
 			}
 
-			var position = new UIPosition();
+			var position = new UIPosition
+			{
+				Object = obj,
+				Active = obj.gameObject.activeSelf,
 
-			position.Object = obj;
-			position.Active = obj.gameObject.activeSelf;
+				Position = obj.localPosition,
 
-			position.Position = obj.localPosition;
+				AnchorMax = obj.anchorMax,
+				AnchorMin = obj.anchorMin,
+				SizeDelta = obj.sizeDelta,
 
-			position.AnchorMax = obj.anchorMax;
-			position.AnchorMin = obj.anchorMin;
-			position.SizeDelta = obj.sizeDelta;
+				Pivot = obj.pivot,
 
-			position.Pivot = obj.pivot;
-
-			position.Rotation = obj.localRotation.eulerAngles;
-			position.Scale = obj.localScale;
+				Rotation = obj.localRotation.eulerAngles,
+				Scale = obj.localScale,
+			};
 
 			return position;
 		}

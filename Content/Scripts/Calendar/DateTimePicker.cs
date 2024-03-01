@@ -7,6 +7,7 @@
 	/// <summary>
 	/// DatePicker.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/dialogs/datepicker.html")]
 	public class DateTimePicker : Picker<DateTime, DateTimePicker>
 	{
 		/// <summary>

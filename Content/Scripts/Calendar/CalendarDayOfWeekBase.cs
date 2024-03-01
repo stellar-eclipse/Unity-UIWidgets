@@ -8,6 +8,7 @@
 	/// <summary>
 	/// Base class for Calendar day of week.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/calendar.html")]
 	public class CalendarDayOfWeekBase : MonoBehaviour
 	{
 		/// <summary>

@@ -42,8 +42,7 @@
 		{
 			foreach (var t in targets)
 			{
-				var v = t as IValidateable;
-				if (v != null)
+				if (t is IValidateable v)
 				{
 					v.Validate();
 				}

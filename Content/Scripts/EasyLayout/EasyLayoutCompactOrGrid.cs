@@ -185,7 +185,7 @@
 		/// <returns>Size.</returns>
 		protected override GroupSize CalculateGroupSize()
 		{
-			return CalculateGroupSize(true, Spacing, new Vector2(PaddingInner.Horizontal, PaddingInner.Vertical));
+			return CalculateGroupSize(IsHorizontal, Spacing, new Vector2(PaddingInner.Horizontal, PaddingInner.Vertical));
 		}
 
 		/// <summary>

@@ -68,7 +68,7 @@
 				bottom.Update(value);
 			}
 
-			float X(float snapDistance, out bool snapped)
+			readonly float X(float snapDistance, out bool snapped)
 			{
 				if (left.Abs < right.Abs)
 				{
@@ -91,7 +91,7 @@
 				return 0f;
 			}
 
-			float Y(float snapDistance, out bool snapped)
+			readonly float Y(float snapDistance, out bool snapped)
 			{
 				if (top.Abs < bottom.Abs)
 				{
@@ -119,11 +119,9 @@
 			/// </summary>
 			/// <param name="snapDistance">Snap distance.</param>
 			/// <returns>Distance to the nearest lines.</returns>
-			public Result Snap(Vector2 snapDistance)
+			public readonly Result Snap(Vector2 snapDistance)
 			{
-				bool snappedX;
-				bool snappedY;
-				var delta = new Vector2(X(snapDistance.x, out snappedX), Y(snapDistance.y, out snappedY));
+				var delta = new Vector2(X(snapDistance.x, out var snappedX), Y(snapDistance.y, out var snappedY));
 
 				return new Result(delta, snappedX, snappedY);
 			}
@@ -132,7 +130,7 @@
 			/// Converts this instance to the string.
 			/// </summary>
 			/// <returns>String.</returns>
-			public override string ToString()
+			public readonly override string ToString()
 			{
 				var args = new object[] { left.Value.ToString(), right.Value.ToString(), top.Value.ToString(), bottom.Value.ToString() };
 				return string.Format("left: {0}; right: {1}; top: {2}; bottom: {3}", args);

@@ -3,12 +3,12 @@
 	using System;
 	using System.Collections.Generic;
 	using UnityEngine;
-	using UnityEngine.UI;
 
 	/// <summary>
 	/// File with data for ListViewString.
 	/// </summary>
 	[RequireComponent(typeof(ListViewString))]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/collections/listviewstring-datafile.html")]
 	public class ListViewStringDataFile : MonoBehaviour
 	{
 		[NonSerialized]
@@ -39,10 +39,7 @@
 		/// <value>The file.</value>
 		public TextAsset File
 		{
-			get
-			{
-				return file;
-			}
+			get => file;
 
 			set
 			{
@@ -79,35 +76,49 @@
 		[SerializeField]
 		public bool CreateNewList;
 
+		bool isInited;
+
 		/// <summary>
-		/// Start this instance.
+		/// Process the start event.
 		/// </summary>
 		protected virtual void Start()
 		{
-			if (ListView == null)
+			Init();
+		}
+
+		/// <summary>
+		/// Init this instance.
+		/// </summary>
+		public virtual void Init()
+		{
+			if (isInited)
 			{
 				return;
 			}
 
-			if (File != null)
+			isInited = true;
+
+			if ((ListView == null) || (File == null))
 			{
-				var items = GetItemsFromFile(File);
-				items.Comparison = ListView.DataSource.Comparison;
-
-				if (CreateNewList)
-				{
-					ListView.DataSource = items;
-				}
-				else
-				{
-					ListView.DataSource.BeginUpdate();
-					ListView.DataSource.Clear();
-					ListView.DataSource.AddRange(items);
-					ListView.DataSource.EndUpdate();
-				}
-
-				ListView.ScrollToPosition(0);
+				return;
 			}
+
+			var items = GetItemsFromFile(File);
+			items.Comparison = ListView.DataSource.Comparison;
+
+			if (CreateNewList)
+			{
+				ListView.DataSource = items;
+			}
+			else
+			{
+				ListView.DataSource.BeginUpdate();
+				ListView.DataSource.Clear();
+				ListView.DataSource.AddRange(items);
+				ListView.DataSource.EndUpdate();
+			}
+
+			ListView.ScrollToPosition(0);
 		}
 
 		/// <summary>

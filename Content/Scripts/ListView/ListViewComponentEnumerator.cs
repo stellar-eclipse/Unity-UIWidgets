@@ -25,19 +25,19 @@
 			where TItemView : ListViewItem
 			where TTemplateWrapper : ListViewItemTemplate<TItemView>, new()
 		{
-			private readonly PoolEnumeratorMode mode;
+			readonly PoolEnumeratorMode mode;
 
-			private readonly List<TTemplateWrapper> templates;
+			readonly List<TTemplateWrapper> templates;
 
-			private readonly int maxIndex;
+			readonly int maxIndex;
 
-			private int listIndex;
+			readonly InstanceID ownerID;
 
-			private PoolEnumerator<TItemView> enumerator;
+			int listIndex;
 
-			private TItemView current;
+			PoolEnumerator<TItemView> enumerator;
 
-			private InstanceID ownerID;
+			TItemView current;
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="ListViewComponentEnumerator{TItemView, TTemplateWrapper}"/> struct.
@@ -51,16 +51,16 @@
 				this.mode = mode;
 				this.templates = templates;
 
-				enumerator = templates.Count > 0 ? templates[0].GetEnumerator(ownerID, mode) : default(PoolEnumerator<TItemView>);
+				enumerator = templates.Count > 0 ? templates[0].GetEnumerator(ownerID, mode) : default;
 				listIndex = -1;
 				maxIndex = templates.Count;
-				current = default(TItemView);
+				current = default;
 			}
 
 			/// <summary>
 			/// Releases all resources used by the <see cref="ListViewComponentEnumerator{TItemView, TTemplateWrapper}" />.
 			/// </summary>
-			public void Dispose()
+			public readonly void Dispose()
 			{
 			}
 
@@ -88,7 +88,7 @@
 						listIndex++;
 						if (listIndex == maxIndex)
 						{
-							current = default(TItemView);
+							current = default;
 							return false;
 						}
 
@@ -104,20 +104,14 @@
 			/// Gets the element at the current position of the enumerator.
 			/// </summary>
 			/// <returns>The element in the <see cref="ListViewCustom{TItemView, TItem}.ListViewComponentPool" /> at the current position of the enumerator.</returns>
-			public TItemView Current
-			{
-				get
-				{
-					return current;
-				}
-			}
+			public readonly TItemView Current => current;
 
 			/// <summary>
 			/// Gets the element at the current position of the enumerator.
 			/// </summary>
 			/// <returns>The element in the <see cref="ListViewCustom{TItemView, TItem}.ListViewComponentPool" /> at the current position of the enumerator.</returns>
 			/// <exception cref="InvalidOperationException">The enumerator is positioned before the first element of the collection or after the last element. </exception>
-			object IEnumerator.Current
+			readonly object IEnumerator.Current
 			{
 				get
 				{
@@ -137,14 +131,14 @@
 			{
 				enumerator = templates[0].GetEnumerator(ownerID, mode);
 				listIndex = -2;
-				current = default(TItemView);
+				current = default;
 			}
 
 			/// <summary>
 			/// Returns an enumerator that iterates through the <see cref="ListViewCustom{TItemView, TItem}.ListViewComponentPool" />.
 			/// </summary>
 			/// <returns>A <see cref="ListViewComponentEnumerator{TItemView, TTemplateWrapper}" /> for the <see cref="ListViewCustom{TItemView, TItem}.ListViewComponentPool" />.</returns>
-			public ListViewComponentEnumerator<TItemView, TTemplateWrapper> GetEnumerator()
+			public readonly ListViewComponentEnumerator<TItemView, TTemplateWrapper> GetEnumerator()
 			{
 				return this;
 			}

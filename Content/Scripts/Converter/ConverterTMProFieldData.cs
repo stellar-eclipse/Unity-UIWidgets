@@ -1,9 +1,10 @@
-﻿#if UNITY_EDITOR && UIWIDGETS_TMPRO_SUPPORT
+#if UNITY_EDITOR && UIWIDGETS_TMPRO_SUPPORT
 namespace UIWidgets
 {
 	using System;
 	using System.Collections;
 	using System.Reflection;
+	using UIWidgets.Attributes;
 	using UnityEditor;
 
 	/// <summary>
@@ -46,23 +47,6 @@ namespace UIWidgets
 			object fieldValue;
 
 			/// <summary>
-			/// Value of the field.
-			/// </summary>
-			public object Value
-			{
-				get
-				{
-					return fieldValue;
-				}
-
-				set
-				{
-					fieldValue = value;
-					Info.SetValue(Object, value);
-				}
-			}
-
-			/// <summary>
 			/// Is field marked obsolete?
 			/// </summary>
 			public bool IsObsolete
@@ -78,29 +62,10 @@ namespace UIWidgets
 				}
 			}
 
-			/// <summary>
-			/// Is specified type is a base type of the field type?
-			/// </summary>
-			/// <typeparam name="T">Type.</typeparam>
-			/// <returns>true if specified type is a base type of the field type; otherwise false.</returns>
-			public bool TypeReplaceable<T>()
-			{
-				if (Type == null)
-				{
-					return false;
-				}
-
-				var type = typeof(T);
-
-				if (Type.IsSubclassOf(type) || (Type == type))
-				{
-					return false;
-				}
-
-				return true;
-			}
-
+			[DomainReloadExclude]
 			static readonly char[] NameSeparator = new char[] { '.' };
+
+			[DomainReloadExclude]
 			static readonly char[] ArrayTrimChars = new char[] { ']' };
 
 			/// <summary>
@@ -158,6 +123,44 @@ namespace UIWidgets
 						fieldValue = Info.GetValue(Object);
 					}
 				}
+			}
+
+			/// <summary>
+			/// Is specified type is a base type of the field type?
+			/// </summary>
+			/// <typeparam name="T">Type.</typeparam>
+			/// <returns>true if specified type is a base type of the field type; otherwise false.</returns>
+			public bool TypeReplaceable<T>()
+			{
+				if (Type == null)
+				{
+					return false;
+				}
+
+				var type = typeof(T);
+
+				if (Type.IsSubclassOf(type) || (Type == type))
+				{
+					return false;
+				}
+
+				return true;
+			}
+
+			/// <summary>
+			/// Get value.
+			/// </summary>
+			/// <returns>Value.</returns>
+			public object GetValue() => fieldValue;
+
+			/// <summary>
+			/// Set value.
+			/// </summary>
+			/// <param name="value">Value.</param>
+			public void SetValue(object value)
+			{
+				fieldValue = value;
+				Info.SetValue(Object, value);
 			}
 
 			static FieldInfo GetFieldInfo(Type type, string name)
@@ -240,7 +243,7 @@ namespace UIWidgets
 				var type = target.GetType();
 				var field = new FieldData(target, type, property.propertyPath);
 
-				return field.Value;
+				return field.GetValue();
 			}
 
 			static void SetValue<T>(T target, SerializedProperty property, object value)
@@ -248,8 +251,7 @@ namespace UIWidgets
 			{
 				var type = target.GetType();
 				var field = new FieldData(target, type, property.propertyPath);
-
-				field.Value = value;
+				field.SetValue(value);
 			}
 		}
 	}

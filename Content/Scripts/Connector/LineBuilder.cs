@@ -84,13 +84,25 @@
 			switch (line.Type)
 			{
 				case ConnectorType.Straight:
-					points = Straight(start_point, end_point, VertexIndex);
+					Path.Start(start_point);
+					Path.End(end_point);
+					points = Points2Lines();
 					break;
 				case ConnectorType.Rectangular:
 					points = RectangularStart(Line.Start, start_point, end_point);
 					break;
 				default:
 					throw new NotSupportedException(string.Format("Unsupported line type: {0}", EnumHelper<ConnectorType>.ToString(line.Type)));
+			}
+
+			if (EnumHelper<ConnectorArrow>.HasFlag(line.Arrow, ConnectorArrow.Forward))
+			{
+				points += AddArrow(Points[Points.Count - 2], Points[Points.Count - 1], line.ArrowSize, VertexIndex + points);
+			}
+
+			if (EnumHelper<ConnectorArrow>.HasFlag(line.Arrow, ConnectorArrow.Backward))
+			{
+				points += AddArrow(Points[1], Points[0], line.ArrowSize, VertexIndex + points);
 			}
 
 			Connector = null;
@@ -100,6 +112,36 @@
 			VertexIndex = 0;
 
 			return points;
+		}
+
+		/// <summary>
+		/// Add arrow.
+		/// </summary>
+		/// <param name="prevPoint">Previous position.</param>
+		/// <param name="endPoint">End position.</param>
+		/// <param name="size">Arrow size.</param>
+		/// <param name="index">Vector index.</param>
+		/// <returns>Count of the added vertices.</returns>
+		protected virtual int AddArrow(Vector3 prevPoint, Vector3 endPoint, Vector2 size, int index)
+		{
+			var angle_z = Mathf.Atan2(prevPoint.y - endPoint.y, prevPoint.x - endPoint.x) * 180f / Mathf.PI;
+			var angle_cos = Mathf.Cos(Mathf.Deg2Rad * angle_z);
+			var angle_sin = Mathf.Sin(Mathf.Deg2Rad * angle_z);
+
+			var vertex1 = endPoint;
+			var vertex2 = endPoint + new Vector3((size.x * angle_cos) - (size.y / 2f * angle_sin), (size.x * angle_sin) + (size.y / 2f * angle_cos));
+			var vertex3 = endPoint + new Vector3((size.x * angle_cos) + (size.y / 2f * angle_sin), (size.x * angle_sin) - (size.y / 2f * angle_cos));
+
+			var uv = (Connector.Sprite != null) ? DataUtility.GetOuterUV(Connector.Sprite) : new Vector4(0f, 0f, 1f, 1f);
+
+			Color32 color32 = Connector.color;
+			VertexHelper.AddVert(vertex1, color32, new Vector2(uv.x, uv.y));
+			VertexHelper.AddVert(vertex2, color32, new Vector2(uv.x, uv.w));
+			VertexHelper.AddVert(vertex3, color32, new Vector2(uv.z, uv.w));
+
+			VertexHelper.AddTriangle(index + 0, index + 1, index + 2);
+
+			return 3;
 		}
 
 		/// <summary>
@@ -148,21 +190,15 @@
 		/// <returns>Count of added vertexes.</returns>
 		protected int RectangularStart(ConnectorPosition start, Vector3 startPoint, Vector3 endPoint)
 		{
-			switch (start)
+			return start switch
 			{
-				case ConnectorPosition.Left:
-					return RectangularLeft(startPoint, endPoint);
-				case ConnectorPosition.Right:
-					return RectangularRight(startPoint, endPoint);
-				case ConnectorPosition.Top:
-					return RectangularTop(startPoint, endPoint);
-				case ConnectorPosition.Bottom:
-					return RectangularBottom(startPoint, endPoint);
-				case ConnectorPosition.Center:
-					return RectangularCenter(startPoint, endPoint);
-				default:
-					throw new NotSupportedException(string.Format("Unsupported line start: {0}", EnumHelper<ConnectorPosition>.ToString(start)));
-			}
+				ConnectorPosition.Left => RectangularLeft(startPoint, endPoint),
+				ConnectorPosition.Right => RectangularRight(startPoint, endPoint),
+				ConnectorPosition.Top => RectangularTop(startPoint, endPoint),
+				ConnectorPosition.Bottom => RectangularBottom(startPoint, endPoint),
+				ConnectorPosition.Center => RectangularCenter(startPoint, endPoint),
+				_ => throw new NotSupportedException(string.Format("Unsupported line start: {0}", EnumHelper<ConnectorPosition>.ToString(start))),
+			};
 		}
 
 		/// <summary>
@@ -453,7 +489,7 @@
 					{
 						Path.Y(Line.Margin);
 						Path.X(delta.x);
-						Path.Y(delta.y + Line.Margin);
+						Path.Y(delta.y - Line.Margin);
 					}
 					else
 					{

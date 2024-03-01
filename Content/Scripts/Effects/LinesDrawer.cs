@@ -63,6 +63,7 @@
 				if (observableLinesY == null)
 				{
 					observableLinesY = new ObservableList<float>(linesY);
+					observableLinesY.OnChangeMono.AddListener(UpdateLines);
 				}
 
 				return observableLinesY;

@@ -38,7 +38,7 @@ namespace UIWidgets
 			"DefaultCursorHotSpot",
 		};
 
-		GUILayoutOption[] toggleOptions = new GUILayoutOption[] { GUILayout.ExpandWidth(true) };
+		readonly GUILayoutOption[] toggleOptions = new GUILayoutOption[] { GUILayout.ExpandWidth(true) };
 
 		/// <summary>
 		/// Init.

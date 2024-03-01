@@ -3,7 +3,7 @@
 	/// <summary>
 	/// Item drag data.
 	/// </summary>
-	public struct ItemDragData
+	public readonly struct ItemDragData
 	{
 		/// <summary>
 		/// Item.

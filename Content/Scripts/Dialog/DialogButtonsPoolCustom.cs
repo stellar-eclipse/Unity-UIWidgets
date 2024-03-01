@@ -2,7 +2,6 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Collections.ObjectModel;
 	using UIWidgets.Extensions;
 	using UIWidgets.l10n;
 	using UIWidgets.Styles;
@@ -30,7 +29,7 @@
 		/// <summary>
 		/// Buttons templates.
 		/// </summary>
-		protected ReadOnlyCollection<Button> Templates;
+		protected IReadOnlyList<Button> Templates;
 
 		/// <summary>
 		/// Active buttons.
@@ -66,7 +65,7 @@
 		/// <param name="container">Container.</param>
 		/// <param name="active">List for the active buttons.</param>
 		/// <param name="cache">List for the cached buttons.</param>
-		public DialogButtonsPoolCustom(TOwner owner, ReadOnlyCollection<Button> templates, RectTransform container, List<TButtonInstance> active, List<List<TButtonInstance>> cache)
+		public DialogButtonsPoolCustom(TOwner owner, IReadOnlyList<Button> templates, RectTransform container, List<TButtonInstance> active, List<List<TButtonInstance>> cache)
 		{
 			Owner = owner;
 			Active = active;
@@ -74,6 +73,13 @@
 			Container = container;
 
 			SetTemplates(templates);
+		}
+
+		/// <summary>
+		/// Init this instance.
+		/// </summary>
+		public virtual void Init()
+		{
 		}
 
 		/// <summary>
@@ -99,7 +105,7 @@
 		/// Set templates.
 		/// </summary>
 		/// <param name="templates">Templates.</param>
-		public void SetTemplates(ReadOnlyCollection<Button> templates)
+		public void SetTemplates(IReadOnlyList<Button> templates)
 		{
 			Templates = templates;
 
@@ -168,7 +174,7 @@
 		/// Replace buttons templates.
 		/// </summary>
 		/// <param name="templates">Templates.</param>
-		public void Replace(ReadOnlyCollection<Button> templates)
+		public void Replace(IReadOnlyList<Button> templates)
 		{
 			ClearCache();
 

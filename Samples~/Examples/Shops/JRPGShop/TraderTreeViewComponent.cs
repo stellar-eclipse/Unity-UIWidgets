@@ -67,14 +67,18 @@
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[]
 				{
 					UtilitiesUI.GetGraphic(NameAdapter),
 					UtilitiesUI.GetGraphic(PriceAdapter),
 					UtilitiesUI.GetGraphic(AvailableCountAdapter),
 				};
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -267,9 +271,9 @@
 		{
 			base.Upgrade();
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Name, ref NameAdapter);
-			Utilities.GetOrAddComponent(Price, ref PriceAdapter);
-			Utilities.GetOrAddComponent(AvailableCount, ref AvailableCountAdapter);
+			Utilities.RequireComponent(Name, ref NameAdapter);
+			Utilities.RequireComponent(Price, ref PriceAdapter);
+			Utilities.RequireComponent(AvailableCount, ref AvailableCountAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

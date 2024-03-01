@@ -1,5 +1,6 @@
 ﻿namespace UIWidgets
 {
+	using System;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
 
@@ -7,50 +8,21 @@
 	/// Drag events listener.
 	/// </summary>
 	[RequireComponent(typeof(RectTransform))]
-	public class DragListener : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IInitializePotentialDragHandler, IScrollHandler,
-		ISelectHandler, IDeselectHandler
+	public class DragListener : DragSupportHandle, IScrollHandler, ISelectHandler, IDeselectHandler
 	{
-		RectTransform rectTransform;
-
-		/// <summary>
-		/// RectTransform.
-		/// </summary>
-		public RectTransform RectTransform
-		{
-			get
-			{
-				if (rectTransform == null)
-				{
-					rectTransform = transform as RectTransform;
-				}
-
-				return rectTransform;
-			}
-		}
-
-		/// <summary>
-		/// OnDrag event.
-		/// </summary>
-		[SerializeField]
-		public PointerUnityEvent OnDragEvent = new PointerUnityEvent();
-
 		/// <summary>
 		/// OnDragStart event.
 		/// </summary>
 		[SerializeField]
+		[Obsolete("Replaced with OnBeginDragEvent.")]
 		public PointerUnityEvent OnDragStartEvent = new PointerUnityEvent();
 
 		/// <summary>
 		/// OnDragEnd event.
 		/// </summary>
 		[SerializeField]
+		[Obsolete("Replaced with OnEndDragEvent.")]
 		public PointerUnityEvent OnDragEndEvent = new PointerUnityEvent();
-
-		/// <summary>
-		/// OnInitializePotentialDrag event.
-		/// </summary>
-		[SerializeField]
-		public PointerUnityEvent OnInitializePotentialDragEvent = new PointerUnityEvent();
 
 		/// <summary>
 		/// OnScroll event.
@@ -71,46 +43,34 @@
 		public SelectEvent OnDeselectEvent = new SelectEvent();
 
 		/// <summary>
-		/// When dragging is occurring this will be called every time the cursor is moved.
-		/// </summary>
-		/// <param name="eventData">Event data.</param>
-		public virtual void OnDrag(PointerEventData eventData)
-		{
-			OnDragEvent.Invoke(eventData);
-		}
-
-		/// <summary>
 		/// Called by a BaseInputModule before a drag is started.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
-		public void OnBeginDrag(PointerEventData eventData)
+		public override void OnBeginDrag(PointerEventData eventData)
 		{
+			base.OnBeginDrag(eventData);
+			#pragma warning disable 0618
 			OnDragStartEvent.Invoke(eventData);
+			#pragma warning restore
 		}
 
 		/// <summary>
 		/// Called by a BaseInputModule when a drag is ended.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
-		public void OnEndDrag(PointerEventData eventData)
+		public override void OnEndDrag(PointerEventData eventData)
 		{
+			base.OnEndDrag(eventData);
+			#pragma warning disable 0618
 			OnDragEndEvent.Invoke(eventData);
-		}
-
-		/// <summary>
-		/// Called by a BaseInputModule when a drag has been found but before it is valid to begin the drag.
-		/// </summary>
-		/// <param name="eventData">Event data.</param>
-		public void OnInitializePotentialDrag(PointerEventData eventData)
-		{
-			OnInitializePotentialDragEvent.Invoke(eventData);
+			#pragma warning restore
 		}
 
 		/// <summary>
 		/// Process scroll event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
-		public void OnScroll(PointerEventData eventData)
+		public virtual void OnScroll(PointerEventData eventData)
 		{
 			OnScrollEvent.Invoke(eventData);
 		}
@@ -119,7 +79,7 @@
 		/// Process select event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
-		public void OnSelect(BaseEventData eventData)
+		public virtual void OnSelect(BaseEventData eventData)
 		{
 			OnSelectEvent.Invoke(eventData);
 		}
@@ -128,7 +88,7 @@
 		/// Process deselect event.
 		/// </summary>
 		/// <param name="eventData">Event data.</param>
-		public void OnDeselect(BaseEventData eventData)
+		public virtual void OnDeselect(BaseEventData eventData)
 		{
 			OnDeselectEvent.Invoke(eventData);
 		}

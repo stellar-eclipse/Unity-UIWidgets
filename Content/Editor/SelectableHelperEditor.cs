@@ -4,11 +4,7 @@ namespace UIWidgets
 {
 	using UnityEditor;
 	using UnityEditor.AnimatedValues;
-#if UNITY_5 || UNITY_5_3_OR_NEWER
 	using UnityEditor.Animations;
-#else
-	using UnityEditorInternal;
-#endif
 	using UnityEngine;
 	using UnityEngine.Events;
 	using UnityEngine.UI;
@@ -19,18 +15,21 @@ namespace UIWidgets
 	[CustomEditor(typeof(SelectableHelper), true)]
 	public class SelectableHelperEditor : UIWidgetsMonoEditor
 	{
-		SerializedProperty m_Script;
-		SerializedProperty m_TargetGraphicProperty;
-		SerializedProperty m_TransitionProperty;
-		SerializedProperty m_ColorBlockProperty;
-		SerializedProperty m_SpriteStateProperty;
-		SerializedProperty m_AnimTriggerProperty;
+		SerializedProperty script;
+		SerializedProperty targetGraphic;
+		SerializedProperty transition;
+		SerializedProperty colorBlock;
+		SerializedProperty spriteState;
+		SerializedProperty animTrigger;
 
-		AnimBool m_ShowColorTint = new AnimBool();
-		AnimBool m_ShowSpriteTrasition = new AnimBool();
-		AnimBool m_ShowAnimTransition = new AnimBool();
+		SerializedProperty interactable;
+		SerializedProperty watchInteractable;
 
-		string[] m_PropertyPathToExcludeForChildClasses;
+		AnimBool showColorTint = new AnimBool();
+		AnimBool showSpriteTrasition = new AnimBool();
+		AnimBool showAnimTransition = new AnimBool();
+
+		string[] propertyPathToExcludeForChildClasses;
 
 		UnityAction repaintDelegate;
 
@@ -52,29 +51,35 @@ namespace UIWidgets
 		/// </summary>
 		protected virtual void OnEnable()
 		{
-			m_Script = serializedObject.FindProperty("m_Script");
-			m_TargetGraphicProperty = serializedObject.FindProperty("targetGraphic");
-			m_TransitionProperty = serializedObject.FindProperty("transition");
-			m_ColorBlockProperty = serializedObject.FindProperty("colors");
-			m_SpriteStateProperty = serializedObject.FindProperty("spriteState");
-			m_AnimTriggerProperty = serializedObject.FindProperty("animationTriggers");
+			script = serializedObject.FindProperty("m_Script");
+			targetGraphic = serializedObject.FindProperty("targetGraphic");
+			transition = serializedObject.FindProperty("transition");
+			colorBlock = serializedObject.FindProperty("colors");
+			spriteState = serializedObject.FindProperty("spriteState");
+			animTrigger = serializedObject.FindProperty("animationTriggers");
 
-			m_PropertyPathToExcludeForChildClasses = new[] {
-				m_Script.propertyPath,
-				m_TransitionProperty.propertyPath,
-				m_ColorBlockProperty.propertyPath,
-				m_SpriteStateProperty.propertyPath,
-				m_AnimTriggerProperty.propertyPath,
-				m_TargetGraphicProperty.propertyPath,
+			interactable = serializedObject.FindProperty("interactable");
+			watchInteractable = serializedObject.FindProperty("watchInteractable");
+
+			propertyPathToExcludeForChildClasses = new[] {
+				script.propertyPath,
+				transition.propertyPath,
+				colorBlock.propertyPath,
+				spriteState.propertyPath,
+				animTrigger.propertyPath,
+				targetGraphic.propertyPath,
+
+				interactable.propertyPath,
+				watchInteractable.propertyPath,
 			};
 
-			var trans = GetTransition(m_TransitionProperty);
-			m_ShowColorTint.value = (trans == Selectable.Transition.ColorTint);
-			m_ShowSpriteTrasition.value = (trans == Selectable.Transition.SpriteSwap);
-			m_ShowAnimTransition.value = (trans == Selectable.Transition.Animation);
+			var trans = GetTransition(transition);
+			showColorTint.value = (trans == Selectable.Transition.ColorTint);
+			showSpriteTrasition.value = (trans == Selectable.Transition.SpriteSwap);
+			showAnimTransition.value = (trans == Selectable.Transition.Animation);
 
-			m_ShowColorTint.valueChanged.AddListener(RepaintDelegate);
-			m_ShowSpriteTrasition.valueChanged.AddListener(RepaintDelegate);
+			showColorTint.valueChanged.AddListener(RepaintDelegate);
+			showSpriteTrasition.valueChanged.AddListener(RepaintDelegate);
 		}
 
 		/// <summary>
@@ -82,8 +87,8 @@ namespace UIWidgets
 		/// </summary>
 		protected virtual void OnDisable()
 		{
-			m_ShowColorTint.valueChanged.RemoveListener(RepaintDelegate);
-			m_ShowSpriteTrasition.valueChanged.RemoveListener(RepaintDelegate);
+			showColorTint.valueChanged.RemoveListener(RepaintDelegate);
+			showSpriteTrasition.valueChanged.RemoveListener(RepaintDelegate);
 		}
 
 		static Selectable.Transition GetTransition(SerializedProperty transition)
@@ -102,29 +107,34 @@ namespace UIWidgets
 
 			if (!IsDerivedSelectableHelperEditor())
 			{
-				EditorGUILayout.PropertyField(m_Script);
+				EditorGUILayout.PropertyField(script);
 			}
 
-			var trans = GetTransition(m_TransitionProperty);
+			var sh = target as SelectableHelper;
 
-			var graphic = m_TargetGraphicProperty.objectReferenceValue as Graphic;
+			var trans = GetTransition(transition);
+
+			var graphic = targetGraphic.objectReferenceValue as Graphic;
 			if (graphic == null)
 			{
-				graphic = (target as SelectableHelper).GetComponent<Graphic>();
+				graphic = sh.GetComponent<Graphic>();
 			}
 
-			var animator = (target as SelectableHelper).GetComponent<Animator>();
-			m_ShowColorTint.target = (!m_TransitionProperty.hasMultipleDifferentValues && trans == Button.Transition.ColorTint);
-			m_ShowSpriteTrasition.target = (!m_TransitionProperty.hasMultipleDifferentValues && trans == Button.Transition.SpriteSwap);
-			m_ShowAnimTransition.target = (!m_TransitionProperty.hasMultipleDifferentValues && trans == Button.Transition.Animation);
+			var animator = sh.GetComponent<Animator>();
+			showColorTint.target = (!transition.hasMultipleDifferentValues && trans == Button.Transition.ColorTint);
+			showSpriteTrasition.target = (!transition.hasMultipleDifferentValues && trans == Button.Transition.SpriteSwap);
+			showAnimTransition.target = (!transition.hasMultipleDifferentValues && trans == Button.Transition.Animation);
 
-			EditorGUILayout.PropertyField(m_TransitionProperty);
+			EditorGUILayout.PropertyField(interactable);
+			EditorGUILayout.PropertyField(watchInteractable);
+
+			EditorGUILayout.PropertyField(transition);
 
 			++EditorGUI.indentLevel;
 			{
 				if (trans == Selectable.Transition.ColorTint || trans == Selectable.Transition.SpriteSwap)
 				{
-					EditorGUILayout.PropertyField(m_TargetGraphicProperty);
+					EditorGUILayout.PropertyField(targetGraphic);
 				}
 
 				switch (trans)
@@ -144,23 +154,23 @@ namespace UIWidgets
 						break;
 				}
 
-				if (EditorGUILayout.BeginFadeGroup(m_ShowColorTint.faded))
+				if (EditorGUILayout.BeginFadeGroup(showColorTint.faded))
 				{
-					EditorGUILayout.PropertyField(m_ColorBlockProperty);
+					EditorGUILayout.PropertyField(colorBlock);
 					EditorGUILayout.Space();
 				}
 				EditorGUILayout.EndFadeGroup();
 
-				if (EditorGUILayout.BeginFadeGroup(m_ShowSpriteTrasition.faded))
+				if (EditorGUILayout.BeginFadeGroup(showSpriteTrasition.faded))
 				{
-					EditorGUILayout.PropertyField(m_SpriteStateProperty);
+					EditorGUILayout.PropertyField(spriteState);
 					EditorGUILayout.Space();
 				}
 				EditorGUILayout.EndFadeGroup();
 
-				if (EditorGUILayout.BeginFadeGroup(m_ShowAnimTransition.faded))
+				if (EditorGUILayout.BeginFadeGroup(showAnimTransition.faded))
 				{
-					EditorGUILayout.PropertyField(m_AnimTriggerProperty);
+					EditorGUILayout.PropertyField(animTrigger);
 
 					if (animator == null || animator.runtimeAnimatorController == null)
 					{
@@ -168,12 +178,12 @@ namespace UIWidgets
 						buttonRect.xMin += EditorGUIUtility.labelWidth;
 						if (GUI.Button(buttonRect, "Auto Generate Animation", EditorStyles.miniButton))
 						{
-							var controller = GenerateSelectableAnimatorContoller((target as SelectableHelper).AnimationTriggers, target as SelectableHelper);
+							var controller = GenerateSelectableAnimatorContoller(sh.AnimationTriggers, sh);
 							if (controller != null)
 							{
 								if (animator == null)
 								{
-									animator = (target as SelectableHelper).gameObject.AddComponent<Animator>();
+									animator = sh.gameObject.AddComponent<Animator>();
 								}
 
 								AnimatorController.SetAnimatorController(animator, controller);
@@ -205,7 +215,7 @@ namespace UIWidgets
 				return;
 			}
 
-			DrawPropertiesExcluding(serializedObject, m_PropertyPathToExcludeForChildClasses);
+			DrawPropertiesExcluding(serializedObject, propertyPathToExcludeForChildClasses);
 		}
 
 		bool IsDerivedSelectableHelperEditor()
@@ -254,7 +264,6 @@ namespace UIWidgets
 			var clip = AnimatorController.AllocateAnimatorClip(name);
 			AssetDatabase.AddObjectToAsset(clip, controller);
 
-#if UNITY_5 || UNITY_5_3_OR_NEWER
 			var state = controller.AddMotion(clip);
 
 			controller.AddParameter(name, UnityEngine.AnimatorControllerParameterType.Trigger);
@@ -262,17 +271,6 @@ namespace UIWidgets
 			var stateMachine = controller.layers[0].stateMachine;
 			var transition = stateMachine.AddAnyStateTransition(state);
 			transition.AddCondition(UnityEditor.Animations.AnimatorConditionMode.If, 0, name);
-#else
-			var state = AnimatorController.AddAnimationClipToController(controller, clip);
-
-			controller.AddParameter(name, AnimatorControllerParameterType.Trigger);
-
-			var stateMachine = controller.GetLayer(0).stateMachine;
-			var transition = stateMachine.AddAnyStateTransition(state);
-			var condition = transition.GetCondition(0);
-			condition.mode = TransitionConditionMode.If;
-			condition.parameter = name;
-#endif
 
 			return clip;
 		}

@@ -7,7 +7,8 @@ namespace UIWidgets
 	/// <summary>
 	/// Color picker HSV sliders block.
 	/// </summary>
-	public class ColorPickerHSVBlock : MonoBehaviour
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/input/colorpicker.html")]
+	public class ColorPickerHSVBlock : MonoBehaviour, UIThemes.ITargetOwner
 	{
 		[SerializeField]
 		Slider hSlider;
@@ -18,15 +19,9 @@ namespace UIWidgets
 		/// <value>The Hue slider.</value>
 		public Slider HSlider
 		{
-			get
-			{
-				return hSlider;
-			}
+			get => hSlider;
 
-			set
-			{
-				SetHSlider(value);
-			}
+			set => SetHSlider(value);
 		}
 
 		[SerializeField]
@@ -38,15 +33,9 @@ namespace UIWidgets
 		/// <value>The Hue input.</value>
 		public Spinner HInput
 		{
-			get
-			{
-				return hInput;
-			}
+			get => hInput;
 
-			set
-			{
-				SetHInput(value);
-			}
+			set => SetHInput(value);
 		}
 
 		[SerializeField]
@@ -58,10 +47,7 @@ namespace UIWidgets
 		/// <value>The Hue slider background.</value>
 		public Image HSliderBackground
 		{
-			get
-			{
-				return hSliderBackground;
-			}
+			get => hSliderBackground;
 
 			set
 			{
@@ -79,15 +65,9 @@ namespace UIWidgets
 		/// <value>The Saturation slider.</value>
 		public Slider SSlider
 		{
-			get
-			{
-				return sSlider;
-			}
+			get => sSlider;
 
-			set
-			{
-				SetSSlider(value);
-			}
+			set => SetSSlider(value);
 		}
 
 		[SerializeField]
@@ -99,15 +79,9 @@ namespace UIWidgets
 		/// <value>The Saturation input.</value>
 		public Spinner SInput
 		{
-			get
-			{
-				return sInput;
-			}
+			get => sInput;
 
-			set
-			{
-				SetSInput(value);
-			}
+			set => SetSInput(value);
 		}
 
 		[SerializeField]
@@ -119,10 +93,7 @@ namespace UIWidgets
 		/// <value>The Saturation slider background.</value>
 		public Image SSliderBackground
 		{
-			get
-			{
-				return sSliderBackground;
-			}
+			get => sSliderBackground;
 
 			set
 			{
@@ -140,15 +111,9 @@ namespace UIWidgets
 		/// <value>The Value slider.</value>
 		public Slider VSlider
 		{
-			get
-			{
-				return vSlider;
-			}
+			get => vSlider;
 
-			set
-			{
-				SetVSlider(value);
-			}
+			set => SetVSlider(value);
 		}
 
 		[SerializeField]
@@ -160,15 +125,9 @@ namespace UIWidgets
 		/// <value>The Value input.</value>
 		public Spinner VInput
 		{
-			get
-			{
-				return vInput;
-			}
+			get => vInput;
 
-			set
-			{
-				SetVInput(value);
-			}
+			set => SetVInput(value);
 		}
 
 		[SerializeField]
@@ -180,10 +139,7 @@ namespace UIWidgets
 		/// <value>The Value slider background.</value>
 		public Image VSliderBackground
 		{
-			get
-			{
-				return vSliderBackground;
-			}
+			get => vSliderBackground;
 
 			set
 			{
@@ -201,10 +157,7 @@ namespace UIWidgets
 		/// <value>The default shader.</value>
 		public Shader DefaultShader
 		{
-			get
-			{
-				return defaultShader;
-			}
+			get => defaultShader;
 
 			set
 			{
@@ -221,10 +174,7 @@ namespace UIWidgets
 		/// <value>The input mode.</value>
 		public ColorPickerInputMode InputMode
 		{
-			get
-			{
-				return inputMode;
-			}
+			get => inputMode;
 
 			set
 			{
@@ -243,15 +193,9 @@ namespace UIWidgets
 		/// <value>The palette mode.</value>
 		public ColorPickerPaletteMode PaletteMode
 		{
-			get
-			{
-				return paletteMode;
-			}
+			get => paletteMode;
 
-			set
-			{
-				paletteMode = value;
-			}
+			set => paletteMode = value;
 		}
 
 		/// <summary>
@@ -651,6 +595,16 @@ namespace UIWidgets
 			}
 
 			UpdateViewReal();
+		}
+
+		/// <summary>
+		/// Set target owner.
+		/// </summary>
+		public void SetTargetOwner()
+		{
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), HSliderBackground, nameof(Graphic.color), this);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), SSliderBackground, nameof(Graphic.color), this);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), VSliderBackground, nameof(Graphic.color), this);
 		}
 
 		/// <summary>

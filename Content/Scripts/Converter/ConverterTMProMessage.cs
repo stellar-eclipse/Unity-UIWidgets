@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR && UIWIDGETS_TMPRO_SUPPORT
+#if UNITY_EDITOR && UIWIDGETS_TMPRO_SUPPORT
 namespace UIWidgets
 {
 	/// <summary>

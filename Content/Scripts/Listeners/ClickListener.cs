@@ -6,6 +6,7 @@
 	/// <summary>
 	/// Click events listener.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/listeners/click.html")]
 	public class ClickListener : MonoBehaviour, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler
 	{
 		/// <summary>

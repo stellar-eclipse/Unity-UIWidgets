@@ -8,6 +8,7 @@
 	/// <summary>
 	/// DatePicker.
 	/// </summary>
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/widgets/dialogs/datepicker.html")]
 	public class DatePicker : PickerOptionalOK<DateTime, DatePicker>
 	{
 		/// <summary>

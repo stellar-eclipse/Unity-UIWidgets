@@ -11,7 +11,7 @@
 		/// DateScroller.
 		/// </summary>
 		[SerializeField]
-		protected UIWidgets.DateBase DateScroller;
+		protected UIWidgets.DateScroller DateScroller;
 
 		/// <summary>
 		/// Start this instance.
@@ -25,8 +25,15 @@
 			DateScroller.Culture = new System.Globalization.CultureInfo("en-US");
 
 			// change calendar
-			DateScroller.Culture = new System.Globalization.CultureInfo("ja-JP");
-			DateScroller.Culture.DateTimeFormat.Calendar = new System.Globalization.JapaneseCalendar();
+			// DateScroller.Culture = new System.Globalization.CultureInfo("ja-JP");
+			// DateScroller.Culture.DateTimeFormat.Calendar = new System.Globalization.JapaneseCalendar();
+			// DateScroller.UpdateCalendar();
+
+			// scroll +5 years
+			// DateScroller.YearsScrollBlock.Scroll(5);
+
+			// scroll -2 days
+			// DateScroller.DaysScrollBlock.Scroll(-2);
 		}
 
 		/// <summary>

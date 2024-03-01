@@ -8,6 +8,7 @@
 	/// Prefabs generator.
 	/// </summary>
 	[ExecuteInEditMode]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/generator.html")]
 	public class PrefabsGeneratorStarter : MonoBehaviour
 	{
 		/// <summary>

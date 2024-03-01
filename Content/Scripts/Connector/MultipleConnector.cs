@@ -141,7 +141,7 @@
 				var target = Lines[i].Target;
 				if (target != null)
 				{
-					var listener = Utilities.GetOrAddComponent<TransformListener>(target);
+					var listener = Utilities.RequireComponent<TransformListener>(target);
 					listener.OnTransformChanged.AddListener(SetVerticesDirty);
 
 					listeners.Add(listener);

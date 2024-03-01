@@ -1,6 +1,9 @@
 ﻿namespace UIWidgets.Styles
 {
 	using System.Collections.Generic;
+	using System.IO;
+	using UIWidgets.Attributes;
+	using UIWidgets.Pool;
 	using UnityEditor;
 	using UnityEngine;
 
@@ -12,38 +15,27 @@
 		/// <summary>
 		/// Creates the style.
 		/// </summary>
+		#if UIWIDGETS_LEGACY_STYLE
 		[MenuItem("Assets/Create/New UI Widgets/Style", false)]
+		#endif
 		public static void CreateStyle()
 		{
-			var folder = "Assets";
-			if (Selection.activeObject != null)
-			{
-				folder = AssetDatabase.GetAssetPath(Selection.activeObject);
-				if (!System.IO.Directory.Exists(folder))
-				{
-					folder = System.IO.Path.GetDirectoryName(folder);
-				}
-			}
-
-			var path = folder + "/New UI Widgets Style.asset";
-			var file = AssetDatabase.GenerateUniqueAssetPath(path);
-			var style = ScriptableObject.CreateInstance<Style>();
-
-			AssetDatabase.CreateAsset(style, file);
-			EditorUtility.SetDirty(style);
-			AssetDatabase.SaveAssets();
+			var path = UtilitiesEditor.SelectedAssetPath() + Path.DirectorySeparatorChar + "New UI Widgets Style.asset";
+			var style = UtilitiesEditor.CreateScriptableObjectAsset<Style>(path, false);
 
 			style.SetDefaultValues();
 			EditorUtility.SetDirty(style);
 			AssetDatabase.SaveAssets();
 
-			Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(file);
+			Selection.activeObject = style;
 		}
 
 		/// <summary>
 		/// Apply the default style.
 		/// </summary>
+		#if UIWIDGETS_LEGACY_STYLE
 		[MenuItem("GameObject/UI/New UI Widgets/Apply Default Style", false, 10)]
+		#endif
 		public static void ApplyDefaultStyle()
 		{
 			var style = PrefabsMenu.Instance.DefaultStyle;
@@ -64,28 +56,26 @@
 			RecordPrefabInstanceModifications(target);
 		}
 
-		static readonly List<Component> Components = new List<Component>();
-
 		/// <summary>
 		/// Record prefab instance modifications.
 		/// </summary>
 		/// <param name="target">Target.</param>
 		public static void RecordPrefabInstanceModifications(GameObject target)
 		{
-#if UNITY_2018_3_OR_NEWER
+			#if UNITY_2018_3_OR_NEWER
 			if (PrefabUtility.IsPartOfAnyPrefab(target))
-#endif
+			#endif
 			{
 				PrefabUtility.RecordPrefabInstancePropertyModifications(target);
 
-				target.GetComponents(Components);
+				using var _ = ListPool<Component>.Get(out var temp);
 
-				foreach (var c in Components)
+				target.GetComponents(temp);
+
+				foreach (var c in temp)
 				{
 					PrefabUtility.RecordPrefabInstancePropertyModifications(c);
 				}
-
-				Components.Clear();
 			}
 
 			var t = target.transform;
@@ -99,7 +89,9 @@
 		/// Check is selected object is not null.
 		/// </summary>
 		/// <returns><c>true</c>, if selected object is not null, <c>false</c> otherwise.</returns>
+		#if UIWIDGETS_LEGACY_STYLE
 		[MenuItem("GameObject/UI/New UI Widgets/Apply Default Style", true, 10)]
+		#endif
 		public static bool CanApplyStyle()
 		{
 			return Selection.activeGameObject != null;
@@ -108,7 +100,9 @@
 		/// <summary>
 		/// Update the default style.
 		/// </summary>
+		#if UIWIDGETS_LEGACY_STYLE
 		[MenuItem("GameObject/UI/New UI Widgets/Update Default Style", false, 10)]
+		#endif
 		public static void UpdateDefaultStyle()
 		{
 			var style = PrefabsMenu.Instance.DefaultStyle;
@@ -133,7 +127,9 @@
 		/// Check is selected object is not null.
 		/// </summary>
 		/// <returns><c>true</c>, if selected object is not null, <c>false</c> otherwise.</returns>
+		#if UIWIDGETS_LEGACY_STYLE
 		[MenuItem("GameObject/UI/New UI Widgets/Update Default Style", true, 10)]
+		#endif
 		public static bool CanUpdateStyle()
 		{
 			return Selection.activeGameObject != null;

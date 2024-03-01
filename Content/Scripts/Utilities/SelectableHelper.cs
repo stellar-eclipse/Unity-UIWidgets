@@ -1,5 +1,6 @@
 ﻿namespace UIWidgets
 {
+	using System.Collections.Generic;
 	using UnityEngine;
 	using UnityEngine.EventSystems;
 	using UnityEngine.UI;
@@ -11,10 +12,12 @@
 	[RequireComponent(typeof(Selectable))]
 	[AddComponentMenu("UI/New UI Widgets/Helpers/Selectable Helper")]
 	[ExecuteInEditMode]
+	[HelpURL("https://ilih.name/unity-assets/UIWidgets/docs/components/selectable-helper.html")]
 	public class SelectableHelper : UIBehaviour,
 		IPointerDownHandler, IPointerUpHandler,
 		IPointerEnterHandler, IPointerExitHandler,
-		ISelectHandler, IDeselectHandler
+		ISelectHandler, IDeselectHandler,
+		IUpdatable
 	{
 		/// <summary>
 		/// Selection states.
@@ -37,10 +40,221 @@
 			Pressed,
 
 			/// <summary>
+			/// Selected.
+			/// </summary>
+			Selected,
+
+			/// <summary>
 			/// Disabled.
 			/// </summary>
 			Disabled,
 		}
+
+		#region Interactable
+		[SerializeField]
+		bool interactable = true;
+
+		/// <summary>
+		/// Is widget interactable.
+		/// </summary>
+		/// <value><c>true</c> if interactable; otherwise, <c>false</c>.</value>
+		public bool Interactable
+		{
+			get
+			{
+				if ((Parent == null) || !Parent.IsInteractable())
+				{
+					return false;
+				}
+
+				return interactable;
+			}
+
+			set
+			{
+				if (interactable != value)
+				{
+					interactable = value;
+					InteractableChanged();
+				}
+			}
+		}
+
+		/// <summary>
+		/// If the canvas groups allow interaction.
+		/// </summary>
+		protected bool GroupsAllowInteraction = true;
+
+		/// <summary>
+		/// The CanvasGroup cache.
+		/// </summary>
+		protected List<CanvasGroup> CanvasGroupCache = new List<CanvasGroup>();
+
+		/// <summary>
+		/// Process the CanvasGroupChanged event.
+		/// </summary>
+		protected override void OnCanvasGroupChanged()
+		{
+			var groupAllowInteraction = true;
+			var t = transform;
+			while (t != null)
+			{
+				t.GetComponents(CanvasGroupCache);
+				var shouldBreak = false;
+				foreach (var canvas_group in CanvasGroupCache)
+				{
+					if (!canvas_group.interactable)
+					{
+						groupAllowInteraction = false;
+						shouldBreak = true;
+					}
+
+					shouldBreak |= canvas_group.ignoreParentGroups;
+				}
+
+				if (shouldBreak)
+				{
+					break;
+				}
+
+				t = t.parent;
+			}
+
+			if (groupAllowInteraction != GroupsAllowInteraction)
+			{
+				GroupsAllowInteraction = groupAllowInteraction;
+				InteractableChanged();
+			}
+		}
+
+		/// <summary>
+		/// Returns true if the GameObject and the Component are active.
+		/// </summary>
+		/// <returns>true if the GameObject and the Component are active; otherwise false.</returns>
+		public override bool IsActive()
+		{
+			return base.IsActive() && GroupsAllowInteraction && Interactable;
+		}
+
+		/// <summary>
+		/// Is instance interactable?
+		/// </summary>
+		/// <returns>true if instance interactable; otherwise false</returns>
+		public bool IsInteractable()
+		{
+			return GroupsAllowInteraction && Interactable;
+		}
+
+		/// <summary>
+		/// Process interactable change.
+		/// </summary>
+		protected virtual void InteractableChanged()
+		{
+			if (!base.IsActive())
+			{
+				return;
+			}
+
+			OnInteractableChange(GroupsAllowInteraction && Interactable);
+		}
+
+		/// <summary>
+		/// Process interactable change.
+		/// </summary>
+		/// <param name="interactableState">Current interactable state.</param>
+		protected virtual void OnInteractableChange(bool interactableState)
+		{
+			OnSetProperty();
+		}
+
+		bool watching;
+
+		[SerializeField]
+		[Tooltip("Automatically change Interactable together with Selectable.interactable changes.")]
+		bool watchInteractable;
+
+		/// <summary>
+		/// Watch Selectable.interactable.
+		/// </summary>
+		public bool WatchInteractable
+		{
+			get => watchInteractable;
+
+			set
+			{
+				if (value == watchInteractable)
+				{
+					return;
+				}
+
+				watchInteractable = value;
+				if (watchInteractable)
+				{
+					EnableWatcher();
+				}
+				else
+				{
+					DisableWatcher();
+				}
+			}
+		}
+
+		/// <summary>
+		/// Enable Selectable.interactable watcher.
+		/// </summary>
+		protected virtual void EnableWatcher()
+		{
+			if (!Application.isPlaying)
+			{
+				return;
+			}
+
+			if (watching)
+			{
+				return;
+			}
+
+			if (watchInteractable && gameObject.activeInHierarchy)
+			{
+				Updater.Add(this);
+				watching = true;
+			}
+		}
+
+		/// <summary>
+		/// Disable Selectable.interactable watcher.
+		/// </summary>
+		protected virtual void DisableWatcher()
+		{
+			if (!Application.isPlaying)
+			{
+				return;
+			}
+
+			if (watching)
+			{
+				Updater.Remove(this);
+				watching = false;
+			}
+		}
+
+		/// <summary>
+		/// Run update.
+		/// </summary>
+		public virtual void RunUpdate()
+		{
+			if (Parent == null)
+			{
+				return;
+			}
+
+			if (interactable != Parent.interactable)
+			{
+				Interactable = Parent.interactable;
+			}
+		}
+
+		#endregion
 
 		[SerializeField]
 		Selectable.Transition transition = Selectable.Transition.ColorTint;
@@ -177,18 +391,6 @@
 			}
 		}
 
-		/// <summary>
-		/// Gets a value indicating whether this object is interactable.
-		/// </summary>
-		/// <value><c>true</c> if interactable; otherwise, <c>false</c>.</value>
-		public bool Interactable
-		{
-			get
-			{
-				return (Parent != null) && Parent.IsInteractable();
-			}
-		}
-
 		bool isPointerInside;
 
 		bool isPointerDown;
@@ -236,15 +438,6 @@
 		}
 
 		/// <summary>
-		/// Determines whether this instance is interactable.
-		/// </summary>
-		/// <returns><c>true</c> if this instance is interactable; otherwise, <c>false</c>.</returns>
-		public virtual bool IsInteractable()
-		{
-			return Interactable;
-		}
-
-		/// <summary>
 		/// Callback for when properties have been changed by animation.
 		/// </summary>
 		protected override void OnDidApplyAnimationProperties()
@@ -258,6 +451,8 @@
 		protected override void OnEnable()
 		{
 			base.OnEnable();
+
+			EnableWatcher();
 
 			currentSelectionState = hasSelection ? SelectionState.Highlighted : SelectionState.Normal;
 			TransitionToSelectionState(true);
@@ -282,6 +477,8 @@
 		/// </summary>
 		protected override void OnDisable()
 		{
+			DisableWatcher();
+
 			InstantClearState();
 			base.OnDisable();
 		}
@@ -332,8 +529,6 @@
 		/// </summary>
 		protected virtual void InstantClearState()
 		{
-			string triggerName = AnimationTriggers.normalTrigger;
-
 			isPointerInside = false;
 			isPointerDown = false;
 			hasSelection = false;
@@ -347,7 +542,7 @@
 					SpriteChange(null);
 					break;
 				case Selectable.Transition.Animation:
-					AnimationChange(triggerName);
+					AnimationChange(AnimationTriggers.normalTrigger);
 					break;
 			}
 		}
@@ -385,27 +580,15 @@
 		/// <param name="instant">If set to <c>true</c> instant.</param>
 		protected void TransitionColor(SelectionState state, bool instant)
 		{
-			Color tintColor;
-
-			switch (state)
+			var tintColor = state switch
 			{
-				case SelectionState.Normal:
-					tintColor = Colors.normalColor;
-					break;
-				case SelectionState.Highlighted:
-					tintColor = Colors.highlightedColor;
-					break;
-				case SelectionState.Pressed:
-					tintColor = Colors.pressedColor;
-					break;
-				case SelectionState.Disabled:
-					tintColor = Colors.disabledColor;
-					break;
-				default:
-					tintColor = Color.black;
-					break;
-			}
-
+				SelectionState.Normal => Colors.normalColor,
+				SelectionState.Highlighted => Colors.highlightedColor,
+				SelectionState.Pressed => Colors.pressedColor,
+				SelectionState.Selected => Colors.selectedColor,
+				SelectionState.Disabled => Colors.disabledColor,
+				_ => Color.black,
+			};
 			ColorChange(tintColor * Colors.colorMultiplier, instant);
 		}
 
@@ -441,6 +624,9 @@
 					break;
 				case SelectionState.Pressed:
 					SpriteChange(SpriteState.pressedSprite);
+					break;
+				case SelectionState.Selected:
+					SpriteChange(SpriteState.selectedSprite);
 					break;
 				case SelectionState.Disabled:
 					SpriteChange(SpriteState.disabledSprite);
@@ -483,6 +669,9 @@
 				case SelectionState.Pressed:
 					AnimationChange(AnimationTriggers.pressedTrigger);
 					break;
+				case SelectionState.Selected:
+					AnimationChange(AnimationTriggers.selectedTrigger);
+					break;
 				case SelectionState.Disabled:
 					AnimationChange(AnimationTriggers.disabledTrigger);
 					break;
@@ -495,14 +684,10 @@
 		/// <summary>
 		/// Run animation.
 		/// </summary>
-		/// <param name="triggername">Triggername.</param>
-		protected void AnimationChange(string triggername)
+		/// <param name="triggerName">Trigger name.</param>
+		protected void AnimationChange(string triggerName)
 		{
-			#if UNITY_5_3 || UNITY_5_3_OR_NEWER
-			if (Animator == null || !Animator.isActiveAndEnabled || Animator.runtimeAnimatorController == null || string.IsNullOrEmpty(triggername))
-			#else
-			if (Animator == null || Animator.runtimeAnimatorController == null || string.IsNullOrEmpty(triggername))
-			#endif
+			if (Animator == null || !Animator.isActiveAndEnabled || Animator.runtimeAnimatorController == null || string.IsNullOrEmpty(triggerName))
 			{
 				return;
 			}
@@ -510,8 +695,9 @@
 			Animator.ResetTrigger(AnimationTriggers.normalTrigger);
 			Animator.ResetTrigger(AnimationTriggers.pressedTrigger);
 			Animator.ResetTrigger(AnimationTriggers.highlightedTrigger);
+			Animator.ResetTrigger(AnimationTriggers.selectedTrigger);
 			Animator.ResetTrigger(AnimationTriggers.disabledTrigger);
-			Animator.SetTrigger(triggername);
+			Animator.SetTrigger(triggerName);
 		}
 
 		/// <summary>
@@ -531,9 +717,8 @@
 				return false;
 			}
 
-			bool selected = hasSelection;
-			var pointerData = eventData as PointerEventData;
-			if (pointerData != null)
+			var selected = hasSelection;
+			if (eventData is PointerEventData pointerData)
 			{
 				selected |=
 					(isPointerDown && !isPointerInside && pointerData.pointerPress == gameObject)
@@ -574,6 +759,12 @@
 				return;
 			}
 
+			if (hasSelection)
+			{
+				currentSelectionState = SelectionState.Selected;
+				return;
+			}
+
 			if (IsHighlighted(eventData))
 			{
 				currentSelectionState = SelectionState.Highlighted;
@@ -604,7 +795,7 @@
 		/// <param name="instant">If set to <c>true</c> instant.</param>
 		void TransitionToSelectionState(bool instant)
 		{
-			var transitionState = (IsActive() && !IsInteractable()) ? SelectionState.Disabled : currentSelectionState;
+			var transitionState = IsInteractable() ? currentSelectionState : SelectionState.Disabled;
 
 			DoStateTransition(transitionState, instant);
 		}

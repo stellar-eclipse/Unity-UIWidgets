@@ -1,7 +1,14 @@
-﻿namespace UIWidgets.Styles
+namespace UIWidgets.Styles
 {
 	using System;
 	using UnityEngine;
+#if UIWIDGETS_TMPRO_SUPPORT && UIWIDGETS_TMPRO_4_0_OR_NEWER
+	using FontAsset = UnityEngine.TextCore.Text.FontAsset;
+#elif UIWIDGETS_TMPRO_SUPPORT
+	using FontAsset = TMPro.TMP_FontAsset;
+#else
+	using FontAsset = UnityEngine.ScriptableObject;
+#endif
 
 	/// <summary>
 	/// Fast style definition.
@@ -87,13 +94,7 @@
 		/// The TMPro font.
 		/// </summary>
 		[SerializeField]
-#if UIWIDGETS_TMPRO_SUPPORT && (UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER)
-		public TMPro.TMP_FontAsset FontTMPro;
-#elif UIWIDGETS_TMPRO_SUPPORT
-		public TMPro.TextMeshProFont FontTMPro;
-#else
-		public ScriptableObject FontTMPro;
-#endif
+		public FontAsset FontTMPro;
 
 		/// <summary>
 		/// Button.

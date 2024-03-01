@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.ComponentModel;
+	using EasyLayoutNS.Extensions;
 	using UIWidgets;
 	using UnityEngine;
 	using UnityEngine.Serialization;
@@ -121,23 +122,11 @@
 		/// <param name="sb">String builder.</param>
 		public virtual void GetDebugInfo(System.Text.StringBuilder sb)
 		{
-			sb.Append("\tFixed Blocks Count: ");
-			sb.Append(FixedBlocksCount);
-			sb.AppendLine();
-
-			sb.Append("\tBlocks Count: ");
-			sb.Append(BlocksCount);
-			sb.AppendLine();
-
+			sb.AppendValue("\tFixed Blocks Count: ", FixedBlocksCount);
+			sb.AppendValue("\tBlocks Count: ", BlocksCount);
 			sb.AppendLine("\t#####");
-
-			sb.Append("\tPadding Inner Start: ");
-			sb.Append(EasyLayoutUtilities.List2String(PaddingInnerStart));
-			sb.AppendLine();
-
-			sb.Append("\tPadding Inner End: ");
-			sb.Append(EasyLayoutUtilities.List2String(PaddingInnerEnd));
-			sb.AppendLine();
+			sb.AppendValue("\tPadding Inner Start: ", EasyLayoutUtilities.List2String(PaddingInnerStart));
+			sb.AppendValue("\tPadding Inner End: ", EasyLayoutUtilities.List2String(PaddingInnerEnd));
 		}
 	}
 }

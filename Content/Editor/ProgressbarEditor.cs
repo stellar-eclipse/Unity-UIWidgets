@@ -9,7 +9,9 @@ namespace UIWidgets
 	/// Progress bar editor.
 	/// </summary>
 	[CanEditMultipleObjects]
+	#pragma warning disable 0618
 	[CustomEditor(typeof(Progressbar), true)]
+	#pragma warning restore
 	public class ProgressbarEditor : UIWidgetsMonoEditor
 	{
 		readonly Dictionary<string, SerializedProperty> serializedProperties = new Dictionary<string, SerializedProperty>();
@@ -31,6 +33,7 @@ namespace UIWidgets
 			"Speed",
 			"SpeedType",
 			"UnscaledTime",
+			"correctUVRect",
 		};
 
 		/// <summary>
@@ -74,6 +77,7 @@ namespace UIWidgets
 			else
 			{
 				EditorGUILayout.PropertyField(serializedProperties["IndeterminateBar"]);
+				EditorGUILayout.PropertyField(serializedProperties["correctUVRect"]);
 			}
 
 			EditorGUI.indentLevel--;
@@ -87,7 +91,9 @@ namespace UIWidgets
 
 			foreach (var t in targets)
 			{
+				#pragma warning disable 0618
 				((Progressbar)t).Refresh();
+				#pragma warning restore
 			}
 
 			ValidateTargets();

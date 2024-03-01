@@ -8,7 +8,7 @@
 	/// <content>
 	/// Base class for the custom ListViews.
 	/// </content>
-	public partial class ListViewCustom<TItemView, TItem> : ListViewCustomBase, IStylable
+	public partial class ListViewCustom<TItemView, TItem> : ListViewCustom<TItem>, IUpdatable, ILateUpdatable, IListViewCallbacks<TItemView>
 		where TItemView : ListViewItem
 	{
 		/// <summary>
@@ -101,7 +101,8 @@
 			/// <param name="strict">If set to <c>true</c> strict.</param>
 			public override int GetFirstVisibleIndex(bool strict = false)
 			{
-				var index = GetPosition() / GetItemSize();
+				var pos = Mathf.Max(0f, GetPosition() - Owner.LayoutBridge.GetMargin());
+				var index = pos / GetItemSize();
 				var first_visible_index = strict
 					? Mathf.CeilToInt(index)
 					: Mathf.FloorToInt(index);
@@ -127,7 +128,8 @@
 			/// <param name="strict">If set to <c>true</c> strict.</param>
 			public override int GetLastVisibleIndex(bool strict = false)
 			{
-				var window = GetPosition() + Owner.Viewport.ScaledAxisSize;
+				var pos = Mathf.Max(0f, GetPosition() - Owner.LayoutBridge.GetMargin());
+				var window = pos + Owner.Viewport.ScaledAxisSize;
 				var last_visible_index = strict
 					? Mathf.FloorToInt(window / GetItemSize())
 					: Mathf.CeilToInt(window / GetItemSize());
@@ -206,23 +208,16 @@
 			public override int GetNearestIndex(Vector2 point, NearestType type)
 			{
 				var pos = Owner.IsHorizontal() ? point.x : Mathf.Abs(point.y);
+				pos -= Owner.LayoutBridge.GetMargin();
 				pos -= IsRequiredCenterTheItems() ? CenteredFillerSize() : 0f;
 
-				int index;
-				switch (type)
+				var index = type switch
 				{
-					case NearestType.Auto:
-						index = Mathf.RoundToInt(pos / GetItemSize());
-						break;
-					case NearestType.Before:
-						index = Mathf.FloorToInt(pos / GetItemSize());
-						break;
-					case NearestType.After:
-						index = Mathf.CeilToInt(pos / GetItemSize());
-						break;
-					default:
-						throw new NotSupportedException(string.Format("Unsupported NearestType: {0}", EnumHelper<NearestType>.ToString(type)));
-				}
+					NearestType.Auto => Mathf.RoundToInt(pos / GetItemSize()),
+					NearestType.Before => Mathf.FloorToInt(pos / GetItemSize()),
+					NearestType.After => Mathf.CeilToInt(pos / GetItemSize()),
+					_ => throw new NotSupportedException(string.Format("Unsupported NearestType: {0}", EnumHelper<NearestType>.ToString(type))),
+				};
 
 				return Mathf.Min(index, Owner.DataSource.Count);
 			}
@@ -233,7 +228,8 @@
 			/// <returns>The nearest item index.</returns>
 			public override int GetNearestItemIndex()
 			{
-				return Mathf.Clamp(Mathf.RoundToInt(GetPosition() / GetItemSize()), 0, Owner.DataSource.Count - 1);
+				var pos = GetPosition() - Owner.LayoutBridge.GetMargin();
+				return Mathf.Clamp(Mathf.RoundToInt(pos / GetItemSize()), 0, Owner.DataSource.Count - 1);
 			}
 
 			/// <summary>
@@ -248,7 +244,7 @@
 				}
 
 				var blocks = Mathf.CeilToInt((float)Owner.DataSource.Count / (float)Owner.GetItemsPerBlock());
-				return (blocks * GetItemSize()) - Owner.LayoutBridge.GetSpacing();
+				return (blocks * GetItemSize()) - Owner.LayoutBridge.GetSpacing() + Owner.LayoutBridge.GetFullMargin();
 			}
 
 			/// <summary>
@@ -259,8 +255,8 @@
 				var spacing_x = Owner.GetItemSpacingX();
 				var spacing_y = Owner.GetItemSpacingY();
 
-				var height = Owner.Viewport.Size.y + spacing_y - Owner.LayoutBridge.GetFullMarginY();
-				var width = Owner.Viewport.Size.x + spacing_x - Owner.LayoutBridge.GetFullMarginX();
+				var height = ViewportHeight();
+				var width = ViewportWidth();
 
 				int per_block;
 				if (Owner.IsHorizontal())

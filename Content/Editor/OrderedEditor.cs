@@ -47,7 +47,7 @@ namespace UIWidgets
 		/// </summary>
 		protected List<string> Cursors = new List<string>();
 
-		GUILayoutOption[] toggleOptions = new GUILayoutOption[] { GUILayout.ExpandWidth(true) };
+		readonly GUILayoutOption[] toggleOptions = new GUILayoutOption[] { GUILayout.ExpandWidth(true) };
 
 		/// <summary>
 		/// Init.

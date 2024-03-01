@@ -2,6 +2,7 @@
 {
 	using System.Collections;
 	using UIWidgets;
+	using UIWidgets.Attributes;
 	using UnityEngine;
 	using UnityEngine.Serialization;
 
@@ -10,9 +11,11 @@
 	/// </summary>
 	public class SteamSpyData : MonoBehaviour
 	{
-		static char[] LineEnd = new char[] { '\n' };
+		[DomainReloadExclude]
+		static readonly char[] LineEnd = new char[] { '\n' };
 
-		static char[] Separator = new char[] { '\t' };
+		[DomainReloadExclude]
+		static readonly char[] Separator = new char[] { '\t' };
 
 		/// <summary>
 		/// SteamSpyView.
@@ -20,6 +23,11 @@
 		[SerializeField]
 		[FormerlySerializedAs("steamSpyView")]
 		protected SteamSpyView SteamSpyView;
+
+		[SerializeField]
+		TextAsset csv;
+
+		string content = string.Empty;
 
 		/// <summary>
 		/// Start this instance.
@@ -38,36 +46,42 @@
 		}
 
 		/// <summary>
+		/// Send web request.
+		/// </summary>
+		/// <returns>IEnumerator.</returns>
+		protected IEnumerator Request()
+		{
+			var url = "https://ilih.name/steamspy/";
+			using var www = UnityEngine.Networking.UnityWebRequest.Get(new System.Uri(url));
+
+			yield return www.SendWebRequest();
+
+			if (Compatibility.IsError(www))
+			{
+				Debug.Log(www.error);
+			}
+			else
+			{
+				content = www.downloadHandler.text;
+			}
+		}
+
+		/// <summary>
 		/// Coroutine to load data from web.
 		/// </summary>
 		/// <returns>IEnumerator.</returns>
 		protected IEnumerator LoadData()
 		{
-			var lines = Compatibility.EmptyArray<string>();
-
-			var url = "https://ilih.name/steamspy/";
-#if UNITY_2018_3_OR_NEWER
-			using (var www = UnityEngine.Networking.UnityWebRequest.Get(new System.Uri(url)))
+			if (csv != null)
 			{
-				yield return www.SendWebRequest();
-
-				if (Compatibility.IsError(www))
-				{
-					Debug.Log(www.error);
-				}
-				else
-				{
-					lines = www.downloadHandler.text.Split(LineEnd);
-				}
+				content = csv.text;
 			}
-#else
-			WWW www = new WWW(url);
-			yield return www;
+			else
+			{
+				yield return Request();
+			}
 
-			lines = www.text.Split(LineEnd);
-
-			www.Dispose();
-#endif
+			var lines = content.Split(LineEnd);
 
 			SteamSpyView.DataSource.BeginUpdate();
 

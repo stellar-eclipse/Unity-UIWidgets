@@ -11,14 +11,7 @@
 		/// <inheritdoc/>
 		protected override void UpdateView()
 		{
-			var item = Item as TreeViewSampleItemCountry;
-
-			if (item == null)
-			{
-				Icon.sprite = null;
-				TextAdapter.text = string.Empty;
-			}
-			else
+			if (Item is TreeViewSampleItemCountry item)
 			{
 				Icon.sprite = item.Icon;
 				TextAdapter.text = item.Name;
@@ -29,6 +22,11 @@
 				}
 
 				Icon.enabled = Icon.sprite != null;
+			}
+			else
+			{
+				Icon.sprite = null;
+				TextAdapter.text = string.Empty;
 			}
 		}
 	}

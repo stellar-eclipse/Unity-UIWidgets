@@ -33,7 +33,9 @@
 		/// Progressbar.
 		/// </summary>
 		[SerializeField]
+		#pragma warning disable 0618
 		public Progressbar Progressbar;
+		#pragma warning restore
 
 		/// <summary>
 		/// Init graphics foreground.
@@ -42,9 +44,13 @@
 		{
 			if (GraphicsForegroundVersion == 0)
 			{
+				#pragma warning disable 0618
 				Foreground = new Graphic[] { UtilitiesUI.GetGraphic(TextAdapter), };
+				#pragma warning restore
 				GraphicsForegroundVersion = 1;
 			}
+
+			base.GraphicsForegroundInit();
 		}
 
 		/// <summary>
@@ -71,13 +77,22 @@
 			Icon.enabled = Icon.sprite != null;
 		}
 
+		/// <inheritdoc/>
+		public override void SetThemeImagesPropertiesOwner(Component owner)
+		{
+			base.SetThemeImagesPropertiesOwner(owner);
+
+			UIThemes.Utilities.SetTargetOwner(typeof(Sprite), Icon, nameof(Icon.sprite), owner);
+			UIThemes.Utilities.SetTargetOwner(typeof(Color), Icon, nameof(Icon.color), owner);
+		}
+
 		/// <summary>
 		/// Upgrade this instance.
 		/// </summary>
 		public override void Upgrade()
 		{
 #pragma warning disable 0612, 0618
-			Utilities.GetOrAddComponent(Text, ref TextAdapter);
+			Utilities.RequireComponent(Text, ref TextAdapter);
 #pragma warning restore 0612, 0618
 		}
 	}

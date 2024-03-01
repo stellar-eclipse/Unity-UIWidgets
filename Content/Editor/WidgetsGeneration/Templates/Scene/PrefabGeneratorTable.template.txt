@@ -6,7 +6,7 @@ namespace {0:WidgetsNamespace}
 		void GenerateSceneTable({0:TestClass} target, UIWidgets.WidgetGeneration.SceneGeneratorHelper helper, {0:ListViewComponentClass} dragInfo)
 		{{
 			var table_prefab = PrefabsMenu.Table;
-			var table = UnityEngine.Object.Instantiate(table_prefab) as UnityEngine.GameObject;
+			var table = Instantiate(table_prefab);
 			table.name = table_prefab.name;
 			table.transform.SetParent(helper.TableParent, false);
 			target.Table = table.GetComponent<{0:ListViewClass}>();
@@ -16,8 +16,8 @@ namespace {0:WidgetsNamespace}
 			var table_rt = table.transform as UnityEngine.RectTransform;
 			table_rt.anchorMin = new UnityEngine.Vector2(0, 0);
 			table_rt.anchorMax = new UnityEngine.Vector2(1, 1);
-			table_rt.sizeDelta = new UnityEngine.Vector2(0, -35f);
-			table_rt.anchoredPosition = new UnityEngine.Vector2(0, -35f);
+			table_rt.sizeDelta = new UnityEngine.Vector2(0, -60f);
+			table_rt.anchoredPosition = new UnityEngine.Vector2(0, -60f);
 
 			AddLabel(helper.LabelTable, "Columns can be resized and reordered.\r\nClick on column header to sort items.");
 		}}
@@ -28,7 +28,7 @@ namespace {0:WidgetsNamespace}
 		/// <returns>Table.</returns>
 		protected override UnityEngine.GameObject GenerateTable()
 		{{
-			var go = UIWidgets.UtilitiesEditor.CreateGameObject(UIWidgets.PrefabsTemplates.Instance.Table);
+			var go = UIWidgets.Widgets.CreateGameObject(UIWidgets.PrefabsTemplates.Instance.Table);
 			go.name = "Table" + Info.ShortTypeName;
 
 			var helper = go.GetComponent<UIWidgets.WidgetGeneration.TableGeneratorHelper>();
@@ -52,6 +52,8 @@ namespace {0:WidgetsNamespace}
 			drag.ListView = target;
 
 			UnityEngine.Object.DestroyImmediate(helper);
+			
+			ThemeTable(target);
 
 			return go;
 		}}
@@ -64,9 +66,11 @@ namespace {0:WidgetsNamespace}
 			t[0:FieldName].fontSize = 20;
 			t[0:FieldName].color = UnityEngine.Color.white;
 
+			#if UIWIDGETS_LEGACY_STYLE
 			var style[0:FieldName] = cell[0:FieldName].gameObject.AddComponent<UIWidgets.Styles.StyleSupportHeaderCell>();
 			style[0:FieldName].Text = t[0:FieldName].gameObject;
 			style[0:FieldName].Background = cell[0:FieldName].GetComponent<UnityEngine.UI.Image>();
+			#endif
 }{0:TextFields@
 			var cell[0:FieldName]Button = cell[0:FieldName].gameObject.AddComponent<UnityEngine.UI.Button>();
 			AddListener(cell[0:FieldName]Button.onClick, table.SortBy[0:FieldName]);

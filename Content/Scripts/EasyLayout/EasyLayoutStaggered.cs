@@ -75,7 +75,7 @@
 		{
 			for (int i = list.Count; i < size; i++)
 			{
-				list.Add(default(T));
+				list.Add(default);
 			}
 		}
 

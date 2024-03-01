@@ -3,7 +3,7 @@
 	/// <summary>
 	/// Position.
 	/// </summary>
-	public struct EasyLayoutPosition : System.IEquatable<EasyLayoutPosition>
+	public readonly struct EasyLayoutPosition : System.IEquatable<EasyLayoutPosition>
 	{
 		/// <summary>
 		/// X.
@@ -27,44 +27,27 @@
 		}
 
 		/// <inheritdoc/>
-		public override string ToString()
-		{
-			return string.Format("[{0}, {1}]", X.ToString(), Y.ToString());
-		}
+		public override string ToString() => string.Format("[{0}, {1}]", X.ToString(), Y.ToString());
 
 		/// <summary>
 		/// Determines whether the specified object is equal to the current object.
 		/// </summary>
 		/// <param name="obj">The object to compare with the current object.</param>
 		/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-		public override bool Equals(object obj)
-		{
-			if (obj is EasyLayoutPosition)
-			{
-				return Equals((EasyLayoutPosition)obj);
-			}
-
-			return false;
-		}
+		public override bool Equals(object obj) => (obj is EasyLayoutPosition position) && Equals(position);
 
 		/// <summary>
 		/// Determines whether the specified object is equal to the current object.
 		/// </summary>
 		/// <param name="other">The object to compare with the current object.</param>
 		/// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-		public bool Equals(EasyLayoutPosition other)
-		{
-			return X == other.X && Y == other.Y;
-		}
+		public bool Equals(EasyLayoutPosition other) => X == other.X && Y == other.Y;
 
 		/// <summary>
 		/// Hash function.
 		/// </summary>
 		/// <returns>A hash code for the current object.</returns>
-		public override int GetHashCode()
-		{
-			return X ^ Y;
-		}
+		public override int GetHashCode() => X ^ Y;
 
 		/// <summary>
 		/// Compare specified instances.
@@ -72,10 +55,7 @@
 		/// <param name="left">Left instance.</param>
 		/// <param name="right">Right instances.</param>
 		/// <returns>true if the instances are equal; otherwise, false.</returns>
-		public static bool operator ==(EasyLayoutPosition left, EasyLayoutPosition right)
-		{
-			return left.Equals(right);
-		}
+		public static bool operator ==(EasyLayoutPosition left, EasyLayoutPosition right) => left.Equals(right);
 
 		/// <summary>
 		/// Compare specified instances.
@@ -83,9 +63,6 @@
 		/// <param name="left">Left instance.</param>
 		/// <param name="right">Right instances.</param>
 		/// <returns>true if the instances are now equal; otherwise, false.</returns>
-		public static bool operator !=(EasyLayoutPosition left, EasyLayoutPosition right)
-		{
-			return !left.Equals(right);
-		}
+		public static bool operator !=(EasyLayoutPosition left, EasyLayoutPosition right) => !left.Equals(right);
 	}
 }
